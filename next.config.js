@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Remove static export to enable server features (API routes, auth)
   eslint: {
     ignoreDuringBuilds: true,
   },

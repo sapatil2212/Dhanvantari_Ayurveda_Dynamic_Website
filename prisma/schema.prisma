@@ -1,0 +1,588 @@
+// Prisma schema for MySQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String?
+  email          String   @unique
+  passwordHash   String
+  emailVerified  DateTime?
+  role           Role     @default(OTHER)
+  isActive       Boolean  @default(true)
+  lastLoginAt    DateTime?
+  profileImage   String?
+  phone          String?
+  department     String?
+  specialization String?
+  licenseNumber  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  createdPatients     Patient[] @relation("CreatedPatients")
+  updatedPatients     Patient[] @relation("UpdatedPatients")
+  createdAppointments Appointment[] @relation("CreatedAppointments")
+  updatedAppointments Appointment[] @relation("UpdatedAppointments")
+  doctorAppointments  Appointment[] @relation("DoctorAppointments")
+  createdPrescriptions Prescription[] @relation("CreatedPrescriptions")
+  updatedPrescriptions Prescription[] @relation("UpdatedPrescriptions")
+  createdInvoices     Invoice[] @relation("CreatedInvoices")
+  updatedInvoices     Invoice[] @relation("UpdatedInvoices")
+  auditLogs          AuditLog[]
+  notifications      Notification[]
+  typingHistory      TypingHistory[]
+  
+  // Additional relations
+  createdEncounters        Encounter[] @relation("CreatedEncounters")
+  updatedEncounters        Encounter[] @relation("UpdatedEncounters")
+  recordedVitals           Vital[]     @relation("RecordedVitals")
+  recordedAllergies        Allergy[]   @relation("RecordedAllergies")
+  recordedMedicalHistory   MedicalHistory[] @relation("RecordedMedicalHistory")
+  recordedFamilyHistory    FamilyHistory[] @relation("RecordedFamilyHistory")
+  recordedLifestyle        Lifestyle[] @relation("RecordedLifestyle")
+  processedPayments        Payment[]   @relation("ProcessedPayments")
+  createdInventoryItems    InventoryItem[] @relation("CreatedInventoryItems")
+  updatedInventoryItems    InventoryItem[] @relation("UpdatedInventoryItems")
+  createdInventoryTransactions InventoryTransaction[] @relation("CreatedInventoryTransactions")
+  createdPurchaseOrders    PurchaseOrder[] @relation("CreatedPurchaseOrders")
+  updatedPurchaseOrders    PurchaseOrder[] @relation("UpdatedPurchaseOrders")
+  updatedSystemSettings    SystemSetting[] @relation("UpdatedSystemSettings")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  DOCTOR
+  NURSE
+  RECEPTIONIST
+  PHARMACIST
+  ACCOUNTANT
+  PATIENT
+  OTHER
+}
+
+model VerificationToken {
+  id           String   @id @default(cuid())
+  email        String
+  name         String?
+  passwordHash String
+  role         Role
+  token        String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  MISSED
+  COMPLETED
+  RESCHEDULED
+}
+
+enum AppointmentType {
+  CONSULTATION
+  FOLLOW_UP
+  EMERGENCY
+  ROUTINE_CHECKUP
+  SPECIALIST_VISIT
+  THERAPY_SESSION
+}
+
+model Appointment {
+  id                String            @id @default(cuid())
+  consultationType  String
+  appointmentType   AppointmentType   @default(CONSULTATION)
+  preferredDate     DateTime
+  preferredTime     String
+  duration          Int               @default(30) // in minutes
+  name              String
+  email             String
+  phone             String
+  age               Int?
+  gender            String?
+  chiefComplaint    String
+  previousTreatment String?
+  medications       String?
+  additionalNotes   String?
+  status            AppointmentStatus @default(PENDING)
+  roomNumber        String?
+  doctorId          String?
+  doctor            User?             @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  createdById       String?
+  createdBy         User?             @relation("CreatedAppointments", fields: [createdById], references: [id])
+  updatedById       String?
+  updatedBy         User?             @relation("UpdatedAppointments", fields: [updatedById], references: [id])
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  // Optional link to a patient record if available
+  patientId         String?
+  patient           Patient?          @relation(fields: [patientId], references: [id])
+  
+  // Relations
+  prescriptions     Prescription[]
+  invoices          Invoice[]
+}
+
+enum NotificationType {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  DELETED
+  REMINDER
+  ALERT
+  SYSTEM
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Notification {
+  id            String             @id @default(cuid())
+  type          NotificationType
+  priority      NotificationPriority @default(MEDIUM)
+  title         String
+  message       String
+  isRead        Boolean            @default(false)
+  readAt        DateTime?
+  appointmentId String?
+  patientId     String?
+  userId        String?
+  user          User?              @relation(fields: [userId], references: [id])
+  createdAt     DateTime           @default(now())
+
+  @@index([createdAt])
+  @@index([userId, isRead])
+}
+
+/// Core patient master record
+model Patient {
+  id                    String       @id @default(cuid())
+  firstName             String
+  lastName              String
+  middleName            String?
+  dateOfBirth           DateTime?
+  gender                String?
+  email                 String?
+  phone                 String?
+  alternatePhone        String?
+  addressLine1          String?
+  addressLine2          String?
+  city                  String?
+  state                 String?
+  postalCode            String?
+  country               String?
+  bloodType             String?
+  maritalStatus         String?
+  occupation            String?
+  medicalRecordNumber   String       @unique
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  emergencyContactRelation String?
+  insuranceProvider     String?
+  insuranceNumber       String?
+  insuranceExpiry       DateTime?
+  notes                 String?
+  isActive              Boolean      @default(true)
+  createdById           String?
+  createdBy             User?        @relation("CreatedPatients", fields: [createdById], references: [id])
+  updatedById           String?
+  updatedBy             User?        @relation("UpdatedPatients", fields: [updatedById], references: [id])
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  // Relations
+  appointments          Appointment[]
+  encounters            Encounter[]
+  vitals                Vital[]
+  allergies             Allergy[]
+  invoices              Invoice[]
+  prescriptions         Prescription[]
+  medicalHistory        MedicalHistory[]
+  familyHistory         FamilyHistory[]
+  lifestyle             Lifestyle[]
+}
+
+/// Clinical encounter/visit notes
+model Encounter {
+  id           String   @id @default(cuid())
+  patientId    String
+  date         DateTime @default(now())
+  type         String
+  reason       String?
+  diagnosis    String?
+  notes        String?
+  followUpDate DateTime?
+  createdById  String?
+  createdBy    User?     @relation("CreatedEncounters", fields: [createdById], references: [id])
+  updatedById  String?
+  updatedBy    User?     @relation("UpdatedEncounters", fields: [updatedById], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  prescriptions Prescription[]
+  @@index([patientId, date])
+}
+
+/// Vital signs snapshot
+model Vital {
+  id             String   @id @default(cuid())
+  patientId      String
+  recordedAt     DateTime @default(now())
+  heightCm       Float?
+  weightKg       Float?
+  temperatureC   Float?
+  pulseBpm       Int?
+  systolicMmHg   Int?
+  diastolicMmHg  Int?
+  respiratoryRpm Int?
+  spo2Percent    Int?
+  bmi            Float?
+  bloodSugar     Float?
+  recordedById   String?
+  recordedBy     User?     @relation("RecordedVitals", fields: [recordedById], references: [id])
+  createdAt      DateTime @default(now())
+
+  patient        Patient  @relation(fields: [patientId], references: [id])
+  @@index([patientId, recordedAt])
+}
+
+/// Allergy/intolerance registry
+model Allergy {
+  id          String   @id @default(cuid())
+  patientId   String
+  substance   String
+  reaction    String?
+  severity    String?
+  notes       String?
+  recordedAt  DateTime @default(now())
+  recordedById String?
+  recordedBy  User?     @relation("RecordedAllergies", fields: [recordedById], references: [id])
+  createdAt   DateTime @default(now())
+
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  @@index([patientId])
+}
+
+/// Medical History
+model MedicalHistory {
+  id          String   @id @default(cuid())
+  patientId   String
+  condition   String
+  diagnosis   String?
+  treatment   String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isOngoing   Boolean  @default(false)
+  notes       String?
+  recordedById String?
+  recordedBy  User?     @relation("RecordedMedicalHistory", fields: [recordedById], references: [id])
+  createdAt   DateTime @default(now())
+
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  @@index([patientId])
+}
+
+/// Family History
+model FamilyHistory {
+  id          String   @id @default(cuid())
+  patientId   String
+  relation    String
+  condition   String
+  ageAtOnset  Int?
+  outcome     String?
+  notes       String?
+  recordedById String?
+  recordedBy  User?     @relation("RecordedFamilyHistory", fields: [recordedById], references: [id])
+  createdAt   DateTime @default(now())
+
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  @@index([patientId])
+}
+
+/// Lifestyle Information
+model Lifestyle {
+  id          String   @id @default(cuid())
+  patientId   String
+  smoking     String?  // Never, Former, Current
+  alcohol     String?  // Never, Occasional, Regular, Heavy
+  exercise    String?  // Sedentary, Light, Moderate, Heavy
+  diet        String?
+  occupation  String?
+  stressLevel String?  // Low, Moderate, High
+  sleepHours  Int?
+  notes       String?
+  recordedById String?
+  recordedBy  User?     @relation("RecordedLifestyle", fields: [recordedById], references: [id])
+  createdAt   DateTime @default(now())
+
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  @@index([patientId])
+}
+
+/// Billing entities
+enum InvoiceStatus {
+  PENDING
+  PARTIAL
+  PAID
+  CANCELLED
+  OVERDUE
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  patientId  String
+  number     String        @unique
+  date       DateTime      @default(now())
+  dueDate    DateTime?
+  items      Json
+  subtotal   Decimal       @db.Decimal(10, 2)
+  tax        Decimal       @db.Decimal(10, 2)
+  discount   Decimal       @db.Decimal(10, 2)
+  total      Decimal       @db.Decimal(10, 2)
+  status     InvoiceStatus @default(PENDING)
+  notes      String?
+  createdById String?
+  createdBy  User?         @relation("CreatedInvoices", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy  User?         @relation("UpdatedInvoices", fields: [updatedById], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  patient    Patient       @relation(fields: [patientId], references: [id])
+  payments   Payment[]
+  appointmentId String?
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([patientId, date])
+  @@index([status])
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  invoiceId  String
+  amount     Decimal  @db.Decimal(10, 2)
+  method     String
+  reference  String?
+  paidAt     DateTime @default(now())
+  notes      String?
+  processedById String?
+  processedBy User?    @relation("ProcessedPayments", fields: [processedById], references: [id])
+  createdAt  DateTime @default(now())
+
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id])
+  @@index([invoiceId, paidAt])
+}
+
+// Digital prescriptions
+model Prescription {
+  id              String           @id @default(cuid())
+  number          String           @unique
+  patientId       String
+  encounterId     String?
+  date            DateTime         @default(now())
+  diagnosis       String?
+  notes           String?
+  advice          String?
+  followUpDate    DateTime?
+  prescriberName  String
+  prescriberRegNo String?
+  shareCode       String           @unique
+  isActive        Boolean          @default(true)
+  createdById     String?
+  createdBy       User?            @relation("CreatedPrescriptions", fields: [createdById], references: [id])
+  updatedById     String?
+  updatedBy       User?            @relation("UpdatedPrescriptions", fields: [updatedById], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  patient         Patient          @relation(fields: [patientId], references: [id])
+  encounter       Encounter?       @relation(fields: [encounterId], references: [id])
+  appointment     Appointment?     @relation(fields: [appointmentId], references: [id])
+  appointmentId   String?
+  items           PrescriptionItem[]
+
+  @@index([patientId, date])
+}
+
+model PrescriptionItem {
+  id              String        @id @default(cuid())
+  prescriptionId  String
+  medicineName    String
+  strength        String?
+  dosage          String?       // e.g., 1-0-1
+  frequency       String?       // e.g., BID, TID
+  route           String?       // oral, topical, etc
+  durationDays    Int?
+  instructions    String?
+  quantity        Int?
+  unit            String?
+
+  prescription    Prescription  @relation(fields: [prescriptionId], references: [id])
+  @@index([prescriptionId])
+}
+
+// Inventory Management
+model InventoryItem {
+  id              String   @id @default(cuid())
+  name            String
+  category        String
+  sku             String   @unique
+  description     String?
+  currentStock    Int      @default(0)
+  minStock        Int      @default(0)
+  maxStock        Int      @default(0)
+  unit            String
+  costPrice       Decimal  @db.Decimal(10, 2)
+  sellingPrice    Decimal  @db.Decimal(10, 2)
+  supplier        String?
+  expiryDate      DateTime?
+  location        String?
+  status          String   @default("active") // active, low_stock, out_of_stock, expired
+  isActive        Boolean  @default(true)
+  createdById     String?
+  createdBy       User?    @relation("CreatedInventoryItems", fields: [createdById], references: [id])
+  updatedById     String?
+  updatedBy       User?    @relation("UpdatedInventoryItems", fields: [updatedById], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  transactions InventoryTransaction[]
+  purchaseOrderItems PurchaseOrderItem[]
+
+  @@index([category])
+  @@index([status])
+  @@index([supplier])
+}
+
+model InventoryTransaction {
+  id              String   @id @default(cuid())
+  itemId          String
+  item            InventoryItem @relation(fields: [itemId], references: [id])
+  type            String   // IN, OUT, ADJUSTMENT
+  quantity        Int
+  reason          String?
+  reference       String?  // PO number, prescription ID, etc.
+  notes           String?
+  transactionDate DateTime @default(now())
+  createdById     String?
+  createdBy       User?    @relation("CreatedInventoryTransactions", fields: [createdById], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@index([itemId])
+  @@index([type])
+  @@index([transactionDate])
+}
+
+model PurchaseOrder {
+  id              String   @id @default(cuid())
+  number          String   @unique
+  supplier        String
+  orderDate       DateTime @default(now())
+  expectedDelivery DateTime?
+  status          String   @default("pending") // pending, ordered, received, cancelled
+  totalAmount     Decimal  @db.Decimal(10, 2)
+  notes           String?
+  createdById     String?
+  createdBy       User?    @relation("CreatedPurchaseOrders", fields: [createdById], references: [id])
+  updatedById     String?
+  updatedBy       User?    @relation("UpdatedPurchaseOrders", fields: [updatedById], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items           PurchaseOrderItem[]
+
+  @@index([supplier])
+  @@index([status])
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  itemId          String?
+  item            InventoryItem? @relation(fields: [itemId], references: [id])
+  name            String
+  quantity        Int
+  unitPrice       Decimal       @db.Decimal(10, 2)
+  totalPrice      Decimal       @db.Decimal(10, 2)
+  notes           String?
+
+  @@index([purchaseOrderId])
+}
+
+// Audit Logging
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc.
+  entityType  String   // Patient, Appointment, Invoice, etc.
+  entityId    String?
+  oldValues   Json?
+  newValues   Json?
+  ipAddress   String?
+  userAgent   String?
+  timestamp   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([timestamp])
+}
+
+// Typing history for autocomplete suggestions
+model TypingHistory {
+  id        String   @id @default(cuid())
+  fieldType String   // e.g., 'medicineName', 'diagnosis', 'advice', 'prescriberName'
+  value     String   // the actual text that was typed
+  frequency Int      @default(1) // how many times this value was used
+  userId    String?  // optional link to user for personalized suggestions
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([fieldType, value, userId])
+  @@index([fieldType, userId])
+  @@index([fieldType, frequency])
+}
+
+// System Settings
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  category    String?
+  isPublic    Boolean  @default(false)
+  updatedById String?
+  updatedBy   User?    @relation("UpdatedSystemSettings", fields: [updatedById], references: [id])
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}
+
+

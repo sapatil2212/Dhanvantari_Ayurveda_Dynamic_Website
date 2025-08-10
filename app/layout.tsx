@@ -1,12 +1,14 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import Providers from './providers';
 import { Toaster } from '@/components/ui/toaster';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import WhatsAppFloat from '@/components/ui/WhatsAppFloat';
 import { AppointmentProvider } from '@/contexts/AppointmentContext';
 import AppointmentModal from '@/components/ui/AppointmentModal';
+import ClientChrome from './ui/ClientChrome';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -41,16 +43,21 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <AppointmentProvider>
-          <Navigation />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <Footer />
-          <WhatsAppFloat />
-          <AppointmentModal />
-          <Toaster />
-        </AppointmentProvider>
+        <Providers>
+          <AppointmentProvider>
+            {/* Hide header/footer on dashboard via client wrapper */}
+            <ClientChrome>
+              <Navigation />
+            </ClientChrome>
+            <main className="min-h-screen">{children}</main>
+            <ClientChrome>
+              <Footer />
+              <WhatsAppFloat />
+            </ClientChrome>
+            <AppointmentModal />
+            <Toaster />
+          </AppointmentProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Phone, Leaf, ChevronDown } from 'lucide-react';
@@ -40,6 +41,7 @@ export default function Navigation() {
   const { setIsAppointmentModalOpen } = useAppointment();
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const isActive = (href: string) => pathname === href;
 
@@ -122,6 +124,16 @@ export default function Navigation() {
               Book Appointment
             </Button>
 
+            {session ? (
+              <Link href="/dashboard" className="hidden md:inline text-sm font-medium text-gray-700 hover:text-gray-900">
+                Dashboard
+              </Link>
+            ) : (
+              <Link href="/auth/login" className="hidden md:inline text-sm font-medium text-gray-700 hover:text-gray-900">
+                Login
+              </Link>
+            )}
+
             {/* Mobile Menu */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild className="lg:hidden">
@@ -194,6 +206,24 @@ export default function Navigation() {
                     >
                       Book Appointment
                     </Button>
+
+                    {session ? (
+                      <Link
+                        href="/dashboard"
+                        className="block w-full text-center py-2 text-sm font-medium text-gray-900 hover:text-emerald-600"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/auth/login"
+                        className="block w-full text-center py-2 text-sm font-medium text-gray-900 hover:text-emerald-600"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Login
+                      </Link>
+                    )}
                   </div>
                 </div>
               </SheetContent>

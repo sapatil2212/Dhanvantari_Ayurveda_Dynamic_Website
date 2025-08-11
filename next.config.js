@@ -1,10 +1,42 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Remove static export to enable server features (API routes, auth)
-  eslint: {
-    ignoreDuringBuilds: true,
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
   },
-  images: { unoptimized: true },
+  images: {
+    domains: ['localhost'],
+  },
+  // Disable static generation for API routes that use dynamic features
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, must-revalidate',
+          },
+        ],
+      },
+    ];
+  },
+  // Ensure API routes are not statically generated
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/:path*',
+      },
+    ];
+  },
+  // Add environment variables for build time
+  env: {
+    CUSTOM_KEY: process.env.CUSTOM_KEY,
+  },
+  // Disable static optimization for problematic routes
+  async generateStaticParams() {
+    return [];
+  },
 };
 
 module.exports = nextConfig;

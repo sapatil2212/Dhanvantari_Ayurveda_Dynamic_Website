@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -40,13 +40,31 @@ const navigation = [
 export default function Navigation() {
   const { setIsAppointmentModalOpen } = useAppointment();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
 
   const isActive = (href: string) => pathname === href;
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 0);
+    };
+
+    // Set initial state
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60' 
+        : 'bg-white'
+    }`}>
       <div className="container mx-auto px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

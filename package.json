@@ -16,8 +16,10 @@
     "db:setup": "node scripts/setup-database.js",
     "db:reset": "prisma migrate reset --force",
     "db:test": "node scripts/test-db-connection.js",
+    "db:resolve-migration": "node scripts/resolve-migration.js",
+    "db:quick-fix": "node scripts/quick-fix-migration.js",
     "setup": "node scripts/initial-setup.js",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "node scripts/vercel-build.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

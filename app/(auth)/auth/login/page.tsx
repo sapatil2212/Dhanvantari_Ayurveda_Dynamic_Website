@@ -1,6 +1,6 @@
 "use client";
 import { signIn } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -19,7 +19,7 @@ const schema = z.object({
   password: z.string().min(8, { message: 'Please enter correct password' }),
 });
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -151,6 +151,14 @@ export default function LoginPage() {
       />
       {loading && <LoadingOverlay message="Signing you in..." />}
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-10">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
 

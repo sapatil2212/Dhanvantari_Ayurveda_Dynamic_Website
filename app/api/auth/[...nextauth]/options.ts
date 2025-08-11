@@ -54,14 +54,36 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      try {
-        const u = new URL(url);
-        if (u.origin === baseUrl) return url;
-      } catch {
-        // ignore invalid absolute URL
+      // Always redirect to dashboard after successful login
+      if (url === baseUrl || url === `${baseUrl}/auth/login`) {
+        return `${baseUrl}/dashboard`;
       }
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
-      return baseUrl;
+      
+      // Handle callback URLs
+      if (url.includes('callbackUrl')) {
+        const callbackUrl = new URLSearchParams(url.split('?')[1] || '').get('callbackUrl');
+        if (callbackUrl && callbackUrl.startsWith('/')) {
+          return `${baseUrl}${callbackUrl}`;
+        }
+      }
+      
+      // Handle relative URLs
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`;
+      }
+      
+      // Handle same origin URLs
+      try {
+        const urlObj = new URL(url);
+        if (urlObj.origin === baseUrl) {
+          return url;
+        }
+      } catch {
+        // ignore invalid URLs
+      }
+      
+      // Default to dashboard
+      return `${baseUrl}/dashboard`;
     },
   },
 };

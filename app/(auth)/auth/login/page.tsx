@@ -36,16 +36,18 @@ function LoginForm() {
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     setLoading(true);
+    const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
     const res = await signIn('credentials', {
       redirect: false,
       email: values.email,
       password: values.password,
-      callbackUrl: '/dashboard',
+      callbackUrl,
     });
     setLoading(false);
     if (!res?.error) {
       setSuccessOpen(true);
-      setTimeout(() => router.push('/dashboard'), 800);
+      // Let NextAuth handle the redirect
+      setTimeout(() => window.location.href = callbackUrl, 800);
     } else {
       if (res.error === 'USER_NOT_FOUND') {
         setError('email', { type: 'manual', message: 'User is not registered yet!' });

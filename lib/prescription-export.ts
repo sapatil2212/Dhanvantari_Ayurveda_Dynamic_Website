@@ -130,7 +130,7 @@ export function exportToPDF(prescription: PrescriptionData) {
     },
     didDrawPage: function(data) {
       // Add page number
-      const pageCount = doc.internal.getNumberOfPages();
+      const pageCount = doc.getNumberOfPages();
       doc.setFontSize(8);
       doc.setTextColor(100, 100, 100);
       doc.text(`Page ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: 'center' });

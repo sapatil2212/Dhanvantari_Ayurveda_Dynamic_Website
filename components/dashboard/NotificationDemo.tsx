@@ -94,7 +94,7 @@ export function NotificationDemo() {
     await triggerCustomNotification(
       'Custom Notification',
       'This is a custom notification with action buttons',
-      'info',
+      'SYSTEM',
       { type: 'appointment', id: 'demo-123' },
       { label: 'View Details', url: '/dashboard/appointments/demo-123' }
     );
@@ -200,16 +200,16 @@ export function NotificationDemo() {
           <div>
             <h3 className="text-lg font-semibold mb-3">System Notifications</h3>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => handleSystemNotification('success')} variant="outline" className="text-green-600">
+              <Button onClick={() => handleSystemNotification('CREATED')} variant="outline" className="text-green-600">
                 Success
               </Button>
-              <Button onClick={() => handleSystemNotification('error')} variant="outline" className="text-red-600">
+              <Button onClick={() => handleSystemNotification('ALERT')} variant="outline" className="text-red-600">
                 Error
               </Button>
-              <Button onClick={() => handleSystemNotification('warning')} variant="outline" className="text-yellow-600">
+              <Button onClick={() => handleSystemNotification('REMINDER')} variant="outline" className="text-yellow-600">
                 Warning
               </Button>
-              <Button onClick={() => handleSystemNotification('info')} variant="outline" className="text-blue-600">
+              <Button onClick={() => handleSystemNotification('SYSTEM')} variant="outline" className="text-blue-600">
                 Info
               </Button>
             </div>

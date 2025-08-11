@@ -77,12 +77,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (data.status && (data.status === 'CONFIRMED' || data.status === 'CANCELLED' || data.status === 'PENDING' || data.status === 'MISSED')) {
       try {
         await sendAppointmentStatusEmail({
-          to: updated.email,
-          name: updated.name,
-          status: updated.status as any,
-          consultationType: updated.consultationType,
-          date: updated.preferredDate.toISOString(),
-          time: updated.preferredTime,
+          patientName: updated.name,
+          patientEmail: updated.email,
+          appointmentDate: updated.preferredDate.toISOString().split('T')[0],
+          appointmentTime: updated.preferredTime,
+          status: updated.status.toLowerCase() as 'confirmed' | 'cancelled' | 'rescheduled',
+          service: updated.consultationType,
+          notes: updated.additionalNotes || undefined,
+          appointmentId: updated.id,
         });
       } catch (e) {
         console.error('Failed to send status email', e);

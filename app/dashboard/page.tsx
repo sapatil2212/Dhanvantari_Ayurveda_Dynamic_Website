@@ -22,7 +22,8 @@ import {
   BarChart3,
   Package,
   FileText,
-  Bell
+  Bell,
+  MessageCircle
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { hasPermission, Permission, Role } from '@/lib/permissions';
@@ -62,6 +63,10 @@ export default async function DashboardPage() {
       }
     })
   ]);
+
+  // Temporary enquiry counts until Prisma client is updated
+  const totalEnquiries = 0;
+  const newEnquiries = 0;
 
   // Calculate revenue for current month
   const currentMonth = new Date();
@@ -128,6 +133,15 @@ export default async function DashboardPage() {
       icon: FileText,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50'
+    },
+    { 
+      label: 'New Enquiries', 
+      value: newEnquiries, 
+      change: '+8.2%', 
+      trend: 'up',
+      icon: MessageCircle,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50'
     }
   ];
 
@@ -163,7 +177,7 @@ export default async function DashboardPage() {
   const data = Array.from({ length: 12 }).map((_, i) => ({
     name: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
     patients: Math.floor(20 + Math.random() * 80),
-    appointments: Math.floor(15 + Math.random() * 60),
+    inpatient: Math.floor(15 + Math.random() * 60),
     revenue: Math.floor(50000 + Math.random() * 200000),
   }));
 

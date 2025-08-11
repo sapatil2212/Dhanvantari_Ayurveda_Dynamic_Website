@@ -36,10 +36,21 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  Phone,
+  Mail,
+  MessageCircle
 } from 'lucide-react';
 import { hasPermission, Permission, Role } from '@/lib/permissions';
 import { useSession, signOut } from 'next-auth/react';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger
+} from '@/components/ui/dialog';
 
 interface SidebarProps {
   userRole?: Role;
@@ -59,7 +70,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
-  const effectiveRole = userRole ?? (session?.user?.role as Role | undefined);
+  const effectiveRole = userRole ?? ((session?.user as any)?.role as Role | undefined);
 
   const menuItems: MenuItem[] = [
     {
@@ -126,6 +137,18 @@ export default function Sidebar({ userRole }: SidebarProps) {
         { title: 'Purchase Orders', href: '/dashboard/inventory/purchase-orders', icon: ShoppingCart },
         { title: 'Stock Alerts', href: '/dashboard/inventory/alerts', icon: AlertTriangle },
         { title: 'Suppliers', href: '/dashboard/inventory/suppliers', icon: Users },
+      ]
+    },
+    {
+      title: 'Enquiries',
+      href: '/dashboard/enquiries',
+      icon: MessageCircle,
+      permission: Permission.VIEW_PATIENTS, // Using patient permission for now
+      children: [
+        { title: 'All Enquiries', href: '/dashboard/enquiries', icon: MessageCircle },
+        { title: 'New Enquiries', href: '/dashboard/enquiries?status=NEW', icon: Bell },
+        { title: 'In Progress', href: '/dashboard/enquiries?status=IN_PROGRESS', icon: Clock },
+        { title: 'Converted', href: '/dashboard/enquiries?status=CONVERTED', icon: CheckCircle },
       ]
     },
     {
@@ -352,25 +375,93 @@ export default function Sidebar({ userRole }: SidebarProps) {
       )}
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
+      <ScrollArea className="flex-1 px-3 py-3">
         <nav className="space-y-2">
           {filteredMenuItems.map(item => renderMenuItem(item))}
         </nav>
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t p-4">
-        <div className="space-y-2">
+      <div className="border-t p-3">
+        <div className="space-y-1">
           {!collapsed && (
             <>
-              <Button variant="ghost" size="sm" className="w-full justify-start">
-                <HelpCircle className="h-4 w-4 mr-2" />
-                Help & Support
-              </Button>
-              <Button variant="ghost" size="sm" className="w-full justify-start">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Documentation
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs text-gray-400 hover:text-gray-500">
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    Help & Support
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Help & Support</DialogTitle>
+                    <DialogDescription>
+                      Contact our support team via phone or email.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="mt-2 space-y-3">
+                    <a href="tel:8830553868" className="flex items-center gap-3 text-sm hover:text-primary">
+                      <Phone className="h-4 w-4" />
+                      <span>8830553868</span>
+                    </a>
+                    <a href="mailto:saptechnoeditors@gmail.com" className="flex items-center gap-3 text-sm hover:text-primary">
+                      <Mail className="h-4 w-4" />
+                      <span>saptechnoeditors@gmail.com</span>
+                    </a>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs text-gray-400 hover:text-gray-500">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Documentation
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Documentation</DialogTitle>
+                    <DialogDescription>
+                      Quick access to key guides and references.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="mt-2 space-y-2 text-sm">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span>Appointments: booking, rescheduling, reminders</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>Patients: profiles, history, vitals, encounters</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      <span>Inventory: items, purchase orders, stock alerts</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span>Invoices & Payments: billing flow and reports</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Bell className="h-4 w-4 text-muted-foreground" />
+                      <span>Notifications: real-time updates and email</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <span>Users & Roles: permissions and access control</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Database className="h-4 w-4 text-muted-foreground" />
+                      <span>System: settings, backup and restore</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                      <span>Enquiries: tracking and conversion</span>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </>
           )}
           <Button 

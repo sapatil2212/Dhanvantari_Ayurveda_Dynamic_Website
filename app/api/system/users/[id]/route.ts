@@ -14,18 +14,18 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const userId = (session.user as any).id as string | undefined;
     const email = session.user?.email as string | undefined;
 
-    let role: Role | undefined = sessionRole;
-    if (!role) {
+    let userRole: Role | undefined = sessionRole;
+    if (!userRole) {
       if (userId) {
-        role = (await prisma.user.findUnique({ where: { id: userId }, select: { role: true } }))?.role as Role | undefined;
+        userRole = (await prisma.user.findUnique({ where: { id: userId }, select: { role: true } }))?.role as Role | undefined;
       } else if (email) {
-        role = (await prisma.user.findUnique({ where: { email }, select: { role: true } }))?.role as Role | undefined;
+        userRole = (await prisma.user.findUnique({ where: { email }, select: { role: true } }))?.role as Role | undefined;
       }
     }
 
-    if (!role) return NextResponse.json({ error: 'Insufficient permissions or stale session' }, { status: 403 });
+    if (!userRole) return NextResponse.json({ error: 'Insufficient permissions or stale session' }, { status: 403 });
 
-    if (!checkPermission(role, Permission.MANAGE_ROLES)) {
+    if (!checkPermission(userRole, Permission.MANAGE_ROLES)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 

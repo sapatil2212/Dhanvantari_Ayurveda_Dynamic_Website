@@ -522,7 +522,7 @@ export default function InventoryReportsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Object.entries(data.categoryTotals).map(([category, totals]) => (
+                {Object.entries(data.categoryTotals).map(([category, totals]: [string, any]) => (
                   <TableRow key={category}>
                     <TableCell className="font-medium">{category}</TableCell>
                     <TableCell>{formatNumber(totals.totalItems)}</TableCell>

@@ -17,13 +17,11 @@ export class InventoryNotificationService {
   // Check for low stock items and send alerts
   static async checkLowStockAlerts() {
     try {
-      const lowStockItems = await prisma.inventoryItem.findMany({
+      // Get all items and filter in memory for low stock
+      const allItems = await prisma.inventoryItem.findMany({
         where: {
           isActive: true,
-          AND: [
-            { currentStock: { gt: 0 } },
-            { currentStock: { lte: { minStock: true } } }
-          ]
+          currentStock: { gt: 0 }
         },
         include: {
           createdBy: {
@@ -31,6 +29,8 @@ export class InventoryNotificationService {
           }
         }
       });
+
+      const lowStockItems = allItems.filter(item => item.currentStock <= item.minStock);
 
       for (const item of lowStockItems) {
         const alert: InventoryAlert = {

@@ -17,7 +17,7 @@ export async function GET(
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.VIEW_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.VIEW_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -68,7 +68,7 @@ export async function PUT(
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.EDIT_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.EDIT_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -143,7 +143,7 @@ export async function PUT(
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         location,
         status: newStatus,
-        updatedById: session.user.id
+        updatedById: (session.user as any).id
       },
       include: {
         createdBy: {
@@ -177,7 +177,7 @@ export async function DELETE(
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.DELETE_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.DELETE_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -195,7 +195,7 @@ export async function DELETE(
       where: { id: params.id },
       data: {
         isActive: false,
-        updatedById: session.user.id
+        updatedById: (session.user as any).id
       }
     });
 

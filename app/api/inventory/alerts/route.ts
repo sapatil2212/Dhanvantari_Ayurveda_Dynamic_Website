@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.VIEW_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.VIEW_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -67,15 +67,19 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate alert statistics
-    const lowStockCount = await prisma.inventoryItem.count({
+    // Get all items and filter in memory for low stock
+    const allItems = await prisma.inventoryItem.findMany({
       where: {
         isActive: true,
-        AND: [
-          { currentStock: { gt: 0 } },
-          { currentStock: { lte: { minStock: true } } }
-        ]
+        currentStock: { gt: 0 }
+      },
+      select: {
+        currentStock: true,
+        minStock: true
       }
     });
+    
+    const lowStockCount = allItems.filter(item => item.currentStock <= item.minStock).length;
 
     const outOfStockCount = await prisma.inventoryItem.count({
       where: {

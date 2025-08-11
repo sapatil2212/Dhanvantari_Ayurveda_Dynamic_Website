@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.MANAGE_PURCHASE_ORDERS)) {
+    if (!checkPermission((session.user as any).role, Permission.MANAGE_PURCHASE_ORDERS)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.MANAGE_PURCHASE_ORDERS)) {
+    if (!checkPermission((session.user as any).role, Permission.MANAGE_PURCHASE_ORDERS)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
           expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
           totalAmount,
           notes,
-          createdById: session.user.id
+          createdById: (session.user as any).id
         }
       });
 

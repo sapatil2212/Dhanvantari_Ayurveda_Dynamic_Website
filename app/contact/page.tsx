@@ -68,24 +68,48 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch('/api/enquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          service: formData.service,
+          message: formData.message,
+          source: 'WEBSITE_CONTACT'
+        }),
+      });
 
-    toast({
-      title: "Message Sent Successfully!",
-      description: "We'll contact you within 24 hours to schedule your consultation.",
-    });
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
 
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      service: '',
-      message: ''
-    });
+      toast({
+        title: "Message Sent Successfully!",
+        description: "We'll contact you within 24 hours to schedule your consultation.",
+      });
 
-    setIsSubmitting(false);
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        service: '',
+        message: ''
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

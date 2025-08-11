@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.VIEW_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.VIEW_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.EDIT_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.EDIT_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
           reason,
           reference,
           notes,
-          createdById: session.user.id
+          createdById: (session.user as any).id
         }
       });
 
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
         data: {
           currentStock: newStock,
           status: newStatus,
-          updatedById: session.user.id
+          updatedById: (session.user as any).id
         }
       });
 

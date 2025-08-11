@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const before = await prisma.systemSetting.findUnique({ where: { id: params.id } });
     const updated = await prisma.systemSetting.update({
       where: { id: params.id },
-      data: { value: String(value), updatedById: session.user.id },
+      data: { value: String(value), updatedById: (session.user as any).id },
     });
     await recordAudit({
       userId: (session.user as any).id,

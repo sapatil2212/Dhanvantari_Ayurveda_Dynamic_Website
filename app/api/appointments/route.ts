@@ -107,11 +107,13 @@ export async function POST(request: Request) {
     // Send booking email (best-effort)
     try {
       await sendAppointmentBookedEmail({
-        to: created.email,
-        name: created.name,
-        consultationType: created.consultationType,
-        date: created.preferredDate.toISOString(),
-        time: created.preferredTime,
+        patientName: created.name,
+        patientEmail: created.email,
+        appointmentDate: created.preferredDate.toISOString().split('T')[0],
+        appointmentTime: created.preferredTime,
+        service: created.consultationType,
+        notes: created.additionalNotes || undefined,
+        appointmentId: created.id,
       });
     } catch {}
 

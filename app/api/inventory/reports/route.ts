@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.VIEW_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.VIEW_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate') || '';
 
     // Set default date range if not provided (last 30 days)
-    let dateFilter = {};
+    let dateFilter: any = {};
     if (startDate || endDate) {
       dateFilter = {
         createdAt: {}
@@ -76,15 +76,19 @@ async function getOverviewReport() {
     where: { isActive: true }
   });
 
-  const lowStockItems = await prisma.inventoryItem.count({
+  // Get all items and filter in memory for low stock
+  const allItemsForLowStock = await prisma.inventoryItem.findMany({
     where: {
       isActive: true,
-      AND: [
-        { currentStock: { gt: 0 } },
-        { currentStock: { lte: { minStock: true } } }
-      ]
+      currentStock: { gt: 0 }
+    },
+    select: {
+      currentStock: true,
+      minStock: true
     }
   });
+  
+  const lowStockItems = allItemsForLowStock.filter(item => item.currentStock <= item.minStock).length;
 
   const outOfStockItems = await prisma.inventoryItem.count({
     where: {
@@ -241,7 +245,7 @@ async function getMovementsReport(dateFilter: any) {
     totalsByType,
     movementsByDate: Object.entries(movementsByDate).map(([date, data]) => ({
       date,
-      ...data
+      ...(data as any)
     }))
   });
 }
@@ -280,7 +284,12 @@ async function getCategoriesReport() {
     acc[item.category].totalStock += Number(item.currentStock);
     acc[item.category].totalCostValue += Number(item.currentStock) * Number(item.costPrice);
     acc[item.category].totalSellingValue += Number(item.currentStock) * Number(item.sellingPrice);
-    acc[item.category].statusCounts[item.status as keyof typeof acc[item.category].statusCounts]++;
+    
+    // Update status count
+    if (item.status === 'active') acc[item.category].statusCounts.active++;
+    else if (item.status === 'low_stock') acc[item.category].statusCounts.low_stock++;
+    else if (item.status === 'out_of_stock') acc[item.category].statusCounts.out_of_stock++;
+    else if (item.status === 'expired') acc[item.category].statusCounts.expired++;
 
     return acc;
   }, {} as any);

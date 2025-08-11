@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     
     const where: any = {
       OR: [
-        { userId: session.user.id },
+        { userId: (session.user as any).id },
         { userId: null } // System-wide notifications
       ]
     };

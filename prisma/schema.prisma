@@ -55,6 +55,8 @@ model User {
   createdPurchaseOrders    PurchaseOrder[] @relation("CreatedPurchaseOrders")
   updatedPurchaseOrders    PurchaseOrder[] @relation("UpdatedPurchaseOrders")
   updatedSystemSettings    SystemSetting[] @relation("UpdatedSystemSettings")
+  assignedEnquiries        Enquiry[] @relation("AssignedEnquiries")
+  assignedByEnquiries      Enquiry[] @relation("AssignedByEnquiries")
 }
 
 enum Role {
@@ -140,6 +142,7 @@ model Appointment {
   // Relations
   prescriptions     Prescription[]
   invoices          Invoice[]
+  enquiries         Enquiry[] @relation("ConvertedToAppointment")
 }
 
 enum NotificationType {
@@ -223,6 +226,7 @@ model Patient {
   medicalHistory        MedicalHistory[]
   familyHistory         FamilyHistory[]
   lifestyle             Lifestyle[]
+  enquiries             Enquiry[] @relation("ConvertedToPatient")
 }
 
 /// Clinical encounter/visit notes
@@ -583,6 +587,62 @@ model SystemSetting {
   updatedAt   DateTime @updatedAt
 
   @@index([category])
+}
+
+// Enquiry Management
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  CONTACTED
+  CONVERTED
+  CLOSED
+  SPAM
+}
+
+enum EnquirySource {
+  WEBSITE_CONTACT
+  WEBSITE_APPOINTMENT
+  PHONE
+  EMAIL
+  WALK_IN
+  REFERRAL
+  SOCIAL_MEDIA
+  OTHER
+}
+
+model Enquiry {
+  id          String        @id @default(cuid())
+  name        String
+  email       String
+  phone       String
+  service     String?       // Service of interest
+  message     String?
+  status      EnquiryStatus @default(NEW)
+  source      EnquirySource @default(WEBSITE_CONTACT)
+  priority    String        @default("normal") // low, normal, high, urgent
+  assignedTo  String?       // User ID of assigned staff member
+  assignedBy  String?       // User ID who assigned the enquiry
+  notes       String?       // Internal notes
+  followUpDate DateTime?    // When to follow up
+  convertedToPatient String? // Patient ID if converted to patient
+  convertedToAppointment String? // Appointment ID if converted to appointment
+  ipAddress   String?       // IP address of the enquiry
+  userAgent   String?       // User agent string
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  assignedUser    User?     @relation("AssignedEnquiries", fields: [assignedTo], references: [id])
+  assignedByUser  User?     @relation("AssignedByEnquiries", fields: [assignedBy], references: [id])
+  patient         Patient?  @relation("ConvertedToPatient", fields: [convertedToPatient], references: [id])
+  appointment     Appointment? @relation("ConvertedToAppointment", fields: [convertedToAppointment], references: [id])
+
+  @@index([status])
+  @@index([source])
+  @@index([assignedTo])
+  @@index([createdAt])
+  @@index([email])
+  @@index([phone])
 }
 
 

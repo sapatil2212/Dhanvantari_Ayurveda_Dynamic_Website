@@ -18,6 +18,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
       encounters: { orderBy: { date: 'desc' }, take: 10 },
       invoices: { orderBy: { date: 'desc' }, take: 10, include: { payments: true } },
       appointments: { orderBy: { preferredDate: 'desc' }, take: 10 },
+      allergies: { orderBy: { createdAt: 'desc' } },
     },
   });
   if (!patient) redirect('/dashboard/patients');
@@ -106,7 +107,13 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
                       <div className="font-medium">#{inv.number} · {new Date(inv.date).toLocaleDateString()} · {inv.status}</div>
                       <div className="text-gray-600">Total: ₹{String(inv.total)}</div>
                     </div>
-                    <InvoiceActions invoice={inv} patientId={patient.id} />
+                    <InvoiceActions invoice={{
+                      id: inv.id,
+                      number: inv.number,
+                      status: inv.status,
+                      total: Number(inv.total),
+                      date: inv.date.toISOString()
+                    }} patientId={patient.id} />
                   </div>
                 </div>
               ))}

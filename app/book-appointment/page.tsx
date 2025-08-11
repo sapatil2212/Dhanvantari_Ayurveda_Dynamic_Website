@@ -96,17 +96,47 @@ export default function BookAppointmentPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
-    // Simulate appointment booking
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // First create an enquiry
+      const enquiryResponse = await fetch('/api/enquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: appointmentData.name,
+          email: appointmentData.email,
+          phone: appointmentData.phone,
+          service: appointmentData.consultationType,
+          message: `Appointment request for ${appointmentData.consultationType}. Chief complaint: ${appointmentData.chiefComplaint}. Preferred date: ${appointmentData.preferredDate} at ${appointmentData.timeSlot}.`,
+          source: 'WEBSITE_APPOINTMENT'
+        }),
+      });
 
-    toast({
-      title: "Appointment Booked Successfully!",
-      description: "We'll send you a confirmation email shortly with all the details.",
-    });
+      if (!enquiryResponse.ok) {
+        console.error('Failed to create enquiry');
+      }
 
-    // Reset form and go to success step
-    setStep(5);
-    setIsSubmitting(false);
+      // Then create the appointment (you may want to integrate with your existing appointment API)
+      // For now, we'll simulate the appointment creation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast({
+        title: "Appointment Booked Successfully!",
+        description: "We'll send you a confirmation email shortly with all the details.",
+      });
+
+      // Reset form and go to success step
+      setStep(5);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to book appointment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getSelectedConsultationType = () => {

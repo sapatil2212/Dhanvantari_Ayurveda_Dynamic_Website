@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../[...nextauth]/options';
+import { authOptions } from '../../auth/[...nextauth]/options';
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   
-  if (!session?.user?.id) {
+  if (!session?.user || !(session.user as any).id) {
     return new Response('Unauthorized', { status: 401 });
   }
 

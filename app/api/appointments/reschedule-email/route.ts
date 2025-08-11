@@ -8,7 +8,17 @@ export async function POST(request: Request) {
     if (!to || !name || !consultationType || !oldDate || !oldTime || !newDate || !newTime) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    await sendAppointmentRescheduleEmail({ to, name, consultationType, oldDate, oldTime, newDate, newTime, status });
+    await sendAppointmentRescheduleEmail({ 
+      patientName: name, 
+      patientEmail: to, 
+      oldDate, 
+      oldTime, 
+      newDate, 
+      newTime, 
+      service: consultationType,
+      notes: status,
+      appointmentId: 'reschedule-email'
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('POST /api/appointments/reschedule-email error', error);

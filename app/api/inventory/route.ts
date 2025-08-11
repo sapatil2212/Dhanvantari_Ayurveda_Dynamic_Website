@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.VIEW_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.VIEW_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check permission
-    if (!checkPermission(session.user.role, Permission.CREATE_INVENTORY)) {
+    if (!checkPermission((session.user as any).role, Permission.CREATE_INVENTORY)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         location,
         status,
-        createdById: session.user.id
+        createdById: (session.user as any).id
       },
       include: {
         createdBy: {
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
           quantity: currentStock,
           reason: 'Initial stock',
           reference: 'Initial setup',
-          createdById: session.user.id
+          createdById: (session.user as any).id
         }
       });
     }

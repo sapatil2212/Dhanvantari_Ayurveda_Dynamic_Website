@@ -23,7 +23,11 @@ export async function POST(request: Request) {
     await prisma.passwordResetToken.create({ data: { email, token, expiresAt } });
 
     const link = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${token}`;
-    await sendPasswordResetEmail({ to: email, link });
+    await sendPasswordResetEmail({ 
+      name: user.name || 'User', 
+      email, 
+      resetToken: token 
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof z.ZodError) {

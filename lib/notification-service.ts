@@ -178,7 +178,7 @@ export class NotificationService {
     const messages = {
       low_stock: {
         title: 'Low Stock Alert',
-        message: `${item.name} is running low (${item.quantity} units remaining)`,
+        message: `${item.name} is running low (${item.currentStock} units remaining)`,
         type: 'ALERT' as const
       },
       out_of_stock: {

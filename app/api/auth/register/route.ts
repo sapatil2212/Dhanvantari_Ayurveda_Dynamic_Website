@@ -46,7 +46,11 @@ export async function POST(request: Request) {
     });
 
     const link = `${process.env.NEXTAUTH_URL}/auth/verify?token=${token}`;
-    await sendVerificationEmail({ to: email, link });
+    await sendVerificationEmail({ 
+      name: name || 'User', 
+      email, 
+      verificationToken: token 
+    });
 
     return NextResponse.json({ ok: true, message: 'Verification link sent to email' });
   } catch (error) {

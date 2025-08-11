@@ -6,14 +6,14 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const result = await prisma.notification.updateMany({
       where: {
         OR: [
-          { userId: session.user.id },
+          { userId: (session.user as any).id },
           { userId: null } // System-wide notifications
         ],
         isRead: false

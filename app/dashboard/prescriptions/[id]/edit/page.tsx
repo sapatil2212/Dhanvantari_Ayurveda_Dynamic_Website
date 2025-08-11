@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { VoiceInputButton } from '@/components/VoiceAssistant';
+import VoiceAssistant, { VoiceInputButton } from '@/components/ui/VoiceAssistant';
 import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, Trash2, Plus, X, Mic } from 'lucide-react';
 
@@ -70,6 +70,10 @@ export default function EditPrescriptionPage() {
 
   const [items, setItems] = useState<PrescriptionItem[]>([]);
 
+  // Voice input state
+  const [isListening, setIsListening] = useState(false);
+  const [currentVoiceField, setCurrentVoiceField] = useState<string | null>(null);
+
   useEffect(() => {
     fetchPrescription();
     fetchPatients();
@@ -122,6 +126,25 @@ export default function EditPrescriptionPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleVoiceInput = (text: string, field: string) => {
+    if (field.startsWith('medicineName-')) {
+      const index = parseInt(field.split('-')[1]);
+      updateItem(index, 'medicineName', text);
+    } else {
+      setFormData(prev => ({ ...prev, [field]: text }));
+    }
+  };
+
+  const handleStartListening = (field: string) => {
+    setCurrentVoiceField(field);
+    setIsListening(true);
+  };
+
+  const handleStopListening = () => {
+    setIsListening(false);
+    setCurrentVoiceField(null);
   };
 
   const addItem = () => {
@@ -326,11 +349,12 @@ export default function EditPrescriptionPage() {
                   placeholder="Enter prescriber name"
                 />
                 <VoiceInputButton
-                  onVoiceInput={(text) => handleInputChange('prescriberName', text)}
+                  field="prescriberName"
+                  isActive={isListening && currentVoiceField === 'prescriberName'}
+                  onStartListening={handleStartListening}
+                  onStopListening={handleStopListening}
                   className="px-3"
-                >
-                  <Mic className="h-4 w-4" />
-                </VoiceInputButton>
+                />
               </div>
             </div>
 
@@ -373,11 +397,12 @@ export default function EditPrescriptionPage() {
                   rows={3}
                 />
                 <VoiceInputButton
-                  onVoiceInput={(text) => handleInputChange('diagnosis', text)}
+                  field="diagnosis"
+                  isActive={isListening && currentVoiceField === 'diagnosis'}
+                  onStartListening={handleStartListening}
+                  onStopListening={handleStopListening}
                   className="px-3 self-start"
-                >
-                  <Mic className="h-4 w-4" />
-                </VoiceInputButton>
+                />
               </div>
             </div>
 
@@ -403,11 +428,12 @@ export default function EditPrescriptionPage() {
                   rows={3}
                 />
                 <VoiceInputButton
-                  onVoiceInput={(text) => handleInputChange('advice', text)}
+                  field="advice"
+                  isActive={isListening && currentVoiceField === 'advice'}
+                  onStartListening={handleStartListening}
+                  onStopListening={handleStopListening}
                   className="px-3 self-start"
-                >
-                  <Mic className="h-4 w-4" />
-                </VoiceInputButton>
+                />
               </div>
             </div>
           </CardContent>
@@ -456,11 +482,12 @@ export default function EditPrescriptionPage() {
                           placeholder="Enter medicine name"
                         />
                         <VoiceInputButton
-                          onVoiceInput={(text) => updateItem(index, 'medicineName', text)}
+                          field={`medicineName-${index}`}
+                          isActive={isListening && currentVoiceField === `medicineName-${index}`}
+                          onStartListening={handleStartListening}
+                          onStopListening={handleStopListening}
                           className="px-3"
-                        >
-                          <Mic className="h-4 w-4" />
-                        </VoiceInputButton>
+                        />
                       </div>
                     </div>
 
@@ -540,6 +567,15 @@ export default function EditPrescriptionPage() {
           {saving ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
+
+      {/* Voice Assistant */}
+      <VoiceAssistant
+        onTranscript={handleVoiceInput}
+        currentField={currentVoiceField}
+        isListening={isListening}
+        onStartListening={handleStartListening}
+        onStopListening={handleStopListening}
+      />
     </div>
   );
 }

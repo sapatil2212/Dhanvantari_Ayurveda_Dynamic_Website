@@ -12,17 +12,24 @@ export async function middleware(request: NextRequest) {
 
   // Only protect dashboard routes
   if (pathname.startsWith('/dashboard')) {
+    console.log('Middleware: Checking dashboard access for:', pathname);
+    
     const token = await getToken({ 
       req: request, 
       secret: process.env.NEXTAUTH_SECRET 
     });
 
+    console.log('Middleware: Token found:', !!token, 'Token details:', token ? { userId: token.userId, role: token.role } : 'none');
+
     // If user is not authenticated, redirect to login
     if (!token) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
+      console.log('Middleware: Redirecting to login with callbackUrl:', pathname);
       return NextResponse.redirect(loginUrl);
     }
+    
+    console.log('Middleware: Access granted to dashboard');
   }
 
   // Allow the request to continue

@@ -68,23 +68,30 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Handle callback URLs first
+      console.log('NextAuth redirect called with:', { url, baseUrl });
+      
+      // Handle callback URLs first - this is the key fix
       if (url.includes('callbackUrl')) {
         const callbackUrl = new URLSearchParams(url.split('?')[1] || '').get('callbackUrl');
         if (callbackUrl && callbackUrl.startsWith('/')) {
-          return `${baseUrl}${callbackUrl}`;
+          const finalUrl = `${baseUrl}${callbackUrl}`;
+          console.log('Redirecting to callback URL:', finalUrl);
+          return finalUrl;
         }
       }
       
       // Handle relative URLs
       if (url.startsWith('/')) {
-        return `${baseUrl}${url}`;
+        const finalUrl = `${baseUrl}${url}`;
+        console.log('Redirecting to relative URL:', finalUrl);
+        return finalUrl;
       }
       
       // Handle same origin URLs
       try {
         const urlObj = new URL(url);
         if (urlObj.origin === baseUrl) {
+          console.log('Redirecting to same origin URL:', url);
           return url;
         }
       } catch {
@@ -92,6 +99,7 @@ export const authOptions: NextAuthOptions = {
       }
       
       // Default to dashboard for successful login
+      console.log('Default redirect to dashboard');
       return `${baseUrl}/dashboard`;
     },
   },

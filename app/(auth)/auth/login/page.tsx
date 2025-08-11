@@ -61,20 +61,16 @@ function LoginForm() {
       const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
       
       const res = await signIn('credentials', {
-        redirect: false,
+        redirect: true,
         email: values.email.trim(),
         password: values.password,
         callbackUrl,
       });
 
       if (!res?.error) {
-        setSuccessOpen(true);
-        // Let NextAuth handle the redirect with the callbackUrl
-        // This ensures proper session handling
-        setTimeout(() => {
-          // Use NextAuth's built-in redirect mechanism
-          router.push(callbackUrl);
-        }, 1000);
+        // NextAuth will handle the redirect automatically
+        // No need to show success modal or handle redirect manually
+        return;
       } else {
         // Handle different error types
         switch (res.error) {

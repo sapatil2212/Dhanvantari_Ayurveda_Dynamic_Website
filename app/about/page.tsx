@@ -171,7 +171,7 @@ export default function AboutPage() {
               and lifestyle modifications.
             </p>
             <p className="text-emerald-700 font-semibold italic">
-              "Swasthasya swasthya rakshanam aturasya vikara prashamanam"
+              &ldquo;Swasthasya swasthya rakshanam aturasya vikara prashamanam&rdquo;
               <br />
               <span className="text-sm font-normal">
                 (Preserve health of the healthy and cure diseases of the diseased)

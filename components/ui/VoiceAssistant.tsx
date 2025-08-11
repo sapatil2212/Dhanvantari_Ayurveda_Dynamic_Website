@@ -152,9 +152,9 @@ export default function VoiceAssistant({
         <div className="text-sm text-gray-600">
           <p>Use voice commands to quickly fill prescription details:</p>
           <ul className="mt-2 space-y-1 list-disc list-inside">
-            <li>"Paracetamol 500mg tablet one tablet three times daily"</li>
-            <li>"Hypertension management"</li>
-            <li>"Take after meals with plenty of water"</li>
+            <li>&ldquo;Paracetamol 500mg tablet one tablet three times daily&rdquo;</li>
+            <li>&ldquo;Hypertension management&rdquo;</li>
+            <li>&ldquo;Take after meals with plenty of water&rdquo;</li>
           </ul>
         </div>
 

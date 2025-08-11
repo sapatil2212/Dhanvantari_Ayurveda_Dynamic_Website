@@ -90,7 +90,7 @@ export default function ContactPage() {
 
       toast({
         title: "Message Sent Successfully!",
-        description: "We'll contact you within 24 hours to schedule your consultation.",
+        description: "We&apos;ll contact you within 24 hours to schedule your consultation.",
       });
 
       // Reset form
@@ -182,7 +182,7 @@ export default function ContactPage() {
               <Card className="p-6 md:p-8">
                 <CardHeader className="px-0 pt-0">
                   <CardTitle className="text-2xl text-emerald-800">Send us a Message</CardTitle>
-                  <p className="text-emerald-600">We'll respond within 24 hours</p>
+                  <p className="text-emerald-600">We&apos;ll respond within 24 hours</p>
                 </CardHeader>
 
                 <CardContent className="px-0 pb-0">
@@ -268,7 +268,7 @@ export default function ContactPage() {
                         <div>
                           <p className="text-sm text-emerald-800 font-medium">What happens next?</p>
                           <ul className="text-xs text-emerald-700 mt-1 space-y-1">
-                            <li>• We'll review your message within 24 hours</li>
+                            <li>• We&apos;ll review your message within 24 hours</li>
                             <li>• Our team will call you to discuss your needs</li>
                             <li>• Schedule a convenient consultation time</li>
                             <li>• Begin your personalized treatment plan</li>

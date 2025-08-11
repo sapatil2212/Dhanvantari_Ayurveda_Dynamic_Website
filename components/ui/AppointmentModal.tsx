@@ -504,7 +504,7 @@ export default function AppointmentModal() {
                           <li>• Bring any previous medical reports or test results</li>
                           <li>• Consultation fee is payable at the time of visit</li>
                           <li>• Cancellations must be made 24 hours in advance</li>
-                          <li>• We'll call you a day before to confirm your appointment</li>
+                          <li>• We&apos;ll call you a day before to confirm your appointment</li>
                         </ul>
                       </div>
                     </div>

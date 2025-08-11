@@ -249,7 +249,7 @@ export default function TestimonialsSection() {
               </div>
 
               <blockquote className="text-lg text-gray-700 leading-relaxed mb-6 italic">
-                "{testimonials[currentIndex].testimonial}"
+                &ldquo;{testimonials[currentIndex].testimonial}&rdquo;
               </blockquote>
 
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
@@ -314,7 +314,7 @@ export default function TestimonialsSection() {
                 </div>
                 
                 <blockquote className="text-sm text-gray-700 leading-relaxed mb-4 italic">
-                  "{testimonial.testimonial.substring(0, 120)}..."
+                  &ldquo;{testimonial.testimonial.substring(0, 120)}...&rdquo;
                 </blockquote>
                 
                 <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700">

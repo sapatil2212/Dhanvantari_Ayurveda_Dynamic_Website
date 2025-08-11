@@ -187,7 +187,7 @@ export default function TestimonialsPage() {
 
                   {/* Testimonial Text */}
                   <blockquote className="text-gray-700 text-sm leading-relaxed mb-4 italic">
-                    "{testimonial.testimonial}"
+                    &ldquo;{testimonial.testimonial}&rdquo;
                   </blockquote>
 
                   {/* Footer */}

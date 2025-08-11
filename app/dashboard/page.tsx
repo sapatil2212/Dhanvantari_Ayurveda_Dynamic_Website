@@ -206,7 +206,7 @@ export default async function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Welcome back{session.user?.name ? `, ${session.user.name}` : ''}!</h1>
-          <p className="text-sm text-gray-500">Here's what's happening in your clinic today.</p>
+          <p className="text-sm text-gray-500">Here&apos;s what&apos;s happening in your clinic today.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
@@ -342,7 +342,7 @@ export default async function DashboardPage() {
             <Card>
               <CardContent className="p-6 text-center">
                 <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">You don't have permission to view analytics.</p>
+                <p className="text-gray-500">You don&apos;t have permission to view analytics.</p>
               </CardContent>
             </Card>
           )}
@@ -351,7 +351,7 @@ export default async function DashboardPage() {
         <TabsContent value="appointments" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Today's Schedule</CardTitle>
+              <CardTitle>Today&apos;s Schedule</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">

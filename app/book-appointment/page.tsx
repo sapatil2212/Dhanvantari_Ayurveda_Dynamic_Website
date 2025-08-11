@@ -123,7 +123,7 @@ export default function BookAppointmentPage() {
 
       toast({
         title: "Appointment Booked Successfully!",
-        description: "We'll send you a confirmation email shortly with all the details.",
+        description: "We&apos;ll send you a confirmation email shortly with all the details.",
       });
 
       // Reset form and go to success step
@@ -180,10 +180,10 @@ export default function BookAppointmentPage() {
 
             <div className="space-y-4 text-gray-600 mb-8">
               <p>
-                <strong>What's next?</strong>
+                <strong>What&apos;s next?</strong>
               </p>
               <ul className="text-sm space-y-2 text-left max-w-md mx-auto">
-                <li>• You'll receive a confirmation email within 15 minutes</li>
+                <li>• You&apos;ll receive a confirmation email within 15 minutes</li>
                 <li>• Our team will call you 1 day before your appointment</li>
                 <li>• Please arrive 10 minutes early for registration</li>
                 <li>• Bring any previous medical reports if available</li>
@@ -592,7 +592,7 @@ export default function BookAppointmentPage() {
                           <li>• Bring any previous medical reports or test results</li>
                           <li>• Consultation fee is payable at the time of visit</li>
                           <li>• Cancellations must be made 24 hours in advance</li>
-                          <li>• We'll call you a day before to confirm your appointment</li>
+                          <li>• We&apos;ll call you a day before to confirm your appointment</li>
                         </ul>
                       </div>
                     </div>

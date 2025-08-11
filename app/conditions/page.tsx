@@ -236,7 +236,7 @@ export default function ConditionsPage() {
       {/* CTA Section */}
       <section className="py-16 px-4 bg-emerald-800 text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Don't See Your Condition Listed?</h2>
+          <h2 className="text-3xl font-bold mb-4">Don&apos;t See Your Condition Listed?</h2>
           <p className="text-emerald-100 mb-8">
             We treat many more conditions through Ayurveda. Contact us to discuss your specific health concerns.
           </p>

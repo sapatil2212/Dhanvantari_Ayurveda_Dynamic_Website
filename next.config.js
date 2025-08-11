@@ -33,10 +33,7 @@ const nextConfig = {
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
-  // Disable static optimization for problematic routes
-  async generateStaticParams() {
-    return [];
-  },
+
 };
 
 module.exports = nextConfig;

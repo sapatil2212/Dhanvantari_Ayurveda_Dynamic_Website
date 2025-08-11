@@ -454,7 +454,7 @@ export default function EditPrescriptionPage() {
         <CardContent>
           {items.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No medicine items added yet. Click "Add Medicine" to get started.
+              No medicine items added yet. Click &ldquo;Add Medicine&rdquo; to get started.
             </div>
           ) : (
             <div className="space-y-4">

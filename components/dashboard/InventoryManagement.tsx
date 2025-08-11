@@ -48,6 +48,7 @@ import {
   Download,
   Upload,
   RefreshCw,
+  Users,
   BarChart3,
   ShoppingCart,
   Clock,
@@ -509,18 +510,18 @@ export default function InventoryManagement() {
                 <span>Stock Alerts</span>
               </Button>
             </Link>
-                         <Link href="/dashboard/inventory/suppliers">
-               <Button variant="outline" className="h-20 flex-col w-full">
-                 <Users className="h-6 w-6 mb-2" />
-                 <span>Suppliers</span>
-               </Button>
-             </Link>
-             <Link href="/dashboard/inventory/reports">
-               <Button variant="outline" className="h-20 flex-col w-full">
-                 <BarChart3 className="h-6 w-6 mb-2" />
-                 <span>Reports</span>
-               </Button>
-             </Link>
+            <Link href="/dashboard/inventory/suppliers">
+              <Button variant="outline" className="h-20 flex-col w-full">
+                <Users className="h-6 w-6 mb-2" />
+                <span>Suppliers</span>
+              </Button>
+            </Link>
+            <Link href="/dashboard/inventory/reports">
+              <Button variant="outline" className="h-20 flex-col w-full">
+                <BarChart3 className="h-6 w-6 mb-2" />
+                <span>Reports</span>
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

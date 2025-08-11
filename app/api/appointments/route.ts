@@ -18,9 +18,9 @@ export async function GET(request: Request) {
     const ors: any[] = [];
     if (q) {
       ors.push(
-        { name: { contains: q, mode: 'insensitive' } },
-        { email: { contains: q, mode: 'insensitive' } },
-        { phone: { contains: q, mode: 'insensitive' } },
+        { name: { contains: q } },
+        { email: { contains: q } },
+        { phone: { contains: q } },
       );
     }
     if (email) ors.push({ email: { equals: email } });

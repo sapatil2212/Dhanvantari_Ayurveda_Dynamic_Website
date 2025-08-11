@@ -76,7 +76,6 @@ export async function GET(request: NextRequest) {
         fieldType,
         value: {
           contains: query,
-          mode: 'insensitive',
         },
         ...(userId && { userId }),
       },
@@ -99,7 +98,6 @@ export async function GET(request: NextRequest) {
           fieldType,
           value: {
             contains: query,
-            mode: 'insensitive',
           },
           userId: null, // Global suggestions
         },

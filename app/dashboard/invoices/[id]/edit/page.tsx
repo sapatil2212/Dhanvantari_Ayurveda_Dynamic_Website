@@ -50,6 +50,7 @@ export default function EditInvoicePage() {
   const params = useParams();
   const router = useRouter();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [originalInvoice, setOriginalInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +89,7 @@ export default function EditInvoicePage() {
       }
       const data = await response.json();
       setInvoice(data);
+      setOriginalInvoice(data);
 
       // Parse items and metadata
       const itemsData = data.items as any;
@@ -311,38 +313,77 @@ export default function EditInvoicePage() {
                   </Alert>
                 )}
 
-      {/* Original Invoice Summary for Reference */}
-      {invoice.status === 'PAID' && (
-        <Card className="border-blue-200 bg-blue-50">
+      {/* Previous Invoice Details (always visible for reference) */}
+      {originalInvoice && (
+        <Card className="border-slate-200 bg-slate-50">
           <CardHeader>
-            <CardTitle className="text-blue-800 flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
-              Original Invoice Summary (Paid)
-            </CardTitle>
+            <CardTitle className="text-slate-800">Previous Invoice Details</CardTitle>
           </CardHeader>
-                     <CardContent className="space-y-2 text-sm">
-             <div className="grid grid-cols-2 gap-4">
-               <div>
-                 <span className="font-medium text-blue-700">Original Subtotal:</span>
-                 <span className="ml-2">₹{(Number(invoice.subtotal) || 0).toFixed(2)}</span>
-               </div>
-               <div>
-                 <span className="font-medium text-blue-700">Original Tax:</span>
-                 <span className="ml-2">₹{(Number(invoice.tax) || 0).toFixed(2)}</span>
-               </div>
-               <div>
-                 <span className="font-medium text-blue-700">Original Discount:</span>
-                 <span className="ml-2">₹{(Number(invoice.discount) || 0).toFixed(2)}</span>
-               </div>
-               <div>
-                 <span className="font-medium text-blue-700">Original Total:</span>
-                 <span className="ml-2 font-semibold">₹{(Number(invoice.total) || 0).toFixed(2)}</span>
-               </div>
-             </div>
-            {invoice.notes && (
-              <div className="mt-3 pt-3 border-t border-blue-200">
-                <span className="font-medium text-blue-700">Original Notes:</span>
-                <p className="mt-1 text-blue-600">{invoice.notes}</p>
+          <CardContent className="space-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="font-medium text-slate-700">Invoice Number:</span>
+                <span className="ml-2">#{originalInvoice.number}</span>
+              </div>
+              <div>
+                <span className="font-medium text-slate-700">Date:</span>
+                <span className="ml-2">{new Date(originalInvoice.date).toLocaleDateString()}</span>
+              </div>
+              <div>
+                <span className="font-medium text-slate-700">Status:</span>
+                <span className="ml-2">{originalInvoice.status}</span>
+              </div>
+              <div>
+                <span className="font-medium text-slate-700">Items:</span>
+                <span className="ml-2">
+                  {(() => {
+                    const d: any = originalInvoice.items;
+                    const arr = Array.isArray(d) ? d : d?.items || [];
+                    return `${arr.length}`;
+                  })()}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-slate-700">Subtotal:</span>
+                <span className="ml-2">₹{(Number(originalInvoice.subtotal) || 0).toFixed(2)}</span>
+              </div>
+              <div>
+                <span className="font-medium text-slate-700">Tax:</span>
+                <span className="ml-2">₹{(Number(originalInvoice.tax) || 0).toFixed(2)}</span>
+              </div>
+              <div>
+                <span className="font-medium text-slate-700">Discount:</span>
+                <span className="ml-2">₹{(Number(originalInvoice.discount) || 0).toFixed(2)}</span>
+              </div>
+              <div>
+                <span className="font-medium text-slate-700">Total:</span>
+                <span className="ml-2 font-semibold">₹{(Number(originalInvoice.total) || 0).toFixed(2)}</span>
+              </div>
+            </div>
+            {/* Previous line items */}
+            <div className="pt-3 border-t border-slate-200">
+              <span className="font-medium text-slate-700">Previous Items:</span>
+              <div className="mt-2 space-y-2">
+                {(() => {
+                  const d: any = originalInvoice.items;
+                  const arr = Array.isArray(d) ? d : d?.items || [];
+                  if (!arr.length) return <div className="text-slate-500">No items</div>;
+                  return arr.map((it: any, idx: number) => (
+                    <div key={idx} className="flex justify-between rounded bg-white/60 p-2 border">
+                      <div className="truncate pr-2">{it.description || it.name || `Item ${idx + 1}`}</div>
+                      <div className="flex gap-4 text-slate-600">
+                        <span>Qty: {Number(it.qty ?? it.quantity ?? 0)}</span>
+                        <span>Price: ₹{Number(it.price ?? it.unitPrice ?? 0).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+            {originalInvoice.notes && (
+              <div className="pt-3 border-t border-slate-200">
+                <span className="font-medium text-slate-700">Notes:</span>
+                <p className="mt-1 text-slate-600">{originalInvoice.notes}</p>
               </div>
             )}
           </CardContent>

@@ -65,8 +65,6 @@ export default function PaymentsPage() {
   const [selectedMethod, setSelectedMethod] = useState('all');
   const [exporting, setExporting] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
-  const [mounted, setMounted] = useState(false);
 
   // Enhanced fetchPayments with better error handling and logging
   const fetchPayments = useCallback(async (showLoading = true, isAutoRefresh = false) => {
@@ -81,15 +79,7 @@ export default function PaymentsPage() {
         setLastRefresh(new Date());
         console.log(`Payments refreshed at ${new Date().toLocaleTimeString()}, got ${data.length} payments`);
         
-        // Show notification for auto-refresh
-        if (isAutoRefresh && !showLoading) {
-          setNotification({
-            message: `Data automatically refreshed • ${data.length} payments loaded`,
-            type: 'info'
-          });
-          // Clear notification after 3 seconds
-          setTimeout(() => setNotification(null), 3000);
-        }
+        // No banner/notification on auto-refresh
       } else {
         console.error('Failed to fetch payments:', response.status, response.statusText);
       }
@@ -105,10 +95,7 @@ export default function PaymentsPage() {
     fetchPayments();
   }, [fetchPayments]);
 
-  // Set mounted to true after hydration to prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Hydration helper removed (no banner depends on mount state)
 
   // Auto-refresh when user returns to the page (visibility change)
   useEffect(() => {
@@ -387,9 +374,6 @@ export default function PaymentsPage() {
           <h1 className="text-3xl font-bold">Payments Analytics</h1>
           <p className="text-gray-600">Track and analyze payment performance</p>
           <div className="flex items-center gap-4 mt-1">
-            <p className="text-sm text-green-600">
-              ✅ Auto-refresh enabled{mounted && ` • Last updated: ${lastRefresh.toLocaleTimeString()}`}
-            </p>
             <p className="text-sm text-amber-600">
               💡 Payment amounts are automatically updated when invoice totals are modified
             </p>
@@ -431,24 +415,7 @@ export default function PaymentsPage() {
         </div>
       </div>
 
-      {/* Notification */}
-      {notification && (
-        <div className={`p-3 rounded-lg border ${
-          notification.type === 'success' 
-            ? 'bg-green-50 border-green-200 text-green-800' 
-            : 'bg-blue-50 border-blue-200 text-blue-800'
-        }`}>
-          <div className="flex items-center gap-2">
-            <div className="text-sm font-medium">{notification.message}</div>
-            <button 
-              onClick={() => setNotification(null)}
-              className="ml-auto text-gray-500 hover:text-gray-700"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Notification banner removed */}
 
       {/* Filters */}
       <Card>

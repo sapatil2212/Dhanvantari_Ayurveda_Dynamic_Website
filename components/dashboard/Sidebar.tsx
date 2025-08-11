@@ -59,6 +59,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
+  const effectiveRole = userRole ?? (session?.user?.role as Role | undefined);
 
   const menuItems: MenuItem[] = [
     {
@@ -166,11 +167,19 @@ export default function Sidebar({ userRole }: SidebarProps) {
   ];
 
   const filteredMenuItems = menuItems.filter(item => {
-    if (item.permission && userRole) {
-      return hasPermission(userRole, item.permission);
+    if (!effectiveRole) {
+      // Default deny when role is unknown
+      return !item.permission && !item.roles;
     }
-    if (item.roles && userRole) {
-      return item.roles.includes(userRole);
+    // Show all sidebar items for doctors regardless of permissions/roles
+    if (effectiveRole === Role.DOCTOR) {
+      return true;
+    }
+    if (item.permission) {
+      return hasPermission(effectiveRole, item.permission);
+    }
+    if (item.roles) {
+      return item.roles.includes(effectiveRole);
     }
     return true;
   });
@@ -192,9 +201,11 @@ export default function Sidebar({ userRole }: SidebarProps) {
     const isExpanded = expandedItems.has(item.href);
 
     const filteredChildren = item.children?.filter(child => {
-      if (child.permission && userRole) {
-        return hasPermission(userRole, child.permission);
-      }
+      if (!effectiveRole) return !child.permission && !child.roles;
+      // Show all children for doctors regardless of permissions/roles
+      if (effectiveRole === Role.DOCTOR) return true;
+      if (child.permission) return hasPermission(effectiveRole, child.permission);
+      if (child.roles) return child.roles.includes(effectiveRole);
       return true;
     });
 
@@ -291,7 +302,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
     return roleIcons[role] || User;
   };
 
-  const RoleIcon = userRole ? getRoleIcon(userRole) : User;
+  const RoleIcon = effectiveRole ? getRoleIcon(effectiveRole) : User;
 
   return (
     <div className={cn(

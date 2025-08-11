@@ -34,9 +34,9 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { number: { contains: search, mode: 'insensitive' } },
-        { supplier: { contains: search, mode: 'insensitive' } },
-        { notes: { contains: search, mode: 'insensitive' } },
+        { number: { contains: search } },
+        { supplier: { contains: search } },
+        { notes: { contains: search } },
       ];
     }
 
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (supplier) {
-      where.supplier = { contains: supplier, mode: 'insensitive' };
+      where.supplier = { contains: supplier };
     }
 
     if (startDate || endDate) {

@@ -154,7 +154,16 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.EDIT_MEDICAL_RECORDS,
     Permission.VIEW_ANALYTICS,
     Permission.EXPORT_REPORTS,
-    Permission.SEND_NOTIFICATIONS
+    Permission.SEND_NOTIFICATIONS,
+    // Grant full System access for doctors per request
+    Permission.VIEW_USERS,
+    Permission.CREATE_USERS,
+    Permission.EDIT_USERS,
+    Permission.DELETE_USERS,
+    Permission.MANAGE_ROLES,
+    Permission.MANAGE_SETTINGS,
+    Permission.VIEW_LOGS,
+    Permission.MANAGE_BACKUPS
   ],
   
   [Role.NURSE]: [
@@ -234,6 +243,12 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.VIEW_PAYMENTS // Only their own payments
   ]
 };
+
+// Convenience wrapper used by API routes
+export function checkPermission(userRole: Role | undefined, permission: Permission): boolean {
+  if (!userRole) return false;
+  return hasPermission(userRole, permission);
+}
 
 export function hasPermission(userRole: Role, permission: Permission): boolean {
   return RolePermissions[userRole]?.includes(permission) || false;

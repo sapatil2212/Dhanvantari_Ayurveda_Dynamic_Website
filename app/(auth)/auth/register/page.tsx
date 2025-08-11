@@ -31,7 +31,12 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
+    setValue,
+    watch,
+  } = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: { role: 'OTHER' },
+  });
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     setLoading(true);
@@ -89,10 +94,10 @@ export default function RegisterPage() {
                 {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
               </div>
               <div>
-                <Select defaultValue="OTHER" onValueChange={(value) => {
-                  // react-hook-form bind via hidden input
-                  (document.getElementById('role-hidden') as HTMLInputElement).value = value;
-                }}>
+                <Select
+                  value={watch('role')}
+                  onValueChange={(value) => setValue('role', value as any, { shouldValidate: true })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
@@ -102,7 +107,7 @@ export default function RegisterPage() {
                     <SelectItem value="OTHER">Other</SelectItem>
                   </SelectContent>
                 </Select>
-                <input id="role-hidden" type="hidden" value="OTHER" {...register('role')} />
+                <input type="hidden" {...register('role')} />
                 {errors.role && <p className="mt-1 text-xs text-red-500">{errors.role.message}</p>}
               </div>
               <div className="relative">

@@ -30,7 +30,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('EMAIL_NOT_VERIFIED');
         }
 
-        return { id: user.id, name: user.name ?? user.email, email: user.email } as any;
+        return { id: user.id, name: user.name ?? user.email, email: user.email, role: user.role } as any;
       },
     }),
   ],
@@ -42,12 +42,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.userId = (user as any).id;
+        token.role = (user as any).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (token?.userId && session.user) {
         (session.user as any).id = token.userId as string;
+        (session.user as any).role = token.role as any;
       }
       return session;
     },

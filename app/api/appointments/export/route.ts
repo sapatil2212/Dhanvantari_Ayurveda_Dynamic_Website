@@ -14,9 +14,9 @@ export async function GET(request: Request) {
     const where: any = {};
     if (q) {
       where.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { email: { contains: q, mode: 'insensitive' } },
-        { phone: { contains: q, mode: 'insensitive' } },
+        { name: { contains: q } },
+        { email: { contains: q } },
+        { phone: { contains: q } },
       ];
     }
     if (from || to) {

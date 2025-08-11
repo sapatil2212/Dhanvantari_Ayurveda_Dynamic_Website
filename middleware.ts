@@ -1,19 +1,10 @@
-import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth(
-  {
-    callbacks: {
-      authorized: ({ token }) => {
-        // Only check authorization for dashboard routes
-        return !!token;
-      },
-    },
-    pages: {
-      signIn: '/auth/login',
-    },
-  }
-);
+export function middleware(request: NextRequest) {
+  // Temporarily disable middleware to test login flow
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

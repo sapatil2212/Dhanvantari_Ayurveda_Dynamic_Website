@@ -6,7 +6,8 @@ import bcrypt from 'bcryptjs';
 export const authOptions: NextAuthOptions = {
   session: { 
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 12 * 60 * 60, // 12 hours maximum
+    updateAge: 10 * 60, // 10 minutes - update session activity
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
@@ -43,18 +44,33 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/login',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.userId = (user as any).id;
         token.role = (user as any).role;
+        token.lastActivity = Date.now();
         console.log('JWT callback - user logged in:', { userId: token.userId, role: token.role });
       }
+      
+      // Check if token is expired based on last activity
+      const now = Date.now();
+      const lastActivity = token.lastActivity as number || now;
+      const inactivityTimeout = 10 * 60 * 1000; // 10 minutes
+      
+      if (now - lastActivity > inactivityTimeout) {
+        // Token is expired due to inactivity
+        return null;
+      }
+      
+      // Update last activity timestamp
+      token.lastActivity = now;
       return token;
     },
     async session({ session, token }) {
       if (token?.userId && session.user) {
         (session.user as any).id = token.userId as string;
         (session.user as any).role = token.role as any;
+        (session.user as any).lastActivity = token.lastActivity;
       }
       return session;
     },

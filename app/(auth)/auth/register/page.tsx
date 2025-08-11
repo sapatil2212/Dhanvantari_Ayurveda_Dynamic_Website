@@ -1,60 +1,124 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Lock, User, KeyRound, Eye, EyeOff, ArrowRight, Home } from 'lucide-react';
+import { Mail, Lock, User, KeyRound, Eye, EyeOff, ArrowRight, Home, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SuccessModal } from '@/components/ui/Modals';
+import { Spinner } from '@/components/ui/Loader';
 
 const schema = z.object({
-  name: z.string().min(2).optional(),
-  email: z.string().email(),
-  password: z.string().min(8, { message: 'Please enter correct password' }),
+  name: z.string()
+    .min(1, { message: 'Full name is required' })
+    .min(2, { message: 'Name must be at least 2 characters' }),
+  email: z.string()
+    .min(1, { message: 'Email is required' })
+    .email({ message: 'Please enter a valid email address' }),
+  password: z.string()
+    .min(1, { message: 'Password is required' })
+    .min(8, { message: 'Password must be at least 8 characters' })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, { 
+      message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number' 
+    }),
   role: z.enum(['RECEPTIONIST', 'DOCTOR', 'OTHER']).default('OTHER'),
-  psk: z.string().min(8),
+  psk: z.string()
+    .min(1, { message: 'Security key is required' })
+    .min(8, { message: 'Security key must be at least 8 characters' }),
 });
 
 export default function RegisterPage() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [globalError, setGlobalError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setValue,
     watch,
+    setError,
+    clearErrors,
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: { role: 'OTHER' },
+    mode: 'onBlur'
   });
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.replace('/dashboard');
+    }
+  }, [status, session, router]);
+
   const onSubmit = async (values: z.infer<typeof schema>) => {
-    setLoading(true);
-    setFieldError(null);
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
-    });
-    setLoading(false);
-    if (res.ok) {
-      setSuccessOpen(true);
-      setTimeout(() => router.push('/auth/login'), 1200);
-    } else {
-      const data = await res.json().catch(() => ({ message: 'Registration failed' }));
-      if (data.message?.includes('Email')) setFieldError('email');
+    try {
+      setLoading(true);
+      setGlobalError(null);
+      clearErrors();
+
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...values,
+          email: values.email.trim(),
+          name: values.name.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setSuccessOpen(true);
+        setTimeout(() => {
+          router.push('/auth/login');
+        }, 1500);
+      } else {
+        // Handle specific error types
+        if (res.status === 409 || data.message?.toLowerCase().includes('email')) {
+          setError('email', { 
+            type: 'manual', 
+            message: 'An account with this email already exists' 
+          });
+        } else if (data.message?.toLowerCase().includes('security key') || 
+                   data.message?.toLowerCase().includes('psk')) {
+          setError('psk', { 
+            type: 'manual', 
+            message: 'Invalid security key' 
+          });
+        } else {
+          setGlobalError(data.message || 'Registration failed. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setGlobalError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Show loading state if checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="container mx-auto px-4 py-10 flex justify-center items-center min-h-[400px]">
+        <Spinner size={32} />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-10">
@@ -66,6 +130,17 @@ export default function RegisterPage() {
               <Home className="h-4 w-4" />
               <span>Back to home</span>
             </Link>
+
+            {/* Show global error if any */}
+            {globalError && (
+              <Alert className="mb-4 border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  {globalError}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="mb-2">
               <p className="text-2xl font-semibold leading-tight">Create your account</p>
               <p className="text-sm text-gray-500">Start your journey with us</p>
@@ -78,12 +153,8 @@ export default function RegisterPage() {
               </div>
               <div className="relative">
                 <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <Input className={`pl-10 ${fieldError === 'email' ? 'border-red-500' : ''}`} placeholder="Your e-mail" type="email" {...register('email')} />
-                {fieldError === 'email' ? (
-                  <p className="mt-1 text-xs text-red-500">Email already registered</p>
-                ) : (
-                  errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
-                )}
+                <Input className="pl-10" placeholder="Your e-mail" type="email" {...register('email')} />
+                {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
               </div>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -116,8 +187,18 @@ export default function RegisterPage() {
                 {errors.psk && <p className="mt-1 text-xs text-red-500">{errors.psk.message}</p>}
               </div>
 
-              <Button type="submit" className="mt-2 w-full" disabled={loading}>
-                {loading ? 'Creating...' : 'Create account'}
+              <Button 
+                type="submit" 
+                className="mt-2 w-full" 
+                disabled={loading || isSubmitting}
+              >
+                {loading || isSubmitting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Spinner size={16} /> Creating account...
+                  </span>
+                ) : (
+                  'Create account'
+                )}
               </Button>
             </form>
 
@@ -148,7 +229,12 @@ export default function RegisterPage() {
           <div className="absolute inset-0 bg-slate-900/30" />
         </div>
       </Card>
-      <SuccessModal open={successOpen} title="Verification email sent" description="Please check your inbox to verify your account." onClose={() => setSuccessOpen(false)} />
+      <SuccessModal 
+        open={successOpen} 
+        title="Registration successful!" 
+        description="Please check your inbox and verify your email address before logging in." 
+        onClose={() => setSuccessOpen(false)} 
+      />
     </div>
   );
 }

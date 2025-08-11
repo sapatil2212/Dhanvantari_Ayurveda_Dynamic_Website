@@ -18,8 +18,22 @@ export async function POST(request: Request) {
     const json = await request.json();
     const { name, email, password, role, psk } = schema.parse(json);
 
-    if (psk !== process.env.AGENCY_PSK) {
-      return NextResponse.json({ message: 'Invalid agency key' }, { status: 401 });
+    // Debug logging for PSK validation
+    console.log('Registration attempt:', {
+      receivedPSK: psk,
+      envPSK: process.env.AGENCY_PSK,
+      nodeEnv: process.env.NODE_ENV,
+      pskMatch: psk === process.env.AGENCY_PSK
+    });
+
+    // Check PSK - handle both environment variable and fallback
+    const expectedPSK = process.env.AGENCY_PSK || 'swapnil2212';
+    
+    if (psk !== expectedPSK) {
+      console.log('PSK validation failed:', { received: psk, expected: expectedPSK });
+      return NextResponse.json({ 
+        message: 'Invalid agency security key. Please check with administrator.' 
+      }, { status: 401 });
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });

@@ -1,5 +1,5 @@
 "use client";
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
@@ -8,60 +8,108 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Home } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Home, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { SuccessModal } from '@/components/ui/Modals';
 import { LoadingOverlay, Spinner } from '@/components/ui/Loader';
 
 const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, { message: 'Please enter correct password' }),
+  email: z.string()
+    .min(1, { message: 'Email is required' })
+    .email({ message: 'Please enter a valid email address' }),
+  password: z.string()
+    .min(1, { message: 'Password is required' })
+    .min(8, { message: 'Password must be at least 8 characters' }),
 });
 
 function LoginForm() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const [errorText, setErrorText] = useState<string | null>(null);
+  const [globalError, setGlobalError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const [verifiedOpen, setVerifiedOpen] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setError,
-  } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
+    clearErrors,
+  } = useForm<z.infer<typeof schema>>({ 
+    resolver: zodResolver(schema),
+    mode: 'onBlur'
+  });
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+      router.replace(callbackUrl);
+    }
+  }, [status, session, router, searchParams]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
-    setLoading(true);
-    const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-    const res = await signIn('credentials', {
-      redirect: false,
-      email: values.email,
-      password: values.password,
-      callbackUrl,
-    });
-    setLoading(false);
-    if (!res?.error) {
-      setSuccessOpen(true);
-      // Let NextAuth handle the redirect
-      setTimeout(() => window.location.href = callbackUrl, 800);
-    } else {
-      if (res.error === 'USER_NOT_FOUND') {
-        setError('email', { type: 'manual', message: 'User is not registered yet!' });
-      } else if (res.error === 'EMAIL_NOT_VERIFIED') {
-        setError('email', { type: 'manual', message: 'Please verify your email before logging in.' });
+    try {
+      setLoading(true);
+      setGlobalError(null);
+      clearErrors();
+
+      const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+      
+      const res = await signIn('credentials', {
+        redirect: false,
+        email: values.email.trim(),
+        password: values.password,
+        callbackUrl,
+      });
+
+      if (!res?.error) {
+        setSuccessOpen(true);
+        // Use router.replace for better UX
+        setTimeout(() => {
+          router.replace(callbackUrl);
+        }, 1000);
       } else {
-        // CredentialsSignin or generic error
-        setError('password', { type: 'manual', message: 'Please enter correct password' });
+        // Handle different error types
+        switch (res.error) {
+          case 'USER_NOT_FOUND':
+            setError('email', { 
+              type: 'manual', 
+              message: 'No account found with this email address' 
+            });
+            break;
+          case 'EMAIL_NOT_VERIFIED':
+            setError('email', { 
+              type: 'manual', 
+              message: 'Please verify your email before logging in' 
+            });
+            break;
+          case 'CredentialsSignin':
+            setError('password', { 
+              type: 'manual', 
+              message: 'Incorrect password. Please try again' 
+            });
+            break;
+          default:
+            setGlobalError('Login failed. Please check your credentials and try again.');
+            break;
+        }
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      setGlobalError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const verified = searchParams.get('verified');
   const verifiedEmail = searchParams.get('email');
+  const reason = searchParams.get('reason');
 
   useEffect(() => {
     if (verified === '1') {
@@ -70,6 +118,15 @@ function LoginForm() {
       return () => clearTimeout(t);
     }
   }, [verified]);
+
+  // Show loading state if checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="container mx-auto px-4 py-10 flex justify-center items-center min-h-[400px]">
+        <Spinner size={32} />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-10">
@@ -81,6 +138,27 @@ function LoginForm() {
               <Home className="h-4 w-4" />
               <span>Back to home</span>
             </Link>
+            
+            {/* Show inactivity message if redirected due to timeout */}
+            {reason === 'inactivity' && (
+              <Alert className="mb-4 border-amber-200 bg-amber-50">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800">
+                  You were logged out due to inactivity. Please sign in again.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Show global error if any */}
+            {globalError && (
+              <Alert className="mb-4 border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  {globalError}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="mb-5">
               <p className="text-2xl font-semibold leading-tight">Welcome back,</p>
               <p className="text-2xl font-semibold leading-tight">Sign In to continue</p>
@@ -107,8 +185,12 @@ function LoginForm() {
                 </Link>
               </div>
 
-              <Button type="submit" className="mt-2 w-full" disabled={loading}>
-                {loading ? (
+              <Button 
+                type="submit" 
+                className="mt-2 w-full" 
+                disabled={loading || isSubmitting}
+              >
+                {loading || isSubmitting ? (
                   <span className="inline-flex items-center gap-2">
                     <Spinner size={16} /> Signing in...
                   </span>

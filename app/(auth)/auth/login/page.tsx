@@ -69,9 +69,11 @@ function LoginForm() {
 
       if (!res?.error) {
         setSuccessOpen(true);
-        // Use router.replace for better UX
+        // Let NextAuth handle the redirect with the callbackUrl
+        // This ensures proper session handling
         setTimeout(() => {
-          router.replace(callbackUrl);
+          // Use NextAuth's built-in redirect mechanism
+          router.push(callbackUrl);
         }, 1000);
       } else {
         // Handle different error types

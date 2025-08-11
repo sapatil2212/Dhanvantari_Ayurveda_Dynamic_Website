@@ -68,12 +68,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Always redirect to dashboard after successful login
-      if (url === baseUrl || url === `${baseUrl}/auth/login`) {
-        return `${baseUrl}/dashboard`;
-      }
-      
-      // Handle callback URLs
+      // Handle callback URLs first
       if (url.includes('callbackUrl')) {
         const callbackUrl = new URLSearchParams(url.split('?')[1] || '').get('callbackUrl');
         if (callbackUrl && callbackUrl.startsWith('/')) {
@@ -96,7 +91,7 @@ export const authOptions: NextAuthOptions = {
         // ignore invalid URLs
       }
       
-      // Default to dashboard
+      // Default to dashboard for successful login
       return `${baseUrl}/dashboard`;
     },
   },

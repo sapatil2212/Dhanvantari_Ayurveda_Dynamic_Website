@@ -70,36 +70,16 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       console.log('NextAuth redirect called with:', { url, baseUrl });
       
-      // Handle callback URLs first - this is the key fix
-      if (url.includes('callbackUrl')) {
-        const callbackUrl = new URLSearchParams(url.split('?')[1] || '').get('callbackUrl');
-        if (callbackUrl && callbackUrl.startsWith('/')) {
-          const finalUrl = `${baseUrl}${callbackUrl}`;
-          console.log('Redirecting to callback URL:', finalUrl);
-          return finalUrl;
-        }
-      }
-      
-      // Handle relative URLs
+      // Simple redirect logic - let NextAuth handle most cases
       if (url.startsWith('/')) {
-        const finalUrl = `${baseUrl}${url}`;
-        console.log('Redirecting to relative URL:', finalUrl);
-        return finalUrl;
+        return `${baseUrl}${url}`;
       }
       
-      // Handle same origin URLs
-      try {
-        const urlObj = new URL(url);
-        if (urlObj.origin === baseUrl) {
-          console.log('Redirecting to same origin URL:', url);
-          return url;
-        }
-      } catch {
-        // ignore invalid URLs
+      if (url.startsWith(baseUrl)) {
+        return url;
       }
       
-      // Default to dashboard for successful login
-      console.log('Default redirect to dashboard');
+      // Default to dashboard
       return `${baseUrl}/dashboard`;
     },
   },

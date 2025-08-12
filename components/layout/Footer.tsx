@@ -47,7 +47,7 @@ export default function Footer() {
             <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2 text-emerald-200">
               <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/services" className="hover:text-white transition-colors">Our Services</Link></li>
+              <li><Link href="/services" className="hover:text-white transition-colors">Our Treatments</Link></li>
               <li><Link href="/conditions" className="hover:text-white transition-colors">Conditions We Treat</Link></li>
               <li><Link href="/testimonials" className="hover:text-white transition-colors">Patient Reviews</Link></li>
               <li><Link href="/blog" className="hover:text-white transition-colors">Health Blog</Link></li>
@@ -55,7 +55,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Services */}
+          {/* Treatments */}
           <div>
             <h3 className="font-semibold text-lg mb-4">Our Treatments</h3>
             <ul className="space-y-2 text-emerald-200">

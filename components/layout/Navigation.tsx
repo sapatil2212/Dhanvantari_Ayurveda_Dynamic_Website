@@ -22,12 +22,19 @@ const navigation = [
   { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
   { 
-    name: 'Services', 
+    name: 'Treatments', 
     href: '/services',
     submenu: [
       { name: 'Panchkarma', href: '/services#panchkarma' },
-      { name: 'Consultations', href: '/services#consultations' },
-      { name: 'Specialized Treatments', href: '/services#specialized' }
+      { name: 'Seasonal Ayurvedic Therapies', href: '/services#seasonal-therapies' },
+      { name: 'Kerala Beauty Therapies', href: '/services#kerala-beauty' },
+      { name: 'Weight Management Solutions', href: '/services#weight-management' },
+      { name: 'Memory & Immunity Boosting Therapies', href: '/services#memory-immunity' },
+      { name: 'Infertility (Uttarbasti) Treatment', href: '/services#infertility-treatment' },
+      { name: 'Hair Fall, Premature Greying & Skin Care', href: '/services#hair-skin-care' },
+      { name: 'Garbhsanskar – Healthy Pregnancy Care', href: '/services#pregnancy-care' },
+      { name: 'Menstrual Disorder Treatments', href: '/services#menstrual-disorders' },
+      { name: 'Physical & Mental Weakness Remedies', href: '/services#weakness-remedies' }
     ]
   },
   { name: 'Conditions', href: '/conditions' },
@@ -41,8 +48,26 @@ export default function Navigation() {
   const { setIsAppointmentModalOpen } = useAppointment();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
   const pathname = usePathname();
   const { data: session } = useSession();
+
+  // Function to get treatment descriptions
+  const getTreatmentDescription = (treatmentName: string) => {
+    const descriptions: { [key: string]: string } = {
+      'Panchkarma': 'Traditional detoxification therapies',
+      'Seasonal Ayurvedic Therapies': 'Season-specific wellness treatments',
+      'Kerala Beauty Therapies': 'Natural beauty and rejuvenation',
+      'Weight Management Solutions': 'Holistic weight loss programs',
+      'Memory & Immunity Boosting Therapies': 'Cognitive and immune enhancement',
+      'Infertility (Uttarbasti) Treatment': 'Reproductive health solutions',
+      'Hair Fall, Premature Greying & Skin Care': 'Natural hair and skin treatments',
+      'Garbhsanskar – Healthy Pregnancy Care': 'Prenatal wellness programs',
+      'Menstrual Disorder Treatments': 'Hormonal balance therapies',
+      'Physical & Mental Weakness Remedies': 'Strength and vitality restoration'
+    };
+    return descriptions[treatmentName] || 'Ayurvedic wellness treatment';
+  };
 
   const isActive = (href: string) => pathname === href;
 
@@ -91,20 +116,34 @@ export default function Navigation() {
                           {item.name}
                         </NavigationMenuTrigger>
                         <NavigationMenuContent>
-                          <ul className="w-48 p-2">
-                            {item.submenu.map((subItem) => (
-                              <li key={subItem.name}>
-                                <NavigationMenuLink asChild>
-                                  <Link
-                                    href={subItem.href}
-                                    className="block px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-md"
-                                  >
-                                    {subItem.name}
-                                  </Link>
-                                </NavigationMenuLink>
-                              </li>
-                            ))}
-                          </ul>
+                          <div className="w-[600px] p-3 bg-white rounded-lg shadow-lg">
+                            <div className="grid grid-cols-2 gap-2">
+                              {item.submenu.map((subItem, index) => (
+                                <div key={subItem.name} className="group">
+                                  <NavigationMenuLink asChild>
+                                    <Link
+                                      href={subItem.href}
+                                      className="block p-2 rounded-md hover:bg-emerald-50 transition-all duration-200"
+                                    >
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                                        <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">
+                                          {subItem.name}
+                                        </span>
+                                      </div>
+                                    </Link>
+                                  </NavigationMenuLink>
+                                  {/* Add faint line partitions between items */}
+                                  {index % 2 === 1 && index < item.submenu.length - 1 && (
+                                    <div className="h-px bg-gray-100 mt-2"></div>
+                                  )}
+                                  {index % 2 === 0 && index < item.submenu.length - 2 && (
+                                    <div className="h-px bg-gray-100 mt-2"></div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </NavigationMenuContent>
                       </NavigationMenuItem>
                     </NavigationMenuList>
@@ -161,32 +200,40 @@ export default function Navigation() {
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
                 <div className="flex flex-col space-y-4 mt-8">
-                                  <div className="flex items-center space-x-2 pb-4 border-b">
-                  <Image 
-                    src="/assets/logo/logo.png"
-                    alt="Dhanvantari Ayurvedic Clinic"
-                    width={100}
-                    height={32}
-                    className="h-8 w-auto"
-                    priority
-                  />
-                </div>
 
                   {navigation.map((item) => (
                     <div key={item.name}>
                       {item.submenu ? (
                         <div className="space-y-2">
-                          <div className="font-medium text-gray-900">{item.name}</div>
-                          <div className="pl-4 space-y-2">
-                            {item.submenu.map((subItem) => (
-                              <Link
-                                key={subItem.name}
-                                href={subItem.href}
-                                className="block py-2 text-sm text-gray-600 hover:text-emerald-600"
-                                onClick={() => setIsOpen(false)}
-                              >
-                                {subItem.name}
-                              </Link>
+                          <button
+                            onClick={() => setExpandedSubmenu(expandedSubmenu === item.name ? null : item.name)}
+                            className="flex items-center justify-between w-full py-2 text-left font-medium text-gray-900 text-base hover:text-emerald-600 transition-colors"
+                          >
+                            {item.name}
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                              expandedSubmenu === item.name ? 'rotate-180' : ''
+                            }`} />
+                          </button>
+                          <div className={`pl-4 space-y-1 ${expandedSubmenu === item.name ? 'block' : 'hidden'}`}>
+                            {item.submenu.map((subItem, index) => (
+                              <div key={subItem.name}>
+                                <Link
+                                  href={subItem.href}
+                                  className="block py-2 px-3 rounded-md hover:bg-emerald-50 transition-all duration-200"
+                                  onClick={() => setIsOpen(false)}
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                                    <span className="text-sm text-gray-700">
+                                      {subItem.name}
+                                    </span>
+                                  </div>
+                                </Link>
+                                {/* Add faint line partitions between items */}
+                                {index < item.submenu.length - 1 && (
+                                  <div className="h-px bg-gray-100 mt-1 ml-3"></div>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </div>

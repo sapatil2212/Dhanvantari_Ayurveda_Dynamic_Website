@@ -60,18 +60,19 @@ function LoginForm() {
 
       const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
       
+      console.log('🚀 Attempting login with:', { email: values.email, callbackUrl });
+      
       const res = await signIn('credentials', {
-        redirect: true,
+        redirect: false, // Don't redirect automatically, handle it manually
         email: values.email.trim(),
         password: values.password,
         callbackUrl,
       });
 
-      if (!res?.error) {
-        // NextAuth will handle the redirect automatically
-        // No need to show success modal or handle redirect manually
-        return;
-      } else {
+      console.log('📨 SignIn response:', res);
+
+      if (res?.error) {
+        console.log('❌ Login error:', res.error);
         // Handle different error types
         switch (res.error) {
           case 'USER_NOT_FOUND':
@@ -93,12 +94,24 @@ function LoginForm() {
             });
             break;
           default:
-            setGlobalError('Login failed. Please check your credentials and try again.');
+            setGlobalError(`Login failed: ${res.error}. Please check your credentials and try again.`);
             break;
         }
+      } else if (res?.ok) {
+        // Successful login - redirect to dashboard
+        console.log('✅ Login successful, redirecting to:', callbackUrl);
+        setSuccessOpen(true);
+        
+        // Small delay to show success message
+        setTimeout(() => {
+          router.push(callbackUrl);
+        }, 1000);
+      } else {
+        console.log('❌ Unexpected response:', res);
+        setGlobalError('Login failed. Please check your credentials and try again.');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('💥 Login error:', error);
       setGlobalError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);

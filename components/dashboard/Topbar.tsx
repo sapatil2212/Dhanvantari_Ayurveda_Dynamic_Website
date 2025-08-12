@@ -27,8 +27,7 @@ import {
   Settings, 
   LogOut, 
   Menu,
-  Sun,
-  Moon,
+
   HelpCircle,
   MessageSquare,
   AlertTriangle,
@@ -44,7 +43,7 @@ import {
   Shield,
   Database
 } from 'lucide-react';
-import { useTheme } from 'next-themes';
+
 import { RealTimeNotificationBell } from '@/components/ui/RealTimeNotificationBell';
 import {
   Dialog,
@@ -57,7 +56,7 @@ import {
 
 export default function Topbar() {
   const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
+
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
@@ -78,19 +77,6 @@ export default function Topbar() {
 
         {/* Right side - Notifications and User Menu */}
         <div className="flex items-center space-x-4">
-          {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          >
-            {theme === 'light' ? (
-              <Moon className="h-4 w-4" />
-            ) : (
-              <Sun className="h-4 w-4" />
-            )}
-          </Button>
-
           {/* Real-time Notifications */}
           <RealTimeNotificationBell />
 

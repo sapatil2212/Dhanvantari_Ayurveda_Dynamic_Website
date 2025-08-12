@@ -164,7 +164,7 @@ const heroContent = [
         icon: ArrowRight
       },
       {
-        text: "View Services",
+        text: "View Treatments",
         href: "/services",
         variant: "outline"
       }

@@ -6,8 +6,8 @@ import { Clock, Droplets, Wind, Leaf, Zap, Heart } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Ayurvedic Services & Panchkarma Treatments | Dhanvantari Clinic',
-  description: 'Explore our comprehensive range of authentic Panchkarma treatments including Vaman, Virechan, Basti, Nasya, and specialized therapies.',
+  title: 'Ayurvedic Treatments & Panchkarma Therapies | Dhanvantari Clinic',
+  description: 'Explore our comprehensive range of authentic Ayurvedic treatments including Panchkarma, Seasonal Therapies, Kerala Beauty Therapies, Weight Management, and specialized wellness solutions.',
 };
 
 const panchkarmaServices = [
@@ -98,10 +98,10 @@ export default function ServicesPage() {
       <section className="py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-emerald-800 mb-6">
-            Panchkarma & Ayurvedic Services
+            Ayurvedic Treatments & Therapies
           </h1>
           <p className="text-lg text-emerald-600 mb-8">
-            Authentic traditional therapies for complete mind-body wellness
+            Comprehensive wellness solutions through authentic Ayurvedic practices
           </p>
         </div>
       </section>
@@ -151,13 +151,126 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Additional Services */}
+      {/* Specialized Treatments */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-emerald-800 mb-4">Additional Therapies</h2>
+            <h2 className="text-3xl font-bold text-emerald-800 mb-4">Specialized Treatments</h2>
             <p className="text-emerald-600 max-w-2xl mx-auto">
-              Specialized treatments for targeted wellness and rejuvenation
+              Targeted therapies for specific health concerns and wellness goals
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Seasonal Ayurvedic Therapies</h3>
+                <p className="text-gray-600 text-sm mb-3">Season-specific treatments to maintain dosha balance throughout the year</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Varies by season
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Kerala Beauty Therapies</h3>
+                <p className="text-gray-600 text-sm mb-3">Traditional beauty treatments for radiant skin and natural glow</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  60-90 mins
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Weight Management Solutions</h3>
+                <p className="text-gray-600 text-sm mb-3">Natural approaches to healthy weight loss and metabolism optimization</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Program-based
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Memory & Immunity Boosting</h3>
+                <p className="text-gray-600 text-sm mb-3">Therapies to enhance cognitive function and strengthen immune system</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  30-45 mins
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Infertility (Uttarbasti) Treatment</h3>
+                <p className="text-gray-600 text-sm mb-3">Specialized reproductive health treatments for fertility enhancement</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Program-based
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Hair & Skin Care</h3>
+                <p className="text-gray-600 text-sm mb-3">Natural solutions for hair fall, premature greying and skin health</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  45-60 mins
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Garbhsanskar – Pregnancy Care</h3>
+                <p className="text-gray-600 text-sm mb-3">Holistic care for healthy pregnancy and fetal development</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Program-based
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Menstrual Disorder Treatments</h3>
+                <p className="text-gray-600 text-sm mb-3">Natural therapies for menstrual health and hormonal balance</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Program-based
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
+              <CardContent className="p-0">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-2">Weakness Remedies</h3>
+                <p className="text-gray-600 text-sm mb-3">Solutions for physical and mental weakness through natural therapies</p>
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Program-based
+                </Badge>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Additional Therapies */}
+      <section className="py-16 px-4 bg-emerald-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-emerald-800 mb-4">Supporting Therapies</h2>
+            <p className="text-emerald-600 max-w-2xl mx-auto">
+              Complementary treatments for enhanced wellness and rejuvenation
             </p>
           </div>
 

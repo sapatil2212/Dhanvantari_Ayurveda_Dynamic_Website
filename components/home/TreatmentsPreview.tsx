@@ -187,7 +187,7 @@ export default function TreatmentsPreview() {
             </Card>
           ))}
 
-          {/* Additional Services Card */}
+          {/* Additional Treatments Card */}
           <Card className="p-6 bg-emerald-100 border-emerald-200 flex items-center justify-center text-center hover:shadow-xl transition-all duration-300 cursor-pointer group">
             <CardContent className="p-0">
               <div className="w-16 h-16 bg-emerald-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">

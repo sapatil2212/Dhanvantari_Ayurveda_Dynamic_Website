@@ -144,7 +144,6 @@ This document outlines the comprehensive enhancements made to transform the basi
 
 **Features Added**:
 - Real-time notification system
-- Theme toggle (light/dark mode)
 - Advanced search functionality
 - User profile dropdown
 - Notification badges

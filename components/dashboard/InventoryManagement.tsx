@@ -64,7 +64,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  Building2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 

@@ -317,7 +317,7 @@ export default function NewPurchaseOrderPage() {
           <CardContent>
             {orderItems.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No items added. Click "Add Item" to start building your order.
+                No items added. Click &quot;Add Item&quot; to start building your order.
               </div>
             ) : (
               <div className="space-y-4">

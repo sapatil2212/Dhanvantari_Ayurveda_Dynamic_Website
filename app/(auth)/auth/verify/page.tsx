@@ -40,8 +40,7 @@ export default async function VerifyPage({ searchParams }: Props) {
 
   try {
     const record = await prisma.verificationToken.findUnique({ 
-      where: { token },
-      include: { user: true } // Include user if exists
+      where: { token }
     });
 
     if (!record) {
@@ -106,7 +105,11 @@ export default async function VerifyPage({ searchParams }: Props) {
     }
 
     // Check if user already exists and is verified
-    if (record.user && record.user.emailVerified) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: record.email }
+    });
+
+    if (existingUser && existingUser.emailVerified) {
       // Clean up the token
       await prisma.verificationToken.delete({ where: { token } });
       

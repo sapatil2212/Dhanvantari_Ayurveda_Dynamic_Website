@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -26,7 +26,7 @@ const schema = z.object({
   path: ["confirmPassword"],
 });
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -303,6 +303,25 @@ export default function ResetPasswordPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="container mx-auto px-4 py-10 flex justify-center items-center min-h-[400px]">
+      <div className="flex items-center gap-2">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <span>Loading...</span>
+      </div>
+    </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
 

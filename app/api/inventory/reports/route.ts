@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { Permission } from '@/lib/permissions';
 import { checkPermission } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/inventory/reports - Get inventory reports and analytics
 export async function GET(request: NextRequest) {
   try {

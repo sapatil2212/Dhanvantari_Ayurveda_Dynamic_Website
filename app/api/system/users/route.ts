@@ -4,6 +4,8 @@ import { authOptions } from '../../auth/[...nextauth]/options';
 import { prisma } from '@/lib/prisma';
 import { Permission, Role, checkPermission } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);

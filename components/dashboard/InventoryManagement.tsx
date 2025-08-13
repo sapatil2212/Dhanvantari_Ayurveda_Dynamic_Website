@@ -103,6 +103,7 @@ interface PurchaseOrder {
   status: 'pending' | 'ordered' | 'received' | 'cancelled';
   orderDate: string;
   expectedDelivery: string;
+  notes?: string;
 }
 
 export default function InventoryManagement() {

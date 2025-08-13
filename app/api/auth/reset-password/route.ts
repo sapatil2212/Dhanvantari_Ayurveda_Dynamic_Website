@@ -21,8 +21,7 @@ export async function GET(request: Request) {
 
     // Find the reset token
     const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
-      include: { user: true }
+      where: { token }
     });
 
     if (!resetToken) {
@@ -62,8 +61,7 @@ export async function POST(request: Request) {
 
     // Find the reset token
     const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
-      include: { user: true }
+      where: { token }
     });
 
     if (!resetToken) {

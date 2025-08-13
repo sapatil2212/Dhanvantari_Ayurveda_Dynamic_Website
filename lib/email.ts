@@ -948,6 +948,166 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData) {
   }
 }
 
+// OTP email interfaces
+export interface OTPEmailData {
+  email: string;
+  name: string;
+  otp: string;
+  type: 'REGISTRATION' | 'PASSWORD_RESET';
+}
+
+// Send OTP email
+export async function sendOTPEmail(data: OTPEmailData) {
+  try {
+    const emailUser = process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const emailPass = process.env.EMAIL_PASSWORD || process.env.SMTP_PASS;
+    
+    if (!emailUser || !emailPass) {
+      console.warn('Email credentials not configured. Skipping OTP email send.');
+      return null;
+    }
+
+    const { email, name, otp, type } = data;
+    const isRegistration = type === 'REGISTRATION';
+    const subject = isRegistration ? 'Verify Your Account - Dhanvantari Ayurveda' : 'Reset Your Password - Dhanvantari Ayurveda';
+    const title = isRegistration ? 'Verify Your Account' : 'Reset Your Password';
+    const message = isRegistration 
+      ? 'Thank you for registering with Dhanvantari Ayurveda. Please use the OTP below to verify your account.'
+      : 'We received a request to reset your password. Please use the OTP below to create a new password.';
+
+    const emailContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${title} - Dhanvantari Ayurveda</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center; }
+          .logo-container { display: inline-block; background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+          .logo { width: 120px; height: 40px; object-fit: contain; }
+          .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+          .header .subtitle { color: #d1fae5; margin: 8px 0 0 0; font-size: 18px; font-weight: 300; }
+          .content { padding: 40px 30px; }
+          .greeting { font-size: 24px; color: #059669; margin-bottom: 20px; font-weight: 600; }
+          .message { color: #4b5563; line-height: 1.8; margin-bottom: 30px; font-size: 16px; }
+          .otp-container { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #d1fae5; border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; }
+          .otp-label { color: #059669; font-size: 18px; font-weight: 600; margin-bottom: 15px; }
+          .otp-code { font-size: 48px; font-weight: 700; color: #059669; letter-spacing: 8px; margin: 20px 0; font-family: 'Courier New', monospace; }
+          .otp-expiry { color: #6b7280; font-size: 14px; margin-top: 15px; }
+          .security-note { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 25px 0; }
+          .security-note h4 { color: #92400e; margin: 0 0 10px 0; font-size: 16px; }
+          .security-note p { color: #92400e; margin: 0; font-size: 14px; line-height: 1.5; }
+          .footer { background: #f8f9fa; padding: 40px 30px; text-align: center; border-top: 1px solid #e9ecef; }
+          .footer-content { color: #374151; margin: 0; font-size: 18px; line-height: 1.8; font-weight: 600; }
+          .footer-subtitle { color: #6b7280; margin: 5px 0 0 0; font-size: 14px; font-weight: 400; }
+          .contact-info { margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+          .contact-item { text-align: center; }
+          .contact-label { color: #374151; font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block; }
+          .contact-value { color: #6b7280; font-size: 14px; line-height: 1.6; }
+          .contact-link { color: #059669; text-decoration: none; font-weight: 500; transition: color 0.2s; }
+          .contact-link:hover { color: #047857; text-decoration: underline; }
+          .divider { border-top: 1px solid #e5e7eb; margin: 20px 0; }
+          @media only screen and (max-width: 600px) {
+            .container { margin: 0; }
+            .header { padding: 30px 20px; }
+            .content { padding: 30px 20px; }
+            .footer { padding: 25px 20px; }
+            .otp-code { font-size: 36px; letter-spacing: 6px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo-container">
+              <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
+            </div>
+            <h1>${title}</h1>
+            <p class="subtitle">Secure verification for your account</p>
+          </div>
+          
+          <div class="content">
+            <div class="greeting">Dear ${name},</div>
+            
+            <div class="message">
+              ${message}
+            </div>
+            
+            <div class="otp-container">
+              <div class="otp-label">Your Verification Code</div>
+              <div class="otp-code">${otp}</div>
+              <div class="otp-expiry">This code will expire in 10 minutes</div>
+            </div>
+            
+            <div class="security-note">
+              <h4>🔒 Security Notice</h4>
+              <p>
+                • Never share this OTP with anyone<br>
+                • Our team will never ask for this code over phone or email<br>
+                • If you didn't request this, please ignore this email
+              </p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <div class="footer-content">
+              Dhanvantari Ayurveda
+            </div>
+            <div class="footer-subtitle">
+              Traditional healing for modern wellness
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="contact-info">
+              <div class="contact-item">
+                <span class="contact-label">📍 Address</span>
+                <div class="contact-value">
+                  Dhanvantari Ayurveda Building<br>
+                  Saikheda Phata, near Khanderao mandir<br>
+                  Ojhar, Maharashtra 422206
+                </div>
+              </div>
+              
+              <div class="contact-item">
+                <span class="contact-label">📞 Phone</span>
+                <div class="contact-value">
+                  <a href="tel:+919921118724" class="contact-link">+91 99211 18724</a>
+                </div>
+              </div>
+              
+              <div class="contact-item">
+                <span class="contact-label">✉️ Email</span>
+                <div class="contact-value">
+                  <a href="mailto:dhanvantariayurvedansk@gmail.com" class="contact-link">dhanvantariayurvedansk@gmail.com</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const mailOptions = {
+      from: `"Dhanvantari Ayurveda" <${emailUser}>`,
+      to: email,
+      subject: subject,
+      html: emailContent,
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('OTP email sent:', result.messageId);
+    return result;
+  } catch (error) {
+    console.error('Failed to send OTP email:', error);
+    throw error;
+  }
+}
+
 // Generic email function for simple email sending
 export async function sendEmail(data: { to: string; subject: string; html: string }) {
   try {

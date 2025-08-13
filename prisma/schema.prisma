@@ -92,6 +92,19 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 }
 
+model OTPToken {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  type      String   // REGISTRATION, PASSWORD_RESET
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email, type])
+  @@index([expiresAt])
+}
+
 enum AppointmentStatus {
   PENDING
   CONFIRMED

@@ -1,18 +1,19 @@
 {
-  "buildCommand": "npm run vercel-build",
+  "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
+  "env": {
+    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "DATABASE_URL": "@database_url",
+    "EMAIL_HOST": "@email_host",
+    "EMAIL_PORT": "@email_port",
+    "EMAIL_USERNAME": "@email_username",
+    "EMAIL_PASSWORD": "@email_password"
+  },
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
-    }
-  },
-  "env": {
-    "PRISMA_GENERATE_DATAPROXY": "true"
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
     }
   }
 }

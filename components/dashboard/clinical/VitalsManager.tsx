@@ -45,18 +45,8 @@ export default function VitalsManager() {
       {patient && (
         <Card className="shadow-sm">
           <CardContent className="p-6 space-y-4">
-            <div className="text-sm font-medium text-gray-700">Recent Vitals</div>
-            <div className="space-y-2 text-sm">
-              {vitals.map(v => (
-                <div key={v.id} className="rounded border p-2">
-                  <div className="text-gray-500">{new Date(v.recordedAt).toLocaleString()}</div>
-                  <div>BP: {v.systolicMmHg ?? '-'} / {v.diastolicMmHg ?? '-'} mmHg · Pulse: {v.pulseBpm ?? '-'} bpm · Temp: {v.temperatureC ?? '-'} °C</div>
-                </div>
-              ))}
-              {(!loading && vitals.length === 0) && <div className="text-gray-500">No vitals for this patient.</div>}
-              {loading && <div className="text-gray-500">Loading…</div>}
-            </div>
-            <AddVitalForm patientId={patient.id} onCreated={() => load(patient.id)} />
+            <div className="text-sm font-medium text-gray-700">Vitals Management</div>
+            <AddVitalForm patientId={patient.id} onCreated={() => load(patient.id)} vitals={vitals} />
           </CardContent>
         </Card>
       )}

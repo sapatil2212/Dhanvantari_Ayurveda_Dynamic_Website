@@ -4,16 +4,18 @@ import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  console.log('Middleware - Pathname:', pathname);
 
   // Skip middleware for API routes and static files
   if (pathname.startsWith('/api/') || pathname.startsWith('/_next/') || pathname.includes('.')) {
+    console.log('Middleware - Skipping for API/static file');
     return NextResponse.next();
   }
 
   // Only protect dashboard routes
   if (pathname.startsWith('/dashboard')) {
-    console.log('Middleware: Checking dashboard access for:', pathname);
-    
+    console.log('Middleware - Checking dashboard route');
     try {
       // Try to get the token
       const token = await getToken({ 
@@ -21,19 +23,21 @@ export async function middleware(request: NextRequest) {
         secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development'
       });
 
-      console.log('Middleware: Token found:', !!token, 'Token details:', token ? { userId: token.userId, role: token.role } : 'none');
+      console.log('Middleware - Token:', token);
 
       // If user is not authenticated, redirect to login
       if (!token) {
         const loginUrl = new URL('/auth/login', request.url);
         loginUrl.searchParams.set('callbackUrl', pathname);
-        console.log('Middleware: Redirecting to login with callbackUrl:', pathname);
+        console.log('Middleware - Redirecting to login:', loginUrl.toString());
         return NextResponse.redirect(loginUrl);
       }
       
-      console.log('Middleware: Access granted to dashboard');
+      console.log('Middleware - User authenticated, allowing access');
     } catch (error) {
-      console.error('Middleware error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Middleware error:', error);
+      }
       // On error, redirect to login
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);

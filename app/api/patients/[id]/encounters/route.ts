@@ -23,7 +23,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         reason: body.reason ?? null,
         diagnosis: body.diagnosis ?? null,
         notes: body.notes ?? null,
-        prescriptions: body.prescriptions ?? null,
+        followUpDate: body.followUpDate ? new Date(body.followUpDate) : null,
       },
     });
     return NextResponse.json(created, { status: 201 });

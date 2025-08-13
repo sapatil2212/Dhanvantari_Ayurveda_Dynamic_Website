@@ -6,61 +6,145 @@ import crypto from 'crypto';
 import { sendVerificationEmail } from '@/lib/email';
 
 const schema = z.object({
-  name: z.string().min(2).optional(),
+  name: z.string().min(2).max(50),
   email: z.string().email(),
   password: z.string().min(8),
   role: z.enum(['RECEPTIONIST', 'DOCTOR', 'OTHER']).default('OTHER'),
-  psk: z.string().min(8),
 });
+
+// Simple in-memory rate limiting (in production, use Redis or similar)
+const registrationAttempts = new Map<string, { count: number; resetTime: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const attempt = registrationAttempts.get(ip);
+  
+  if (!attempt) {
+    registrationAttempts.set(ip, { count: 1, resetTime: now + 15 * 60 * 1000 }); // 15 minutes
+    return false;
+  }
+  
+  if (now > attempt.resetTime) {
+    registrationAttempts.set(ip, { count: 1, resetTime: now + 15 * 60 * 1000 });
+    return false;
+  }
+  
+  if (attempt.count >= 5) { // Max 5 attempts per 15 minutes
+    return true;
+  }
+  
+  attempt.count++;
+  return false;
+}
 
 export async function POST(request: Request) {
   try {
-    const json = await request.json();
-    const { name, email, password, role, psk } = schema.parse(json);
-
-    // Validate agency security key
-    if (psk !== process.env.AGENCY_PSK) {
+    // Get client IP for rate limiting
+    const forwarded = request.headers.get('x-forwarded-for');
+    const ip = forwarded ? forwarded.split(',')[0] : 'unknown';
+    
+    // Check rate limiting
+    if (isRateLimited(ip)) {
       return NextResponse.json({ 
-        message: 'Invalid agency security key' 
-      }, { status: 401 });
+        message: 'Too many registration attempts. Please wait 15 minutes before trying again.' 
+      }, { status: 429 });
     }
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const json = await request.json();
+    const { name, email, password, role } = schema.parse(json);
+
+    // Check if email already exists
+    const existing = await prisma.user.findUnique({ 
+      where: { email: email.toLowerCase().trim() } 
+    });
+    
     if (existing) {
-      return NextResponse.json({ message: 'Email already registered' }, { status: 409 });
+      return NextResponse.json({ 
+        message: 'An account with this email already exists' 
+      }, { status: 409 });
     }
 
-    const passwordHash = await bcrypt.hash(password, 12);
-    const token = crypto.randomBytes(24).toString('hex');
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 5); // 5 minutes
+    // Check if there's a pending verification for this email
+    const pendingVerification = await prisma.verificationToken.findFirst({
+      where: { email: email.toLowerCase().trim() }
+    });
 
-    // Clean up any existing tokens for this email and any expired tokens globally
+    if (pendingVerification) {
+      // If verification is still valid (not expired), don't allow new registration
+      if (pendingVerification.expiresAt > new Date()) {
+        return NextResponse.json({ 
+          message: 'A verification email has already been sent to this address. Please check your inbox or wait for the link to expire.' 
+        }, { status: 409 });
+      } else {
+        // Clean up expired verification
+        await prisma.verificationToken.delete({
+          where: { id: pendingVerification.id }
+        });
+      }
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 12);
+    
+    // Generate verification token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Clean up any expired tokens globally
     await prisma.verificationToken.deleteMany({
       where: {
-        OR: [
-          { email },
-          { expiresAt: { lt: new Date() } },
-        ],
+        expiresAt: { lt: new Date() }
       },
     });
 
+    // Create verification token
     await prisma.verificationToken.create({
-      data: { email, name: name ?? null, passwordHash, role, token, expiresAt },
+      data: { 
+        email: email.toLowerCase().trim(), 
+        name: name.trim(), 
+        passwordHash, 
+        role, 
+        token, 
+        expiresAt 
+      },
     });
 
-    const link = `${process.env.NEXTAUTH_URL}/auth/verify?token=${token}`;
-    await sendVerificationEmail({ 
-      name: name || 'User', 
-      email, 
-      verificationToken: token 
-    });
+    // Send verification email
+    try {
+      await sendVerificationEmail({ 
+        name: name.trim(), 
+        email: email.toLowerCase().trim(), 
+        verificationToken: token 
+      });
+    } catch (emailError) {
+      // If email fails, clean up the verification token
+      await prisma.verificationToken.delete({
+        where: { token }
+      });
+      
+      console.error('Email sending failed:', emailError);
+      return NextResponse.json({ 
+        message: 'Failed to send verification email. Please try again later.' 
+      }, { status: 500 });
+    }
 
-    return NextResponse.json({ ok: true, message: 'Verification link sent to email' });
+    return NextResponse.json({ 
+      ok: true, 
+      message: 'Registration successful! Please check your email to verify your account.' 
+    });
+    
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ message: 'Invalid input', issues: error.issues }, { status: 400 });
+      return NextResponse.json({ 
+        message: 'Invalid input data', 
+        issues: error.issues 
+      }, { status: 400 });
     }
-    return NextResponse.json({ message: 'Server error' }, { status: 500 });
+    
+    console.error('Registration error:', error);
+    return NextResponse.json({ 
+      message: 'An unexpected error occurred. Please try again.' 
+    }, { status: 500 });
   }
 }
 

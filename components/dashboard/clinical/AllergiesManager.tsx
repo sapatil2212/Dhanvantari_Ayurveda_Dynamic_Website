@@ -12,7 +12,7 @@ type Allergy = {
   substance: string;
   reaction?: string | null;
   severity?: string | null;
-  recordedAt: string;
+  createdAt: string;
 };
 
 export default function AllergiesManager() {
@@ -44,19 +44,8 @@ export default function AllergiesManager() {
       {patient && (
         <Card className="shadow-sm">
           <CardContent className="p-6 space-y-4">
-            <div className="text-sm font-medium text-gray-700">Allergies</div>
-            <div className="space-y-2 text-sm">
-              {allergies.map(a => (
-                <div key={a.id} className="rounded border p-2">
-                  <div className="text-gray-500">{new Date(a.recordedAt).toLocaleString()}</div>
-                  <div className="font-medium">{a.substance} {a.severity ? `· ${a.severity}` : ''}</div>
-                  <div className="text-gray-600">{a.reaction ?? '-'}</div>
-                </div>
-              ))}
-              {(!loading && allergies.length === 0) && <div className="text-gray-500">No allergies for this patient.</div>}
-              {loading && <div className="text-gray-500">Loading…</div>}
-            </div>
-            <AddAllergyForm patientId={patient.id} onCreated={() => load(patient.id)} />
+            <div className="text-sm font-medium text-gray-700">Allergies Management</div>
+            <AddAllergyForm patientId={patient.id} onCreated={() => load(patient.id)} allergies={allergies} />
           </CardContent>
         </Card>
       )}

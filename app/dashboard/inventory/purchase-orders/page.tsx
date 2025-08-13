@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,13 +15,6 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { 
   Select, 
   SelectContent, 
   SelectItem, 
@@ -28,22 +22,49 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { 
   Plus, 
   Search, 
   Filter, 
-  Eye, 
-  Edit, 
-  CheckCircle, 
-  Clock, 
-  XCircle,
+  AlertTriangle, 
+  Edit,
+  Trash2,
+  Eye,
+  RefreshCw,
+  Loader2,
   ShoppingCart,
-  Download,
-  RefreshCw
+  CheckCircle,
+  Clock,
+  XCircle
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 interface PurchaseOrder {
   id: string;
+  number: string;
   supplier: string;
+  supplierId?: string;
   items: Array<{
     itemId: string;
     name: string;
@@ -57,50 +78,153 @@ interface PurchaseOrder {
   notes?: string;
 }
 
+interface Supplier {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  contactPerson?: string;
+}
+
 export default function PurchaseOrdersPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
+  const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
+  const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [useCustomSupplier, setUseCustomSupplier] = useState(false);
 
-  // Mock data
-  const purchaseOrders: PurchaseOrder[] = [
-    {
-      id: 'PO-001',
-      supplier: 'Ayurvedic Herbs Co.',
-      items: [
-        { itemId: '1', name: 'Ashwagandha Powder', quantity: 50, unitPrice: 800 },
-        { itemId: '2', name: 'Turmeric Capsules', quantity: 100, unitPrice: 150 }
-      ],
-      totalAmount: 55000,
-      status: 'ordered',
-      orderDate: '2025-01-10',
-      expectedDelivery: '2025-01-20',
-      notes: 'Priority order for upcoming festival season'
-    },
-    {
-      id: 'PO-002',
-      supplier: 'Natural Health Ltd.',
-      items: [
-        { itemId: '3', name: 'Neem Oil', quantity: 20, unitPrice: 300 }
-      ],
-      totalAmount: 6000,
-      status: 'received',
-      orderDate: '2025-01-05',
-      expectedDelivery: '2025-01-15'
-    },
-    {
-      id: 'PO-003',
-      supplier: 'Pure Oils Inc.',
-      items: [
-        { itemId: '4', name: 'Sesame Oil', quantity: 30, unitPrice: 250 },
-        { itemId: '5', name: 'Coconut Oil', quantity: 25, unitPrice: 180 }
-      ],
-      totalAmount: 12000,
-      status: 'pending',
-      orderDate: '2025-01-12',
-      expectedDelivery: '2025-01-25'
+  // Load purchase orders
+  const loadPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/inventory/purchase-orders');
+      if (!response.ok) throw new Error('Failed to fetch purchase orders');
+      
+      const data = await response.json();
+      setPurchaseOrders(data.purchaseOrders || []);
+    } catch (error) {
+      console.error('Error loading purchase orders:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load purchase orders',
+        variant: 'destructive',
+      });
+      setPurchaseOrders([]); // Set empty array on error
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  // Delete purchase order
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      setDeletingOrder(orderId);
+      const response = await fetch(`/api/inventory/purchase-orders/${orderId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete purchase order');
+
+      toast({
+        title: 'Success',
+        description: 'Purchase order deleted successfully',
+      });
+
+      // Reload orders
+      await loadPurchaseOrders();
+    } catch (error) {
+      console.error('Error deleting purchase order:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete purchase order',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingOrder(null);
+    }
+  };
+
+  // Handle view order
+  const handleViewOrder = (order: PurchaseOrder) => {
+    setSelectedOrder(order);
+    setViewModalOpen(true);
+  };
+
+  // Handle edit order
+  const handleEditOrder = (order: PurchaseOrder) => {
+    setEditingOrder({ ...order });
+    setUseCustomSupplier(!order.supplierId);
+    setEditModalOpen(true);
+  };
+
+  // Handle save order
+  const handleSaveOrder = async () => {
+    if (!editingOrder) return;
+
+    try {
+      setSavingOrder(true);
+      const response = await fetch(`/api/inventory/purchase-orders/${editingOrder.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingOrder),
+      });
+
+      if (!response.ok) throw new Error('Failed to update order');
+
+      toast({
+        title: 'Success',
+        description: 'Purchase order updated successfully',
+      });
+
+      setEditModalOpen(false);
+      setEditingOrder(null);
+      await loadPurchaseOrders();
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update purchase order',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingOrder(false);
+    }
+  };
+
+  // Load suppliers
+  const loadSuppliers = async () => {
+    try {
+      const response = await fetch('/api/suppliers?activeOnly=true');
+      if (!response.ok) throw new Error('Failed to fetch suppliers');
+      
+      const data = await response.json();
+      setSuppliers(data.suppliers || []);
+    } catch (error) {
+      console.error('Error loading suppliers:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load suppliers',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Load data on component mount
+  useEffect(() => {
+    loadPurchaseOrders();
+    loadSuppliers();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -121,127 +245,69 @@ export default function PurchaseOrdersPage() {
     );
   };
 
-  const filteredOrders = purchaseOrders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredOrders = (purchaseOrders || []).filter(order => {
+    const matchesSearch = order.supplier.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.number.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
 
-  const pendingOrders = purchaseOrders.filter(order => order.status === 'pending');
-  const totalValue = purchaseOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Purchase Orders</h1>
-          <p className="text-sm text-gray-500">Manage inventory purchase orders and suppliers</p>
+          <h1 className="text-3xl font-bold">Purchase Orders</h1>
+          <p className="text-muted-foreground">Manage inventory purchase orders and suppliers</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" />
+          <Button variant="outline" onClick={loadPurchaseOrders} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button onClick={() => setIsNewOrderOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Order
-          </Button>
+          <Link href="/dashboard/inventory/purchase-orders/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Order
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{purchaseOrders.length}</p>
-              </div>
-              <ShoppingCart className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Pending Orders</p>
-                <p className="text-2xl font-bold text-yellow-600">{pendingOrders.length}</p>
-              </div>
-              <Clock className="h-8 w-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Value</p>
-                <p className="text-2xl font-bold">₹{totalValue.toLocaleString()}</p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Suppliers</p>
-                <p className="text-2xl font-bold">
-                  {new Set(purchaseOrders.map(po => po.supplier)).size}
-                </p>
-              </div>
-              <ShoppingCart className="h-8 w-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters and Search */}
+      {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex-1 min-w-[300px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search by order ID or supplier..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Search</label>
+              <Input
+                placeholder="Search orders..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="ordered">Ordered</SelectItem>
-                <SelectItem value="received">Received</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline" size="sm">
-              <Filter className="mr-2 h-4 w-4" />
-              More Filters
-            </Button>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Status</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="ordered">Ordered</SelectItem>
+                  <SelectItem value="received">Received</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <Button variant="outline" className="w-full">
+                <Filter className="h-4 w-4 mr-2" />
+                Apply Filters
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -267,108 +333,378 @@ export default function PurchaseOrdersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono font-medium">{order.id}</TableCell>
-                    <TableCell>{order.supplier}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{order.items.length} items</div>
-                        <div className="text-sm text-gray-500">
-                          {order.items.map(item => item.name).join(', ')}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">₹{order.totalAmount.toLocaleString()}</TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(order.expectedDelivery).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                      Loading purchase orders...
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      No purchase orders found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono">{order.number}</TableCell>
+                      <TableCell>{order.supplier}</TableCell>
+                      <TableCell>{order.items?.length || 0} items</TableCell>
+                      <TableCell>₹{Number(order.totalAmount).toLocaleString()}</TableCell>
+                      <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableCell>{order.orderDate ? new Date(order.orderDate).toLocaleDateString() : '-'}</TableCell>
+                      <TableCell>{order.expectedDelivery ? new Date(order.expectedDelivery).toLocaleDateString() : '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewOrder(order)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditOrder(order)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                disabled={deletingOrder === order.id}
+                              >
+                                {deletingOrder === order.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-md">
+                              <AlertDialogHeader>
+                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                                </div>
+                                <AlertDialogTitle>Delete Purchase Order</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this purchase order?
+                                </AlertDialogDescription>
+                                <p className="text-sm text-red-600 mt-2">
+                                  This action cannot be undone.
+                                </p>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="flex justify-center gap-3 !justify-center">
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteOrder(order.id)}
+                                  disabled={deletingOrder === order.id}
+                                >
+                                  {deletingOrder === order.id ? 'Deleting...' : 'Delete'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
 
-      {/* New Purchase Order Dialog */}
-      <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
-        <DialogContent className="max-w-4xl">
+      {/* View Order Modal */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create New Purchase Order</DialogTitle>
+            <DialogTitle>View Purchase Order</DialogTitle>
+            <DialogDescription>
+              Detailed information about the purchase order
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-6">
-            {/* Supplier Selection */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Supplier</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select supplier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ayurvedic-herbs">Ayurvedic Herbs Co.</SelectItem>
-                    <SelectItem value="natural-health">Natural Health Ltd.</SelectItem>
-                    <SelectItem value="pure-oils">Pure Oils Inc.</SelectItem>
-                  </SelectContent>
-                </Select>
+          {selectedOrder && (
+            <div className="space-y-6">
+              {/* Order Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Order Number</Label>
+                  <p className="text-sm text-muted-foreground font-mono">{selectedOrder.number}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Supplier</Label>
+                  <p className="text-sm text-muted-foreground">{selectedOrder.supplier}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <div className="mt-1">{getStatusBadge(selectedOrder.status)}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Total Amount</Label>
+                  <p className="text-sm text-muted-foreground">₹{Number(selectedOrder.totalAmount).toLocaleString()}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Order Date</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedOrder.orderDate ? new Date(selectedOrder.orderDate).toLocaleDateString() : '-'}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Expected Delivery</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedOrder.expectedDelivery ? new Date(selectedOrder.expectedDelivery).toLocaleDateString() : '-'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium">Expected Delivery</label>
-                <Input type="date" />
-              </div>
-            </div>
 
-            {/* Items Selection */}
-            <div>
-              <label className="text-sm font-medium">Items</label>
-              <div className="mt-2 space-y-2">
-                <div className="grid grid-cols-4 gap-2 p-3 border rounded">
-                  <Select>
+              {/* Order Items */}
+              <div>
+                <Label className="text-sm font-medium">Order Items</Label>
+                <div className="mt-2 border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item Name</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Unit Price</TableHead>
+                        <TableHead>Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedOrder.items?.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{item.name}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>₹{item.unitPrice.toLocaleString()}</TableCell>
+                          <TableCell>₹{(item.quantity * item.unitPrice).toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedOrder.notes && (
+                <div>
+                  <Label className="text-sm font-medium">Notes</Label>
+                  <p className="text-sm text-muted-foreground mt-1">{selectedOrder.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewModalOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Order Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Purchase Order</DialogTitle>
+            <DialogDescription>
+              Update the purchase order information
+            </DialogDescription>
+          </DialogHeader>
+          {editingOrder && (
+            <div className="space-y-6">
+              {/* Order Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="supplier">Supplier</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="editExistingSupplier"
+                        checked={!useCustomSupplier}
+                        onChange={() => setUseCustomSupplier(false)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="editExistingSupplier" className="text-sm">Select from existing suppliers</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="editCustomSupplier"
+                        checked={useCustomSupplier}
+                        onChange={() => setUseCustomSupplier(true)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="editCustomSupplier" className="text-sm">Enter custom supplier name</Label>
+                    </div>
+                  </div>
+                  
+                  {!useCustomSupplier ? (
+                    <Select 
+                      value={editingOrder.supplierId || ''} 
+                      onValueChange={(value) => {
+                        const selectedSupplier = suppliers.find(s => s.id === value);
+                        setEditingOrder({ 
+                          ...editingOrder, 
+                          supplierId: value,
+                          supplier: selectedSupplier?.name || ''
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a supplier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {suppliers.map((supplier) => (
+                          <SelectItem key={supplier.id} value={supplier.id}>
+                            <div className="flex flex-col">
+                              <span>{supplier.name}</span>
+                              {supplier.contactPerson && (
+                                <span className="text-xs text-muted-foreground">
+                                  Contact: {supplier.contactPerson}
+                                </span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="editCustomSupplier"
+                      value={editingOrder.supplier}
+                      onChange={(e) => setEditingOrder({ ...editingOrder, supplier: e.target.value, supplierId: undefined })}
+                      placeholder="Enter custom supplier name"
+                    />
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="status">Status</Label>
+                  <Select value={editingOrder.status} onValueChange={(value) => setEditingOrder({ ...editingOrder, status: value as any })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Item" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ashwagandha">Ashwagandha Powder</SelectItem>
-                      <SelectItem value="turmeric">Turmeric Capsules</SelectItem>
-                      <SelectItem value="neem-oil">Neem Oil</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="ordered">Ordered</SelectItem>
+                      <SelectItem value="received">Received</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Input type="number" placeholder="Qty" />
-                  <Input type="number" placeholder="Unit Price" />
-                  <Button variant="outline" size="sm">Remove</Button>
                 </div>
-                <Button variant="outline" size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Item
-                </Button>
+                <div>
+                  <Label htmlFor="expectedDelivery">Expected Delivery</Label>
+                  <Input
+                    id="expectedDelivery"
+                    type="date"
+                    value={editingOrder.expectedDelivery ? editingOrder.expectedDelivery.split('T')[0] : ''}
+                    onChange={(e) => setEditingOrder({ ...editingOrder, expectedDelivery: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="totalAmount">Total Amount</Label>
+                  <Input
+                    id="totalAmount"
+                    type="number"
+                    step="0.01"
+                    value={editingOrder.totalAmount}
+                    onChange={(e) => setEditingOrder({ ...editingOrder, totalAmount: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <Label className="text-sm font-medium">Order Items</Label>
+                <div className="mt-2 border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item Name</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Unit Price</TableHead>
+                        <TableHead>Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {editingOrder.items?.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Input
+                              value={item.name}
+                              onChange={(e) => {
+                                const newItems = [...editingOrder.items];
+                                newItems[index] = { ...item, name: e.target.value };
+                                setEditingOrder({ ...editingOrder, items: newItems });
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const newItems = [...editingOrder.items];
+                                newItems[index] = { ...item, quantity: parseInt(e.target.value) || 0 };
+                                setEditingOrder({ ...editingOrder, items: newItems });
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={item.unitPrice}
+                              onChange={(e) => {
+                                const newItems = [...editingOrder.items];
+                                newItems[index] = { ...item, unitPrice: parseFloat(e.target.value) || 0 };
+                                setEditingOrder({ ...editingOrder, items: newItems });
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>₹{(item.quantity * item.unitPrice).toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={editingOrder.notes || ''}
+                  onChange={(e) => setEditingOrder({ ...editingOrder, notes: e.target.value })}
+                  rows={3}
+                />
               </div>
             </div>
-
-            {/* Notes */}
-            <div>
-              <label className="text-sm font-medium">Notes</label>
-              <Input placeholder="Add any special instructions or notes" />
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsNewOrderOpen(false)}>
-                Cancel
-              </Button>
-              <Button>Create Order</Button>
-            </div>
-          </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveOrder} disabled={savingOrder}>
+              {savingOrder ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

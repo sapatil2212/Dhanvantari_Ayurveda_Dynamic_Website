@@ -1,80 +1,199 @@
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation';
-import { authOptions } from '@/app/api/auth/[...nextauth]/options';
-import { prisma } from '@/lib/prisma';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
-export default async function PatientDetailPage({ params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect('/auth/login');
+const AddVitalForm = dynamic(() => import('@/components/dashboard/AddVitalForm'), { ssr: false });
+const AddEncounterForm = dynamic(() => import('@/components/dashboard/AddEncounterForm'), { ssr: false });
+const AddAllergyForm = dynamic(() => import('@/components/dashboard/AddAllergyForm'), { ssr: false });
+const InvoiceActions = dynamic(() => import('@/components/dashboard/InvoiceActions'), { ssr: false });
 
-  const patient = await prisma.patient.findUnique({
-    where: { id: params.id },
-    include: {
-      vitals: { orderBy: { recordedAt: 'desc' }, take: 5 },
-      encounters: { orderBy: { date: 'desc' }, take: 10 },
-      invoices: { orderBy: { date: 'desc' }, take: 10, include: { payments: true } },
-      appointments: { orderBy: { preferredDate: 'desc' }, take: 10 },
-      allergies: { orderBy: { createdAt: 'desc' } },
-    },
-  });
-  if (!patient) redirect('/dashboard/patients');
+type Patient = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  gender?: string | null;
+  dateOfBirth?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  bloodType?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  vitals: Array<{
+    id: string;
+    recordedAt: string;
+    systolicMmHg?: number | null;
+    diastolicMmHg?: number | null;
+    pulseBpm?: number | null;
+    temperatureC?: number | null;
+  }>;
+  encounters: Array<{
+    id: string;
+    type: string;
+    date: string;
+    diagnosis?: string | null;
+    reason?: string | null;
+  }>;
+  invoices: Array<{
+    id: string;
+    number: string;
+    date: string;
+    status: string;
+    total: number;
+  }>;
+  allergies?: Array<{
+    id: string;
+    substance: string;
+    reaction?: string | null;
+    severity?: string | null;
+    createdAt: string;
+  }>;
+  appointments: Array<{
+    id: string;
+    consultationType: string;
+    preferredDate: string;
+    preferredTime: string;
+    status: string;
+  }>;
+};
 
-  const AddVitalForm = dynamic(() => import('@/components/dashboard/AddVitalForm'), { ssr: false });
-  const AddEncounterForm = dynamic(() => import('@/components/dashboard/AddEncounterForm'), { ssr: false });
-  const AddAllergyForm = dynamic(() => import('@/components/dashboard/AddAllergyForm'), { ssr: false });
-  const InvoiceActions = dynamic(() => import('@/components/dashboard/InvoiceActions'), { ssr: false });
-  const prescriptions = await prisma.prescription.findMany({ where: { patientId: patient.id }, orderBy: { date: 'desc' }, take: 5 });
+type Prescription = {
+  id: string;
+  number: string;
+  date: string;
+};
+
+export default function PatientDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id as string;
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadPatient = async () => {
+    try {
+      const res = await fetch(`/api/patients/${id}`);
+      if (!res.ok) {
+        router.push('/dashboard/patients');
+        return;
+      }
+      const data = await res.json();
+      setPatient(data);
+    } catch (error) {
+      console.error('Failed to load patient:', error);
+      router.push('/dashboard/patients');
+    }
+  };
+
+  const loadPrescriptions = async () => {
+    try {
+      const res = await fetch(`/api/prescriptions?patientId=${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPrescriptions(data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load prescriptions:', error);
+    }
+  };
+
+  const refreshData = async () => {
+    await Promise.all([loadPatient(), loadPrescriptions()]);
+  };
+
+  useEffect(() => {
+    if (id) {
+      refreshData().finally(() => setLoading(false));
+    }
+  }, [id]);
+
+  if (loading) return <div className="p-6">Loading…</div>;
+  if (!patient) return <div className="p-6">Patient not found</div>;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{patient.firstName} {patient.lastName}</h1>
-          <p className="text-sm text-gray-500">MRN: {patient.medicalRecordNumber}</p>
+          <p className="text-sm text-gray-500">Patient Details</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex gap-2">
           <Button variant="outline" asChild>
             <Link href={`/dashboard/patients/${patient.id}/edit`}>Edit</Link>
           </Button>
-          <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
+          <Button asChild>
             <Link href={`/dashboard/patients/${patient.id}/invoices/new`}>New Invoice</Link>
           </Button>
-          <Link className="text-sm text-emerald-700 underline" href={`/dashboard/patients`}>Back to list</Link>
         </div>
       </div>
+
+      <Card className="shadow-sm">
+        <CardContent className="p-6">
+          <div className="mb-3 text-sm font-medium text-gray-700">Demographics</div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+            <div>
+              <div className="text-gray-500">Gender:</div>
+              <div>{patient.gender || '-'}</div>
+            </div>
+            <div>
+              <div className="text-gray-500">DoB:</div>
+              <div>{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : '-'}</div>
+            </div>
+            <div>
+              <div className="text-gray-500">Blood:</div>
+              <div>{patient.bloodType || '-'}</div>
+            </div>
+            <div>
+              <div className="text-gray-500">Phone:</div>
+              <div>{patient.phone || '-'}</div>
+            </div>
+            <div>
+              <div className="text-gray-500">Email:</div>
+              <div>{patient.email || '-'}</div>
+            </div>
+            <div className="sm:col-span-3">
+              <div className="text-gray-500">Address:</div>
+              <div>
+                {[patient.addressLine1, patient.addressLine2, patient.city, patient.state, patient.postalCode, patient.country]
+                  .filter(Boolean)
+                  .join(', ') || '-'}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="shadow-sm lg:col-span-2">
           <CardContent className="p-6">
-            <div className="mb-4 text-sm font-medium text-gray-700">Demographics</div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div><span className="text-gray-500">Gender:</span> {patient.gender ?? '-'}</div>
-              <div><span className="text-gray-500">DoB:</span> {patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : '-'}</div>
-              <div><span className="text-gray-500">Blood:</span> {patient.bloodType ?? '-'}</div>
-              <div><span className="text-gray-500">Phone:</span> {patient.phone ?? '-'}</div>
-              <div><span className="text-gray-500">Email:</span> {patient.email ?? '-'}</div>
-              <div><span className="text-gray-500">Address:</span> {[patient.addressLine1,patient.city,patient.state,patient.postalCode].filter(Boolean).join(', ') || '-'}</div>
-            </div>
+            <div className="mb-3 text-sm font-medium text-gray-700">Vitals Management</div>
+            <AddVitalForm patientId={patient.id} onCreated={refreshData} vitals={patient.vitals} />
           </CardContent>
         </Card>
+
         <Card className="shadow-sm">
           <CardContent className="p-6">
-            <div className="mb-3 text-sm font-medium text-gray-700">Recent Vitals</div>
-            <div className="space-y-2 text-sm">
-              {patient.vitals.map(v => (
-                <div key={v.id} className="rounded border p-2">
-                  <div className="text-gray-500">{new Date(v.recordedAt).toLocaleString()}</div>
-                  <div>BP: {v.systolicMmHg ?? '-'} / {v.diastolicMmHg ?? '-'} mmHg · Pulse: {v.pulseBpm ?? '-'} bpm · Temp: {v.temperatureC ?? '-'} °C</div>
-                </div>
-              ))}
-              {patient.vitals.length === 0 && <div className="text-gray-500">No vitals.</div>}
+            <div className="mb-3 text-sm font-medium text-gray-700">Quick Actions</div>
+            <div className="space-y-2">
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link href={`/dashboard/clinical/vitals?patientId=${patient.id}`}>Full Vitals History</Link>
+              </Button>
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link href={`/dashboard/clinical/allergies?patientId=${patient.id}`}>Manage Allergies</Link>
+              </Button>
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link href={`/dashboard/clinical/history?patientId=${patient.id}`}>Medical History</Link>
+              </Button>
             </div>
-            {/* Client-side quick add */}
-            <AddVitalForm patientId={patient.id} />
           </CardContent>
         </Card>
       </div>
@@ -82,17 +201,8 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="shadow-sm">
           <CardContent className="p-6">
-            <div className="mb-3 text-sm font-medium text-gray-700">Encounters</div>
-            <div className="space-y-2 text-sm">
-              {patient.encounters.map(e => (
-                <div key={e.id} className="rounded border p-2">
-                  <div className="font-medium">{e.type} · {new Date(e.date).toLocaleString()}</div>
-                  <div className="text-gray-600">{e.diagnosis ?? e.reason ?? '-'}</div>
-                </div>
-              ))}
-              {patient.encounters.length === 0 && <div className="text-gray-500">No encounters.</div>}
-            </div>
-            <AddEncounterForm patientId={patient.id} />
+            <div className="mb-3 text-sm font-medium text-gray-700">Encounters Management</div>
+            <AddEncounterForm patientId={patient.id} onCreated={refreshData} encounters={patient.encounters} />
           </CardContent>
         </Card>
 
@@ -112,7 +222,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
                       number: inv.number,
                       status: inv.status,
                       total: Number(inv.total),
-                      date: inv.date.toISOString()
+                      date: inv.date
                     }} patientId={patient.id} />
                   </div>
                 </div>
@@ -124,17 +234,8 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
 
         <Card className="shadow-sm">
           <CardContent className="p-6">
-            <div className="mb-3 text-sm font-medium text-gray-700">Allergies</div>
-            <div className="space-y-2 text-sm">
-              {patient.allergies?.map(a => (
-                <div key={a.id} className="rounded border p-2">
-                  <div className="font-medium">{a.substance} {a.severity ? `· ${a.severity}` : ''}</div>
-                  <div className="text-gray-600">{a.reaction ?? '-'}</div>
-                </div>
-              ))}
-              {(!patient.allergies || patient.allergies.length === 0) && <div className="text-gray-500">No allergies.</div>}
-            </div>
-            <AddAllergyForm patientId={patient.id} />
+            <div className="mb-3 text-sm font-medium text-gray-700">Allergies Management</div>
+            <AddAllergyForm patientId={patient.id} onCreated={refreshData} allergies={patient.allergies || []} />
           </CardContent>
         </Card>
 

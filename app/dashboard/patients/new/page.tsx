@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AnimatedTick } from '@/components/ui/animated-tick';
 
 const schema = z.object({
   firstName: z.string().min(1),
@@ -34,6 +35,7 @@ const schema = z.object({
 export default function NewPatientPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
@@ -46,7 +48,9 @@ export default function NewPatientPage() {
     setLoading(false);
     if (res.ok) {
       const created = await res.json();
-      router.push(`/dashboard/patients/${created.id}`);
+      setSuccess(true);
+      // Redirect after showing success message for 1.5 seconds
+      setTimeout(() => router.push(`/dashboard/patients/${created.id}`), 1500);
     }
   };
 
@@ -142,7 +146,18 @@ export default function NewPatientPage() {
             </div>
             <div className="sm:col-span-2 mt-2 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-              <Button type="submit" disabled={loading}>{loading ? 'Saving…' : 'Save'}</Button>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className={success ? 'bg-green-600 hover:bg-green-700' : ''}
+              >
+                {loading ? 'Saving…' : success ? (
+                  <>
+                    <AnimatedTick className="mr-2" size={16} />
+                    Created!
+                  </>
+                ) : 'Save'}
+              </Button>
             </div>
           </form>
         </CardContent>

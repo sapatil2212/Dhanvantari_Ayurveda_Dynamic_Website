@@ -117,9 +117,32 @@ export default function BookAppointmentPage() {
         console.error('Failed to create enquiry');
       }
 
-      // Then create the appointment (you may want to integrate with your existing appointment API)
-      // For now, we'll simulate the appointment creation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Create the appointment
+      const appointmentResponse = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          consultationType: appointmentData.consultationType,
+          preferredDate: appointmentData.preferredDate,
+          preferredTime: appointmentData.timeSlot,
+          name: appointmentData.name,
+          email: appointmentData.email,
+          phone: appointmentData.phone,
+          age: appointmentData.age,
+          gender: appointmentData.gender,
+          chiefComplaint: appointmentData.chiefComplaint,
+          previousTreatment: appointmentData.previousTreatment,
+          medications: appointmentData.medications,
+          additionalNotes: appointmentData.additionalNotes,
+        }),
+      });
+
+      if (!appointmentResponse.ok) {
+        const errorData = await appointmentResponse.json();
+        throw new Error(errorData.error || 'Failed to create appointment');
+      }
 
       toast({
         title: "Appointment Booked Successfully!",

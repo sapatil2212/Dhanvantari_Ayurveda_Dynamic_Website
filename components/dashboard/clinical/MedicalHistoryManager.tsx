@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PatientSelector, type Patient } from './PatientSelector';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { AnimatedTick } from '@/components/ui/animated-tick';
 
 type MedicalHistory = {
   id: string;
@@ -33,6 +34,7 @@ export default function MedicalHistoryManager() {
     notes: '',
   });
   const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const load = async (patientId: string) => {
     setLoading(true);
@@ -73,7 +75,10 @@ export default function MedicalHistoryManager() {
     setSaving(false);
     if (res.ok) {
       setForm({ condition: '', diagnosis: '', treatment: '', startDate: '', endDate: '', isOngoing: false, notes: '' });
+      setSuccess(true);
       load(patient.id);
+      // Reset success state after 2 seconds
+      setTimeout(() => setSuccess(false), 2000);
     }
   };
 
@@ -122,7 +127,18 @@ export default function MedicalHistoryManager() {
                 <Input placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               </div>
               <div className="sm:col-span-2 flex justify-end">
-                <Button onClick={submit} disabled={saving || !form.condition.trim()}>{saving ? 'Saving…' : 'Add Entry'}</Button>
+                <Button 
+                  onClick={submit} 
+                  disabled={saving || !form.condition.trim()}
+                  className={success ? 'bg-green-600 hover:bg-green-700' : ''}
+                >
+                  {saving ? 'Saving…' : success ? (
+                    <>
+                      <AnimatedTick className="mr-2" size={16} />
+                      Added!
+                    </>
+                  ) : 'Add Entry'}
+                </Button>
               </div>
             </div>
           </CardContent>

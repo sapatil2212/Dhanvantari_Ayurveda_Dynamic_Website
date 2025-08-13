@@ -87,7 +87,6 @@ export default function Sidebar({ userRole }: SidebarProps) {
         { title: 'All Patients', href: '/dashboard/patients', icon: Users },
         { title: 'Add Patient', href: '/dashboard/patients/new', icon: User },
         { title: 'Medical Records', href: '/dashboard/patients/records', icon: ClipboardList },
-        { title: 'Family History', href: '/dashboard/patients/family-history', icon: Heart },
       ]
     },
     {

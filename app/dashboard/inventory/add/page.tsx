@@ -6,88 +6,109 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save, Package } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AddInventoryItemPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    sku: '',
     category: '',
-    unit: '',
+    sku: '',
+    description: '',
     currentStock: '',
     minStock: '',
     maxStock: '',
+    unit: '',
     costPrice: '',
     sellingPrice: '',
     supplier: '',
     expiryDate: '',
     location: '',
-    description: ''
   });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      setLoading(true);
+      
+      const response = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          currentStock: parseInt(formData.currentStock) || 0,
+          minStock: parseInt(formData.minStock) || 0,
+          maxStock: parseInt(formData.maxStock) || 0,
+          costPrice: parseFloat(formData.costPrice) || 0,
+          sellingPrice: parseFloat(formData.sellingPrice) || 0,
+          expiryDate: formData.expiryDate || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create inventory item');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Inventory item created successfully',
+      });
+
+      router.push('/dashboard/inventory');
+    } catch (error) {
+      console.error('Error creating inventory item:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create inventory item',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // TODO: Implement API call to save inventory item
-      console.log('Saving inventory item:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success('Inventory item added successfully!');
-      router.push('/dashboard/inventory');
-    } catch (error) {
-      toast.error('Failed to add inventory item. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
+        <Link href="/dashboard/inventory">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Inventory
+          </Button>
+        </Link>
         <div>
-          <h1 className="text-2xl font-semibold">Add Inventory Item</h1>
-          <p className="text-sm text-gray-500">Add a new item to your inventory</p>
+          <h1 className="text-3xl font-bold">Add Inventory Item</h1>
+          <p className="text-muted-foreground">Add a new Ayurvedic medicine, herb, or medical supply</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Item Details
-          </CardTitle>
+          <CardTitle>Item Details</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -99,24 +120,22 @@ export default function AddInventoryItemPage() {
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Enter item name"
+                  placeholder="e.g., Ashwagandha Powder"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="sku">SKU *</Label>
                 <Input
                   id="sku"
                   value={formData.sku}
                   onChange={(e) => handleInputChange('sku', e.target.value)}
-                  placeholder="Enter SKU code"
+                  placeholder="e.g., HERB-001"
                   required
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="category">Category *</Label>
                 <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
@@ -124,134 +143,33 @@ export default function AddInventoryItemPage() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="herbs">Herbs</SelectItem>
-                    <SelectItem value="supplements">Supplements</SelectItem>
-                    <SelectItem value="oils">Oils</SelectItem>
-                    <SelectItem value="equipment">Equipment</SelectItem>
-                    <SelectItem value="medicines">Medicines</SelectItem>
-                    <SelectItem value="cosmetics">Cosmetics</SelectItem>
+                    <SelectItem value="Herbs">Herbs</SelectItem>
+                    <SelectItem value="Supplements">Supplements</SelectItem>
+                    <SelectItem value="Oils">Oils</SelectItem>
+                    <SelectItem value="Equipment">Equipment</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="unit">Unit *</Label>
-                <Input
-                  id="unit"
-                  value={formData.unit}
-                  onChange={(e) => handleInputChange('unit', e.target.value)}
-                  placeholder="e.g., kg, bottles, liters, pieces"
-                  required
-                />
+                <Select value={formData.unit} onValueChange={(value) => handleInputChange('unit', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kg">Kilogram (kg)</SelectItem>
+                    <SelectItem value="g">Gram (g)</SelectItem>
+                    <SelectItem value="l">Liter (l)</SelectItem>
+                    <SelectItem value="ml">Milliliter (ml)</SelectItem>
+                    <SelectItem value="pieces">Pieces</SelectItem>
+                    <SelectItem value="bottles">Bottles</SelectItem>
+                    <SelectItem value="packets">Packets</SelectItem>
+                    <SelectItem value="boxes">Boxes</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-
-            {/* Stock Information */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="currentStock">Current Stock *</Label>
-                <Input
-                  id="currentStock"
-                  type="number"
-                  value={formData.currentStock}
-                  onChange={(e) => handleInputChange('currentStock', e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="minStock">Minimum Stock *</Label>
-                <Input
-                  id="minStock"
-                  type="number"
-                  value={formData.minStock}
-                  onChange={(e) => handleInputChange('minStock', e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="maxStock">Maximum Stock *</Label>
-                <Input
-                  id="maxStock"
-                  type="number"
-                  value={formData.maxStock}
-                  onChange={(e) => handleInputChange('maxStock', e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Pricing Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="costPrice">Cost Price (₹) *</Label>
-                <Input
-                  id="costPrice"
-                  type="number"
-                  value={formData.costPrice}
-                  onChange={(e) => handleInputChange('costPrice', e.target.value)}
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="sellingPrice">Selling Price (₹) *</Label>
-                <Input
-                  id="sellingPrice"
-                  type="number"
-                  value={formData.sellingPrice}
-                  onChange={(e) => handleInputChange('sellingPrice', e.target.value)}
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Supplier and Location */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="supplier">Supplier *</Label>
-                <Input
-                  id="supplier"
-                  value={formData.supplier}
-                  onChange={(e) => handleInputChange('supplier', e.target.value)}
-                  placeholder="Enter supplier name"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="location">Storage Location</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  placeholder="e.g., Shelf A1, Cabinet B2"
-                />
-              </div>
-            </div>
-
-            {/* Expiry Date */}
-            <div className="space-y-2">
-              <Label htmlFor="expiryDate">Expiry Date</Label>
-              <Input
-                id="expiryDate"
-                type="date"
-                value={formData.expiryDate}
-                onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-              />
             </div>
 
             {/* Description */}
@@ -261,24 +179,133 @@ export default function AddInventoryItemPage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Enter item description, usage instructions, or any additional notes"
-                rows={4}
+                placeholder="Brief description of the item..."
+                rows={3}
               />
             </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-4 pt-6 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                <Save className="mr-2 h-4 w-4" />
-                {isLoading ? 'Saving...' : 'Save Item'}
+            {/* Stock Information */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="currentStock">Current Stock *</Label>
+                <Input
+                  id="currentStock"
+                  type="number"
+                  min="0"
+                  value={formData.currentStock}
+                  onChange={(e) => handleInputChange('currentStock', e.target.value)}
+                  placeholder="0"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="minStock">Minimum Stock *</Label>
+                <Input
+                  id="minStock"
+                  type="number"
+                  min="0"
+                  value={formData.minStock}
+                  onChange={(e) => handleInputChange('minStock', e.target.value)}
+                  placeholder="0"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxStock">Maximum Stock *</Label>
+                <Input
+                  id="maxStock"
+                  type="number"
+                  min="0"
+                  value={formData.maxStock}
+                  onChange={(e) => handleInputChange('maxStock', e.target.value)}
+                  placeholder="0"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Pricing */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="costPrice">Cost Price (₹) *</Label>
+                <Input
+                  id="costPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.costPrice}
+                  onChange={(e) => handleInputChange('costPrice', e.target.value)}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sellingPrice">Selling Price (₹) *</Label>
+                <Input
+                  id="sellingPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.sellingPrice}
+                  onChange={(e) => handleInputChange('sellingPrice', e.target.value)}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Additional Information */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="supplier">Supplier</Label>
+                <Input
+                  id="supplier"
+                  value={formData.supplier}
+                  onChange={(e) => handleInputChange('supplier', e.target.value)}
+                  placeholder="Supplier name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="expiryDate">Expiry Date</Label>
+                <Input
+                  id="expiryDate"
+                  type="date"
+                  value={formData.expiryDate}
+                  onChange={(e) => handleInputChange('expiryDate', e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="location">Storage Location</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  placeholder="e.g., Shelf A1"
+                />
+              </div>
+            </div>
+
+            {/* Submit Buttons */}
+            <div className="flex justify-end gap-4">
+              <Link href="/dashboard/inventory">
+                <Button type="button" variant="outline">
+                  Cancel
+                </Button>
+              </Link>
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Item'
+                )}
               </Button>
             </div>
           </form>

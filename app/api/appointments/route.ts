@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendAppointmentBookedEmail } from '@/lib/email';
 import { NotificationService } from '@/lib/notification-service';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/options';
 
 export async function GET(request: Request) {
   try {
@@ -47,6 +49,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Get the authenticated user session
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user || !(session.user as any).id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const userId = (session.user as any).id;
+
     const body = await request.json();
     const {
       consultationType,
@@ -81,15 +92,23 @@ export async function POST(request: Request) {
         previousTreatment,
         medications,
         additionalNotes,
+        createdBy: {
+          connect: {
+            id: userId
+          }
+        },
         // Try to link an existing patient based on email/phone, otherwise leave null
         patient: email || phone ? {
           connectOrCreate: {
-            where: email ? { medicalRecordNumber: `AUTO-${email}` } : { medicalRecordNumber: `AUTO-${phone}` },
+            where: {
+              medicalRecordNumber: email ? `AUTO-${email}` : `AUTO-${phone}`
+            },
             create: {
               firstName: name.split(' ')[0] ?? name,
               lastName: name.split(' ').slice(1).join(' ') || 'Patient',
-              email: email ?? null,
-              phone: phone ?? null,
+              email: email || null,
+              phone: phone || null,
+              gender: gender || null,
               medicalRecordNumber: email ? `AUTO-${email}` : `AUTO-${phone}`,
             },
           },

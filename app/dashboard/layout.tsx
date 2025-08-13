@@ -12,7 +12,14 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session) redirect('/auth/login');
+  console.log('Dashboard layout - Session:', session);
+  
+  if (!session) {
+    console.log('Dashboard layout - No session, redirecting to login');
+    redirect('/auth/login');
+  }
+
+  console.log('Dashboard layout - Session found, user:', session.user);
 
   // Get user role for sidebar - handle case where user ID might not be available
   let userRole: Role | undefined;

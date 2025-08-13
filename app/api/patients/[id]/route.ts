@@ -10,6 +10,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         encounters: { orderBy: { date: 'desc' }, take: 10 },
         invoices: { orderBy: { date: 'desc' }, take: 10, include: { payments: true } },
         appointments: { orderBy: { preferredDate: 'desc' }, take: 10 },
+        allergies: { orderBy: { createdAt: 'desc' } },
       },
     });
     if (!patient) return NextResponse.json({ error: 'Not found' }, { status: 404 });

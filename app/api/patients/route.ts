@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/options';
 
 function generateMrn() {
-  const ts = Date.now().toString().slice(-8);
-  const rand = Math.floor(100 + Math.random() * 900);
-  return `MRN-${ts}-${rand}`;
+  return `MRN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const q = (searchParams.get('q') ?? '').trim();
+    const q = searchParams.get('q') ?? '';
     const take = Number(searchParams.get('take') ?? 50);
     const skip = Number(searchParams.get('skip') ?? 0);
 
@@ -44,6 +44,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Get the authenticated user session
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user || !(session.user as any).id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const userId = (session.user as any).id;
+
     const body = await request.json();
     const {
       firstName,
@@ -100,6 +109,11 @@ export async function POST(request: Request) {
         emergencyContactPhone,
         notes,
         medicalRecordNumber: mrn,
+        createdBy: {
+          connect: {
+            id: userId
+          }
+        },
       },
     });
 

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/options';
 
 async function genNumber() {
   // Get the current year
@@ -44,6 +46,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Get the authenticated user session
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user || !(session.user as any).id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const userId = (session.user as any).id;
+
     const body = await request.json();
     if (!body.patientId || !Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json({ error: 'patientId and items are required' }, { status: 400 });
@@ -65,6 +76,7 @@ export async function POST(request: Request) {
         followUpDate: body.followUpDate ? new Date(body.followUpDate) : null,
         prescriberName: body.prescriberName ?? null,
         prescriberRegNo: body.prescriberRegNo ?? null,
+        createdById: userId,
         items: {
           create: body.items.map((it: any) => ({
             medicineName: it.medicineName,

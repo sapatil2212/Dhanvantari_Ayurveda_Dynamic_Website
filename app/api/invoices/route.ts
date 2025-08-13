@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/options';
 
 export async function GET(request: Request) {
   try {
@@ -28,6 +30,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Get the authenticated user session
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user || !(session.user as any).id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const userId = (session.user as any).id;
+
     const body = await request.json();
     if (!body.patientId || !body.items) return NextResponse.json({ error: 'patientId and items required' }, { status: 400 });
     const number = `INV-${Date.now()}`;
@@ -54,6 +65,7 @@ export async function POST(request: Request) {
         discount: body.discountAmount || 0, // Store discount amount in discount field
         total: body.total,
         notes: body.notes ?? null,
+        createdById: userId,
       },
     });
     return NextResponse.json(created, { status: 201 });

@@ -163,7 +163,15 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.MANAGE_ROLES,
     Permission.MANAGE_SETTINGS,
     Permission.VIEW_LOGS,
-    Permission.MANAGE_BACKUPS
+    Permission.MANAGE_BACKUPS,
+    // Add inventory permissions for doctors
+    Permission.VIEW_INVENTORY,
+    Permission.CREATE_INVENTORY,
+    Permission.EDIT_INVENTORY,
+    Permission.DELETE_INVENTORY,
+    Permission.MANAGE_PURCHASE_ORDERS,
+    Permission.VIEW_SUPPLIERS,
+    Permission.MANAGE_SUPPLIERS
   ],
   
   [Role.NURSE]: [
@@ -177,7 +185,12 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.VIEW_MEDICAL_RECORDS,
     Permission.CREATE_MEDICAL_RECORDS,
     Permission.EDIT_MEDICAL_RECORDS,
-    Permission.SEND_NOTIFICATIONS
+    Permission.SEND_NOTIFICATIONS,
+    // Add inventory permissions for nurses
+    Permission.VIEW_INVENTORY,
+    Permission.CREATE_INVENTORY,
+    Permission.EDIT_INVENTORY,
+    Permission.MANAGE_PURCHASE_ORDERS
   ],
   
   [Role.RECEPTIONIST]: [
@@ -194,7 +207,12 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.EDIT_INVOICES,
     Permission.PROCESS_PAYMENTS,
     Permission.VIEW_PAYMENTS,
-    Permission.SEND_NOTIFICATIONS
+    Permission.SEND_NOTIFICATIONS,
+    // Add inventory permissions for receptionists
+    Permission.VIEW_INVENTORY,
+    Permission.CREATE_INVENTORY,
+    Permission.EDIT_INVENTORY,
+    Permission.MANAGE_PURCHASE_ORDERS
   ],
   
   [Role.PHARMACIST]: [
@@ -223,7 +241,12 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.PROCESS_PAYMENTS,
     Permission.VIEW_PAYMENTS,
     Permission.VIEW_FINANCIAL_REPORTS,
-    Permission.EXPORT_REPORTS
+    Permission.EXPORT_REPORTS,
+    // Add inventory permissions for accountants
+    Permission.VIEW_INVENTORY,
+    Permission.CREATE_INVENTORY,
+    Permission.EDIT_INVENTORY,
+    Permission.MANAGE_PURCHASE_ORDERS
   ],
   
   [Role.PATIENT]: [
@@ -310,6 +333,18 @@ export function canAccessResource(userRole: Role, resourceType: string, action: 
       edit: Permission.EDIT_USERS,
       delete: Permission.DELETE_USERS,
       manage: Permission.MANAGE_ROLES
+    },
+    inventory: {
+      view: Permission.VIEW_INVENTORY,
+      create: Permission.CREATE_INVENTORY,
+      edit: Permission.EDIT_INVENTORY,
+      delete: Permission.DELETE_INVENTORY
+    },
+    purchaseOrders: {
+      view: Permission.MANAGE_PURCHASE_ORDERS,
+      create: Permission.MANAGE_PURCHASE_ORDERS,
+      edit: Permission.MANAGE_PURCHASE_ORDERS,
+      delete: Permission.MANAGE_PURCHASE_ORDERS
     }
   };
 

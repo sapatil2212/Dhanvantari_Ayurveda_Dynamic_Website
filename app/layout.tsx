@@ -6,7 +6,6 @@ import { Toaster } from '@/components/ui/toaster';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import WhatsAppFloat from '@/components/ui/WhatsAppFloat';
-import { AppointmentProvider } from '@/contexts/AppointmentContext';
 import AppointmentModal from '@/components/ui/AppointmentModal';
 import ClientChrome from './ui/ClientChrome';
 
@@ -44,19 +43,17 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`}>
         <Providers>
-          <AppointmentProvider>
-            {/* Hide header/footer on dashboard via client wrapper */}
-            <ClientChrome>
-              <Navigation />
-            </ClientChrome>
-            <main className="min-h-screen">{children}</main>
-            <ClientChrome>
-              <Footer />
-              <WhatsAppFloat />
-            </ClientChrome>
-            <AppointmentModal />
-            <Toaster />
-          </AppointmentProvider>
+          {/* Hide header/footer on dashboard via client wrapper */}
+          <ClientChrome>
+            <Navigation />
+          </ClientChrome>
+          <main className="min-h-screen">{children}</main>
+          <ClientChrome>
+            <Footer />
+            <WhatsAppFloat />
+          </ClientChrome>
+          <AppointmentModal />
+          <Toaster />
         </Providers>
       </body>
     </html>

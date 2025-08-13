@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,294 +14,297 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Plus, 
   Search, 
   Filter, 
-  Eye, 
-  Edit, 
+  AlertTriangle, 
+  Edit,
   Trash2,
-  Phone,
+  Eye,
+  RefreshCw,
+  Loader2,
+  Building2,
   Mail,
-  MapPin,
-  Building,
-  Users,
-  Package,
-  Star,
-  Download,
-  RefreshCw
+  Phone,
+  Globe,
+  User
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Supplier {
   id: string;
   name: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-  category: string;
-  rating: number;
-  status: 'active' | 'inactive' | 'pending';
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  contactPerson?: string;
+  website?: string;
   notes?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    purchaseOrders: number;
+  };
 }
 
 export default function SuppliersPage() {
+  const { toast } = useToast();
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [isAddSupplierOpen, setIsAddSupplierOpen] = useState(false);
+  const [activeOnly, setActiveOnly] = useState(true);
+  const [deletingSupplier, setDeletingSupplier] = useState<string | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [savingSupplier, setSavingSupplier] = useState(false);
+  const [newSupplier, setNewSupplier] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    contactPerson: '',
+    website: '',
+    notes: ''
+  });
 
-  // Mock data
-  const suppliers: Supplier[] = [
-    {
-      id: 'SUP-001',
-      name: 'Ayurvedic Herbs Co.',
-      contactPerson: 'Rajesh Kumar',
-      email: 'rajesh@ayurvedicherbs.com',
-      phone: '+91 98765 43210',
-      address: '123 Herbal Street',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400001',
-      category: 'Herbs',
-      rating: 4.5,
-      status: 'active',
-      totalOrders: 45,
-      totalSpent: 850000,
-      lastOrderDate: '2025-01-10',
-      notes: 'Reliable supplier for premium herbs'
-    },
-    {
-      id: 'SUP-002',
-      name: 'Natural Health Ltd.',
-      contactPerson: 'Priya Sharma',
-      email: 'priya@naturalhealth.com',
-      phone: '+91 87654 32109',
-      address: '456 Wellness Avenue',
-      city: 'Delhi',
-      state: 'Delhi',
-      pincode: '110001',
-      category: 'Supplements',
-      rating: 4.2,
-      status: 'active',
-      totalOrders: 32,
-      totalSpent: 520000,
-      lastOrderDate: '2025-01-08'
-    },
-    {
-      id: 'SUP-003',
-      name: 'Pure Oils Inc.',
-      contactPerson: 'Amit Patel',
-      email: 'amit@pureoils.com',
-      phone: '+91 76543 21098',
-      address: '789 Oil Road',
-      city: 'Bangalore',
-      state: 'Karnataka',
-      pincode: '560001',
-      category: 'Oils',
-      rating: 4.8,
-      status: 'active',
-      totalOrders: 28,
-      totalSpent: 380000,
-      lastOrderDate: '2025-01-05'
-    },
-    {
-      id: 'SUP-004',
-      name: 'Traditional Medicines Co.',
-      contactPerson: 'Sita Devi',
-      email: 'sita@traditionalmed.com',
-      phone: '+91 65432 10987',
-      address: '321 Medicine Lane',
-      city: 'Chennai',
-      state: 'Tamil Nadu',
-      pincode: '600001',
-      category: 'Medicines',
-      rating: 4.0,
-      status: 'pending',
-      totalOrders: 5,
-      totalSpent: 75000,
-      lastOrderDate: '2025-01-12'
+  // Load suppliers
+  const loadSuppliers = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (activeOnly) params.append('activeOnly', 'true');
+
+      const response = await fetch(`/api/suppliers?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch suppliers');
+      
+      const data = await response.json();
+      setSuppliers(data.suppliers || []);
+    } catch (error) {
+      console.error('Error loading suppliers:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load suppliers',
+        variant: 'destructive',
+      });
+      setSuppliers([]);
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: 'bg-green-100 text-green-800',
-      inactive: 'bg-red-100 text-red-800',
-      pending: 'bg-yellow-100 text-yellow-800'
-    };
-    
-    return (
-      <Badge className={statusConfig[status as keyof typeof statusConfig]}>
-        {status.toUpperCase()}
-      </Badge>
-    );
   };
 
-  const getRatingStars = (rating: number) => {
-    return (
-      <div className="flex items-center gap-1">
-        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-        <span className="text-sm font-medium">{rating}</span>
-      </div>
-    );
+  // Delete supplier
+  const handleDeleteSupplier = async (supplierId: string) => {
+    try {
+      setDeletingSupplier(supplierId);
+      const response = await fetch(`/api/suppliers/${supplierId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete supplier');
+
+      toast({
+        title: 'Success',
+        description: 'Supplier deleted successfully',
+      });
+
+      await loadSuppliers();
+    } catch (error) {
+      console.error('Error deleting supplier:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete supplier',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingSupplier(null);
+    }
   };
+
+  // Handle view supplier
+  const handleViewSupplier = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+    setViewModalOpen(true);
+  };
+
+  // Handle edit supplier
+  const handleEditSupplier = (supplier: Supplier) => {
+    setEditingSupplier({ ...supplier });
+    setEditModalOpen(true);
+  };
+
+  // Handle save supplier
+  const handleSaveSupplier = async () => {
+    if (!editingSupplier) return;
+
+    try {
+      setSavingSupplier(true);
+      const response = await fetch(`/api/suppliers/${editingSupplier.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingSupplier),
+      });
+
+      if (!response.ok) throw new Error('Failed to update supplier');
+
+      toast({
+        title: 'Success',
+        description: 'Supplier updated successfully',
+      });
+
+      setEditModalOpen(false);
+      setEditingSupplier(null);
+      await loadSuppliers();
+    } catch (error) {
+      console.error('Error updating supplier:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update supplier',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingSupplier(false);
+    }
+  };
+
+  // Handle add supplier
+  const handleAddSupplier = async () => {
+    try {
+      setSavingSupplier(true);
+      const response = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newSupplier),
+      });
+
+      if (!response.ok) throw new Error('Failed to create supplier');
+
+      toast({
+        title: 'Success',
+        description: 'Supplier created successfully',
+      });
+
+      setAddModalOpen(false);
+      setNewSupplier({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        contactPerson: '',
+        website: '',
+        notes: ''
+      });
+      await loadSuppliers();
+    } catch (error) {
+      console.error('Error creating supplier:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create supplier',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingSupplier(false);
+    }
+  };
+
+  // Load data on component mount
+  useEffect(() => {
+    loadSuppliers();
+  }, []);
+
+  // Reload when filters change
+  useEffect(() => {
+    loadSuppliers();
+  }, [searchTerm, activeOnly]);
 
   const filteredSuppliers = suppliers.filter(supplier => {
     const matchesSearch = supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         supplier.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || supplier.category === categoryFilter;
-    const matchesStatus = statusFilter === 'all' || supplier.status === statusFilter;
+                         (supplier.email && supplier.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (supplier.phone && supplier.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (supplier.contactPerson && supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch;
   });
-
-  const activeSuppliers = suppliers.filter(s => s.status === 'active');
-  const totalSpent = suppliers.reduce((sum, s) => sum + s.totalSpent, 0);
-  const totalOrders = suppliers.reduce((sum, s) => sum + s.totalOrders, 0);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Suppliers</h1>
-          <p className="text-sm text-gray-500">Manage inventory suppliers and vendor relationships</p>
+          <h1 className="text-3xl font-bold">Suppliers</h1>
+          <p className="text-muted-foreground">Manage inventory suppliers and vendors</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" />
+          <Button variant="outline" onClick={loadSuppliers} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button onClick={() => setIsAddSupplierOpen(true)}>
+          <Button onClick={() => setAddModalOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Supplier
           </Button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Suppliers</p>
-                <p className="text-2xl font-bold">{suppliers.length}</p>
-              </div>
-              <Building className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Suppliers</p>
-                <p className="text-2xl font-bold text-green-600">{activeSuppliers.length}</p>
-              </div>
-              <Users className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{totalOrders}</p>
-              </div>
-              <Package className="h-8 w-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Spent</p>
-                <p className="text-2xl font-bold">₹{(totalSpent / 100000).toFixed(1)}L</p>
-              </div>
-              <Star className="h-8 w-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters and Search */}
+      {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex-1 min-w-[300px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search by name, contact person, or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Search</label>
+              <Input
+                placeholder="Search suppliers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="Herbs">Herbs</SelectItem>
-                <SelectItem value="Supplements">Supplements</SelectItem>
-                <SelectItem value="Oils">Oils</SelectItem>
-                <SelectItem value="Medicines">Medicines</SelectItem>
-                <SelectItem value="Equipment">Equipment</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline" size="sm">
-              <Filter className="mr-2 h-4 w-4" />
-              More Filters
-            </Button>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="activeOnly"
+                checked={activeOnly}
+                onChange={(e) => setActiveOnly(e.target.checked)}
+                className="rounded"
+              />
+              <label htmlFor="activeOnly" className="text-sm font-medium">
+                Active suppliers only
+              </label>
+            </div>
+            <div className="flex items-end">
+              <Button variant="outline" className="w-full">
+                <Filter className="h-4 w-4 mr-2" />
+                Apply Filters
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -316,155 +319,364 @@ export default function SuppliersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Supplier</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Rating</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Contact Person</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Purchase Orders</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Orders</TableHead>
-                  <TableHead>Total Spent</TableHead>
-                  <TableHead>Last Order</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredSuppliers.map((supplier) => (
-                  <TableRow key={supplier.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{supplier.name}</div>
-                        <div className="text-sm text-gray-500">ID: {supplier.id}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1 text-sm">
-                          <Users className="h-3 w-3" />
-                          {supplier.contactPerson}
-                        </div>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Mail className="h-3 w-3" />
-                          {supplier.email}
-                        </div>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Phone className="h-3 w-3" />
-                          {supplier.phone}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{supplier.category}</TableCell>
-                    <TableCell>{getRatingStars(supplier.rating)}</TableCell>
-                    <TableCell>{getStatusBadge(supplier.status)}</TableCell>
-                    <TableCell>{supplier.totalOrders}</TableCell>
-                    <TableCell>₹{supplier.totalSpent.toLocaleString()}</TableCell>
-                    <TableCell>{new Date(supplier.lastOrderDate).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                      Loading suppliers...
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredSuppliers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No suppliers found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSuppliers.map((supplier) => (
+                    <TableRow key={supplier.id}>
+                      <TableCell className="font-medium">{supplier.name}</TableCell>
+                      <TableCell>{supplier.contactPerson || '-'}</TableCell>
+                      <TableCell>{supplier.email || '-'}</TableCell>
+                      <TableCell>{supplier.phone || '-'}</TableCell>
+                      <TableCell>{supplier._count.purchaseOrders}</TableCell>
+                      <TableCell>
+                        <Badge variant={supplier.isActive ? 'default' : 'secondary'}>
+                          {supplier.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewSupplier(supplier)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditSupplier(supplier)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                disabled={deletingSupplier === supplier.id}
+                              >
+                                {deletingSupplier === supplier.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-md">
+                              <AlertDialogHeader>
+                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                                </div>
+                                <AlertDialogTitle>Delete Supplier</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this supplier?
+                                </AlertDialogDescription>
+                                <p className="text-sm text-red-600 mt-2">
+                                  This action cannot be undone.
+                                </p>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="flex justify-center gap-3 !justify-center">
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteSupplier(supplier.id)}
+                                  disabled={deletingSupplier === supplier.id}
+                                >
+                                  {deletingSupplier === supplier.id ? 'Deleting...' : 'Delete'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
 
-      {/* Add Supplier Dialog */}
-      <Dialog open={isAddSupplierOpen} onOpenChange={setIsAddSupplierOpen}>
+      {/* View Supplier Modal */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>View Supplier</DialogTitle>
+            <DialogDescription>
+              Detailed information about the supplier
+            </DialogDescription>
+          </DialogHeader>
+          {selectedSupplier && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium">Name</Label>
+                <p className="text-sm text-muted-foreground">{selectedSupplier.name}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Contact Person</Label>
+                <p className="text-sm text-muted-foreground">{selectedSupplier.contactPerson || '-'}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Email</Label>
+                <p className="text-sm text-muted-foreground">{selectedSupplier.email || '-'}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Phone</Label>
+                <p className="text-sm text-muted-foreground">{selectedSupplier.phone || '-'}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Website</Label>
+                <p className="text-sm text-muted-foreground">{selectedSupplier.website || '-'}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Status</Label>
+                <div className="mt-1">
+                  <Badge variant={selectedSupplier.isActive ? 'default' : 'secondary'}>
+                    {selectedSupplier.isActive ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Purchase Orders</Label>
+                <p className="text-sm text-muted-foreground">{selectedSupplier._count.purchaseOrders}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Created At</Label>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(selectedSupplier.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              {selectedSupplier.address && (
+                <div className="col-span-2">
+                  <Label className="text-sm font-medium">Address</Label>
+                  <p className="text-sm text-muted-foreground">{selectedSupplier.address}</p>
+                </div>
+              )}
+              {selectedSupplier.notes && (
+                <div className="col-span-2">
+                  <Label className="text-sm font-medium">Notes</Label>
+                  <p className="text-sm text-muted-foreground">{selectedSupplier.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewModalOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Supplier Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Supplier</DialogTitle>
+            <DialogDescription>
+              Update the supplier information
+            </DialogDescription>
+          </DialogHeader>
+          {editingSupplier && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={editingSupplier.name}
+                  onChange={(e) => setEditingSupplier({ ...editingSupplier, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="contactPerson">Contact Person</Label>
+                <Input
+                  id="contactPerson"
+                  value={editingSupplier.contactPerson || ''}
+                  onChange={(e) => setEditingSupplier({ ...editingSupplier, contactPerson: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={editingSupplier.email || ''}
+                  onChange={(e) => setEditingSupplier({ ...editingSupplier, email: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={editingSupplier.phone || ''}
+                  onChange={(e) => setEditingSupplier({ ...editingSupplier, phone: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="website">Website</Label>
+                <Input
+                  id="website"
+                  value={editingSupplier.website || ''}
+                  onChange={(e) => setEditingSupplier({ ...editingSupplier, website: e.target.value })}
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={editingSupplier.isActive}
+                  onChange={(e) => setEditingSupplier({ ...editingSupplier, isActive: e.target.checked })}
+                  className="rounded"
+                />
+                <Label htmlFor="isActive">Active</Label>
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="address">Address</Label>
+                <Textarea
+                  id="address"
+                  value={editingSupplier.address || ''}
+                  onChange={(e) => setEditingSupplier({ ...editingSupplier, address: e.target.value })}
+                  rows={2}
+                />
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={editingSupplier.notes || ''}
+                  onChange={(e) => setEditingSupplier({ ...editingSupplier, notes: e.target.value })}
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveSupplier} disabled={savingSupplier}>
+              {savingSupplier ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Supplier Modal */}
+      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Add New Supplier</DialogTitle>
+            <DialogDescription>
+              Create a new supplier record
+            </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Supplier Name</label>
-                <Input placeholder="Enter supplier name" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Contact Person</label>
-                <Input placeholder="Enter contact person name" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Email</label>
-                <Input type="email" placeholder="Enter email address" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Phone</label>
-                <Input placeholder="Enter phone number" />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="newName">Name *</Label>
+              <Input
+                id="newName"
+                value={newSupplier.name}
+                onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
+              />
             </div>
             <div>
-              <label className="text-sm font-medium">Address</label>
-              <Input placeholder="Enter street address" />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium">City</label>
-                <Input placeholder="Enter city" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">State</label>
-                <Input placeholder="Enter state" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Pincode</label>
-                <Input placeholder="Enter pincode" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Category</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="herbs">Herbs</SelectItem>
-                    <SelectItem value="supplements">Supplements</SelectItem>
-                    <SelectItem value="oils">Oils</SelectItem>
-                    <SelectItem value="medicines">Medicines</SelectItem>
-                    <SelectItem value="equipment">Equipment</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Status</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Label htmlFor="newContactPerson">Contact Person</Label>
+              <Input
+                id="newContactPerson"
+                value={newSupplier.contactPerson}
+                onChange={(e) => setNewSupplier({ ...newSupplier, contactPerson: e.target.value })}
+              />
             </div>
             <div>
-              <label className="text-sm font-medium">Notes</label>
-              <Textarea placeholder="Add any additional notes about the supplier" rows={3} />
+              <Label htmlFor="newEmail">Email</Label>
+              <Input
+                id="newEmail"
+                type="email"
+                value={newSupplier.email}
+                onChange={(e) => setNewSupplier({ ...newSupplier, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="newPhone">Phone</Label>
+              <Input
+                id="newPhone"
+                value={newSupplier.phone}
+                onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="newWebsite">Website</Label>
+              <Input
+                id="newWebsite"
+                value={newSupplier.website}
+                onChange={(e) => setNewSupplier({ ...newSupplier, website: e.target.value })}
+              />
+            </div>
+            <div className="col-span-2">
+              <Label htmlFor="newAddress">Address</Label>
+              <Textarea
+                id="newAddress"
+                value={newSupplier.address}
+                onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
+                rows={2}
+              />
+            </div>
+            <div className="col-span-2">
+              <Label htmlFor="newNotes">Notes</Label>
+              <Textarea
+                id="newNotes"
+                value={newSupplier.notes}
+                onChange={(e) => setNewSupplier({ ...newSupplier, notes: e.target.value })}
+                rows={3}
+              />
             </div>
           </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsAddSupplierOpen(false)}>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddModalOpen(false)}>
               Cancel
             </Button>
-            <Button>Add Supplier</Button>
-          </div>
+            <Button onClick={handleAddSupplier} disabled={savingSupplier || !newSupplier.name}>
+              {savingSupplier ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Supplier'
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

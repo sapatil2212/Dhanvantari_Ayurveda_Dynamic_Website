@@ -9,7 +9,11 @@ import ClientChrome from './ui/ClientChrome';
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider 
+      refetchInterval={5 * 60} 
+      refetchOnWindowFocus={true}
+      refetchWhenOffline={false}
+    >
       <SessionActivityProvider>
         <AppointmentProvider>
           <NotificationProvider>

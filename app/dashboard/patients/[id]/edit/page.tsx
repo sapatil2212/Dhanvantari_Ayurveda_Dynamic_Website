@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AnimatedTick } from '@/components/ui/animated-tick';
 
 type Patient = {
   id: string;
@@ -35,6 +36,7 @@ export default function EditPatientPage() {
   const id = params?.id as string;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [p, setP] = useState<Patient | null>(null);
 
   useEffect(() => {
@@ -74,7 +76,11 @@ export default function EditPatientPage() {
       body: JSON.stringify({ ...p, dateOfBirth: p.dateOfBirth || null }),
     });
     setSaving(false);
-    if (res.ok) router.push(`/dashboard/patients/${id}`);
+    if (res.ok) {
+      setSuccess(true);
+      // Redirect after showing success message for 1.5 seconds
+      setTimeout(() => router.push(`/dashboard/patients/${id}`), 1500);
+    }
   };
 
   if (loading || !p) return <div className="p-6">Loading…</div>;
@@ -95,7 +101,7 @@ export default function EditPatientPage() {
             </div>
             <div>
               <label className="mb-1 block text-sm text-gray-600">Gender</label>
-              <Select value={p.gender ?? ''} onValueChange={(value) => setP({ ...p, gender: value })}>
+              <Select value={p.gender || ''} onValueChange={(value) => setP({ ...p, gender: value || null })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -126,7 +132,7 @@ export default function EditPatientPage() {
             </div>
             <div>
               <label className="mb-1 block text-sm text-gray-600">Blood type</label>
-              <Select value={p.bloodType ?? ''} onValueChange={(value) => setP({ ...p, bloodType: value })}>
+              <Select value={p.bloodType || ''} onValueChange={(value) => setP({ ...p, bloodType: value || null })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select blood type" />
                 </SelectTrigger>
@@ -169,7 +175,18 @@ export default function EditPatientPage() {
           </div>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
-            <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+            <Button 
+              onClick={save} 
+              disabled={saving}
+              className={success ? 'bg-green-600 hover:bg-green-700' : ''}
+            >
+              {saving ? 'Saving…' : success ? (
+                <>
+                  <AnimatedTick className="mr-2" size={16} />
+                  Saved!
+                </>
+              ) : 'Save'}
+            </Button>
           </div>
         </CardContent>
       </Card>

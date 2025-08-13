@@ -3,14 +3,49 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
+// Simple in-memory rate limiting for login attempts
+const loginAttempts = new Map<string, { count: number; resetTime: number; blockedUntil?: number }>();
+
+function isLoginRateLimited(identifier: string): boolean {
+  const now = Date.now();
+  const attempt = loginAttempts.get(identifier);
+  
+  if (!attempt) {
+    loginAttempts.set(identifier, { count: 1, resetTime: now + 15 * 60 * 1000 }); // 15 minutes
+    return false;
+  }
+  
+  // Check if account is temporarily blocked
+  if (attempt.blockedUntil && now < attempt.blockedUntil) {
+    return true;
+  }
+  
+  if (now > attempt.resetTime) {
+    loginAttempts.set(identifier, { count: 1, resetTime: now + 15 * 60 * 1000 });
+    return false;
+  }
+  
+  // Block after 5 failed attempts for 30 minutes
+  if (attempt.count >= 5) {
+    attempt.blockedUntil = now + 30 * 60 * 1000; // 30 minutes
+    return true;
+  }
+  
+  attempt.count++;
+  return false;
+}
+
+function resetLoginAttempts(identifier: string) {
+  loginAttempts.delete(identifier);
+}
+
 export const authOptions: NextAuthOptions = {
-  session: { 
+  session: {
     strategy: 'jwt',
-    maxAge: 12 * 60 * 60, // 12 hours maximum
-    updateAge: 10 * 60, // 10 minutes - update session activity
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
-  debug: true, // Enable debug mode to see detailed logs
+  debug: process.env.NODE_ENV === 'development',
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -20,59 +55,52 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         try {
-          console.log('🔐 NextAuth authorize called with email:', credentials?.email);
-          
           if (!credentials?.email || !credentials.password) {
-            console.log('❌ Missing credentials');
             return null;
+          }
+
+          const email = credentials.email.toLowerCase().trim();
+          
+          // Check rate limiting
+          if (isLoginRateLimited(email)) {
+            throw new Error('RATE_LIMIT_EXCEEDED');
           }
 
           // Test database connection
           await prisma.$connect();
-          console.log('✅ Database connected');
           
           const user = await prisma.user.findUnique({ 
-            where: { email: credentials.email.toLowerCase().trim() } 
+            where: { email } 
           });
           
           if (!user) {
-            console.log('❌ User not found:', credentials.email);
-            return null;
+            throw new Error('USER_NOT_FOUND');
           }
 
-          console.log('✅ User found:', { 
-            id: user.id, 
-            email: user.email, 
-            role: user.role,
-            emailVerified: !!user.emailVerified,
-            isActive: user.isActive
-          });
+          // Check if account is active
+          if (!user.isActive) {
+            throw new Error('ACCOUNT_DISABLED');
+          }
+
+          // Check if email is verified
+          if (!user.emailVerified) {
+            throw new Error('EMAIL_NOT_VERIFIED');
+          }
 
           const passwordMatch = await bcrypt.compare(credentials.password, user.passwordHash);
-          console.log('🔑 Password match result:', passwordMatch);
           
           if (!passwordMatch) {
-            console.log('❌ Password mismatch for user:', credentials.email);
-            return null;
+            throw new Error('CredentialsSignin');
           }
 
-          if (!user.emailVerified) {
-            console.log('❌ Email not verified for user:', credentials.email);
-            return null;
-          }
-
-          if (!user.isActive) {
-            console.log('❌ User account is inactive:', credentials.email);
-            return null;
-          }
+          // Reset login attempts on successful login
+          resetLoginAttempts(email);
 
           // Update last login
           await prisma.user.update({
             where: { id: user.id },
             data: { lastLoginAt: new Date() }
           });
-
-          console.log('🎉 Authentication successful for user:', credentials.email);
           
           return { 
             id: user.id, 
@@ -82,7 +110,15 @@ export const authOptions: NextAuthOptions = {
           } as any;
           
         } catch (error) {
-          console.error('💥 NextAuth authorize error:', error);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('NextAuth authorize error:', error);
+          }
+          
+          // Re-throw specific errors to be handled by the client
+          if (error instanceof Error) {
+            throw error;
+          }
+          
           return null;
         } finally {
           await prisma.$disconnect();
@@ -96,13 +132,15 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log('🔄 JWT callback called:', { hasUser: !!user, hasToken: !!token });
+      console.log('NextAuth JWT callback - User:', user, 'Token:', token);
       
       if (user) {
         token.userId = (user as any).id;
         token.role = (user as any).role;
         token.lastActivity = Date.now();
-        console.log('✅ JWT callback - user logged in:', { userId: token.userId, role: token.role });
+        console.log('NextAuth JWT callback - Updated token with user data:', token);
+      } else {
+        console.log('NextAuth JWT callback - No user provided, keeping existing token');
       }
       
       // Update last activity timestamp on each request
@@ -110,44 +148,85 @@ export const authOptions: NextAuthOptions = {
         token.lastActivity = Date.now();
       }
       
+      console.log('NextAuth JWT callback - Final token:', token);
       return token;
     },
     async session({ session, token }) {
-      console.log('🔄 Session callback called:', { hasSession: !!session, hasToken: !!token });
+      console.log('NextAuth session callback - Token:', token, 'Session:', session);
       
       if (token?.userId && session.user) {
         (session.user as any).id = token.userId as string;
         (session.user as any).role = token.role as any;
         (session.user as any).lastActivity = token.lastActivity;
-        console.log('✅ Session callback - session updated:', { userId: (session.user as any).id, role: (session.user as any).role });
+        console.log('NextAuth session callback - Updated session:', session);
+      } else {
+        console.log('NextAuth session callback - No token.userId or session.user');
       }
+      
+      // Ensure session has required fields
+      if (!session.user) {
+        console.log('NextAuth session callback - No session.user, creating default');
+        session.user = {
+          id: token?.userId as string || '',
+          email: token?.email as string || '',
+          name: token?.name as string || '',
+          role: token?.role as any || 'USER',
+        } as any;
+      }
+      
       return session;
     },
     async redirect({ url, baseUrl }) {
-      console.log('🔄 NextAuth redirect called with:', { url, baseUrl });
+      console.log('NextAuth redirect callback - URL:', url, 'Base URL:', baseUrl);
+      
+      // Get the actual base URL from the request
+      const actualBaseUrl = process.env.NEXTAUTH_URL || baseUrl || 'http://localhost:3001';
+      console.log('NextAuth redirect callback - Actual base URL:', actualBaseUrl);
       
       // Handle dashboard redirect
       if (url.includes('/dashboard')) {
-        const redirectUrl = `${baseUrl}/dashboard`;
-        console.log('🎯 Redirecting to dashboard:', redirectUrl);
+        const redirectUrl = `${actualBaseUrl}/dashboard`;
+        console.log('NextAuth redirect callback - Redirecting to dashboard:', redirectUrl);
         return redirectUrl;
       }
       
-      // Simple redirect logic - let NextAuth handle most cases
-      if (url.startsWith('/')) {
-        const redirectUrl = `${baseUrl}${url}`;
-        console.log('🎯 Redirecting to relative path:', redirectUrl);
-        return redirectUrl;
-      }
-      
-      if (url.startsWith(baseUrl)) {
-        console.log('🎯 Redirecting to same base URL:', url);
+      // Handle auth/login redirects
+      if (url.includes('/auth/login')) {
+        console.log('NextAuth redirect callback - Staying on login page');
         return url;
       }
       
+      // Handle relative paths
+      if (url.startsWith('/')) {
+        const redirectUrl = `${actualBaseUrl}${url}`;
+        console.log('NextAuth redirect callback - Redirecting to relative path:', redirectUrl);
+        return redirectUrl;
+      }
+      
+      // Handle absolute URLs with same base
+      if (url.startsWith(actualBaseUrl)) {
+        console.log('NextAuth redirect callback - URL already has base URL:', url);
+        return url;
+      }
+      
+      // Handle external URLs (security check)
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        // Only allow redirects to the same domain
+        try {
+          const urlObj = new URL(url);
+          const baseUrlObj = new URL(actualBaseUrl);
+          if (urlObj.hostname === baseUrlObj.hostname) {
+            console.log('NextAuth redirect callback - Allowing external URL to same domain:', url);
+            return url;
+          }
+        } catch (error) {
+          console.log('NextAuth redirect callback - Invalid URL, defaulting to dashboard');
+        }
+      }
+      
       // Default to dashboard
-      const defaultUrl = `${baseUrl}/dashboard`;
-      console.log('🎯 Default redirect to dashboard:', defaultUrl);
+      const defaultUrl = `${actualBaseUrl}/dashboard`;
+      console.log('NextAuth redirect callback - Default redirect to dashboard:', defaultUrl);
       return defaultUrl;
     },
   },

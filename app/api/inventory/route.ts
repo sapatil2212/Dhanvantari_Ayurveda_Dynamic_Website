@@ -165,7 +165,11 @@ export async function POST(request: NextRequest) {
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         location,
         status,
-        createdById: (session.user as any).id
+        createdBy: {
+          connect: {
+            id: (session.user as any).id
+          }
+        }
       },
       include: {
         createdBy: {

@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       supplier,
+      supplierId,
       expectedDelivery,
       notes,
       items
@@ -156,10 +157,15 @@ export async function POST(request: NextRequest) {
         data: {
           number: poNumber,
           supplier,
+          supplierId: supplierId || null,
           expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
           totalAmount,
           notes,
-          createdById: (session.user as any).id
+          createdBy: {
+            connect: {
+              id: (session.user as any).id
+            }
+          }
         }
       });
 

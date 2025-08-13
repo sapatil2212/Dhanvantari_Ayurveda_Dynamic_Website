@@ -57,6 +57,8 @@ model User {
   updatedSystemSettings    SystemSetting[] @relation("UpdatedSystemSettings")
   assignedEnquiries        Enquiry[] @relation("AssignedEnquiries")
   assignedByEnquiries      Enquiry[] @relation("AssignedByEnquiries")
+  createdSuppliers         Supplier[] @relation("CreatedSuppliers")
+  updatedSuppliers         Supplier[] @relation("UpdatedSuppliers")
 }
 
 enum Role {
@@ -506,6 +508,8 @@ model PurchaseOrder {
   id              String   @id @default(cuid())
   number          String   @unique
   supplier        String
+  supplierId      String?
+  supplierRef     Supplier? @relation("SupplierPurchaseOrders", fields: [supplierId], references: [id])
   orderDate       DateTime @default(now())
   expectedDelivery DateTime?
   status          String   @default("pending") // pending, ordered, received, cancelled
@@ -521,6 +525,7 @@ model PurchaseOrder {
   items           PurchaseOrderItem[]
 
   @@index([supplier])
+  @@index([supplierId])
   @@index([status])
 }
 
@@ -643,6 +648,32 @@ model Enquiry {
   @@index([createdAt])
   @@index([email])
   @@index([phone])
+}
+
+// Supplier Management
+model Supplier {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  contactPerson String?
+  website     String?
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdById String?
+  createdBy   User?    @relation("CreatedSuppliers", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?    @relation("UpdatedSuppliers", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  purchaseOrders PurchaseOrder[] @relation("SupplierPurchaseOrders")
+
+  @@index([name])
+  @@index([email])
+  @@index([isActive])
 }
 
 

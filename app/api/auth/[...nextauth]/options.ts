@@ -183,45 +183,24 @@ export const authOptions: NextAuthOptions = {
       const actualBaseUrl = process.env.NEXTAUTH_URL || baseUrl || 'http://localhost:3001';
       console.log('NextAuth redirect callback - Actual base URL:', actualBaseUrl);
       
-      // Handle dashboard redirect
-      if (url.includes('/dashboard')) {
-        const redirectUrl = `${actualBaseUrl}/dashboard`;
-        console.log('NextAuth redirect callback - Redirecting to dashboard:', redirectUrl);
-        return redirectUrl;
-      }
-      
-      // Handle auth/login redirects
-      if (url.includes('/auth/login')) {
-        console.log('NextAuth redirect callback - Staying on login page');
+      // If URL is already a full URL with protocol, return it
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        console.log('NextAuth redirect callback - URL already has protocol:', url);
         return url;
       }
       
-      // Handle relative paths
+      // If URL is a relative path, prepend the base URL
       if (url.startsWith('/')) {
         const redirectUrl = `${actualBaseUrl}${url}`;
         console.log('NextAuth redirect callback - Redirecting to relative path:', redirectUrl);
         return redirectUrl;
       }
       
-      // Handle absolute URLs with same base
-      if (url.startsWith(actualBaseUrl)) {
-        console.log('NextAuth redirect callback - URL already has base URL:', url);
-        return url;
-      }
-      
-      // Handle external URLs (security check)
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        // Only allow redirects to the same domain
-        try {
-          const urlObj = new URL(url);
-          const baseUrlObj = new URL(actualBaseUrl);
-          if (urlObj.hostname === baseUrlObj.hostname) {
-            console.log('NextAuth redirect callback - Allowing external URL to same domain:', url);
-            return url;
-          }
-        } catch (error) {
-          console.log('NextAuth redirect callback - Invalid URL, defaulting to dashboard');
-        }
+      // If URL is just a hostname without protocol, add protocol
+      if (url.includes('.') && !url.startsWith('http')) {
+        const redirectUrl = `https://${url}`;
+        console.log('NextAuth redirect callback - Adding protocol to hostname:', redirectUrl);
+        return redirectUrl;
       }
       
       // Default to dashboard

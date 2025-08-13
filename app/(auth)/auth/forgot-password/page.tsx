@@ -69,6 +69,13 @@ export default function ForgotPasswordPage() {
     }
   }, [resendTimer]);
 
+  // Clear OTP field when switching to OTP step
+  useEffect(() => {
+    if (step === 'otp') {
+      otpForm.reset();
+    }
+  }, [step, otpForm]);
+
   const handleEmailSubmit = async (values: z.infer<typeof emailSchema>) => {
     try {
       setLoading(true);
@@ -89,6 +96,8 @@ export default function ForgotPasswordPage() {
         setUserEmail(values.email.trim().toLowerCase());
         setResendTimer(60); // 60 seconds cooldown
         setStep('otp');
+        // Clear OTP form when switching to OTP step
+        otpForm.reset();
         setGlobalSuccess('OTP sent successfully! Please check your email.');
       } else {
         if (res.status === 404) {
@@ -320,7 +329,7 @@ export default function ForgotPasswordPage() {
             )}
 
             {step === 'otp' && (
-              <form onSubmit={otpForm.handleSubmit(handleOTPSubmit)} className="space-y-4">
+              <form key="otp-form" onSubmit={otpForm.handleSubmit(handleOTPSubmit)} className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="otp" className="text-sm font-medium text-gray-700">
                     Verification Code
@@ -328,12 +337,18 @@ export default function ForgotPasswordPage() {
                   <div className="relative">
                     <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input 
+                      key={`otp-input-${step}`}
                       id="otp"
                       className="pl-10 text-center text-lg tracking-widest" 
                       placeholder="000000" 
                       maxLength={6}
                       {...otpForm.register('otp')}
                       autoComplete="one-time-code"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck="false"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                     />
                   </div>
                   {otpForm.formState.errors.otp && (

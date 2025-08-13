@@ -31,10 +31,10 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search, mode: 'insensitive' } },
-        { contactPerson: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search } },
+        { email: { contains: search } },
+        { phone: { contains: search } },
+        { contactPerson: { contains: search } }
       ];
     }
 
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     // Check if supplier with same name already exists
     const existingSupplier = await prisma.supplier.findFirst({
-      where: { name: { equals: name, mode: 'insensitive' } }
+      where: { name: { equals: name } }
     });
 
     if (existingSupplier) {

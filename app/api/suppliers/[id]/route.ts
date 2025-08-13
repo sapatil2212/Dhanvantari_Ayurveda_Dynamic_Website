@@ -98,7 +98,7 @@ export async function PUT(
     if (name && name !== existingSupplier.name) {
       const nameExists = await prisma.supplier.findFirst({
         where: { 
-          name: { equals: name, mode: 'insensitive' },
+          name: { equals: name },
           id: { not: params.id }
         }
       });

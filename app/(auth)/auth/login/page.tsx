@@ -50,33 +50,20 @@ function LoginForm() {
     console.log('Login page - Session data:', session);
     console.log('Login page - Callback URL:', searchParams.get('callbackUrl'));
     
-    if (status === 'authenticated' && session) {
+    if (status === 'authenticated' && session?.user) {
       const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-      console.log('Login page - Redirecting to:', callbackUrl);
+      console.log('Login page - User authenticated, redirecting to:', callbackUrl);
       
-      // Use a more reliable redirect method
-      if (callbackUrl.startsWith('/')) {
-        console.log('Login page - Using router.replace with:', callbackUrl);
-        router.replace(callbackUrl);
-        
-        // Fallback: if router doesn't work after 2 seconds, use window.location
-        setTimeout(() => {
-          if (window.location.pathname === '/auth/login') {
-            console.log('Login page - Router redirect failed, using window.location');
-            window.location.href = callbackUrl;
-          }
-        }, 2000);
+      // Immediate redirect without delay
+      const targetUrl = callbackUrl.startsWith('/') ? callbackUrl : '/dashboard';
+      
+      // Use window.location.replace for immediate redirect in production
+      if (typeof window !== 'undefined') {
+        console.log('Login page - Using window.location.replace for:', targetUrl);
+        window.location.replace(targetUrl);
       } else {
-        console.log('Login page - Using router.replace with /dashboard');
-        router.replace('/dashboard');
-        
-        // Fallback: if router doesn't work after 2 seconds, use window.location
-        setTimeout(() => {
-          if (window.location.pathname === '/auth/login') {
-            console.log('Login page - Router redirect failed, using window.location');
-            window.location.href = '/dashboard';
-          }
-        }, 2000);
+        // Fallback for SSR
+        router.replace(targetUrl);
       }
     } else if (status === 'loading') {
       console.log('Login page - Session is loading...');
@@ -149,14 +136,18 @@ function LoginForm() {
         // Successful login - redirect immediately
         console.log('Login successful, redirecting to:', callbackUrl);
         
-        // Force a session refresh and then redirect
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Force window redirect for production reliability
+        const targetUrl = callbackUrl.startsWith('/') ? callbackUrl : '/dashboard';
         
-        if (callbackUrl.startsWith('/')) {
-          router.replace(callbackUrl);
-        } else {
-          router.replace('/dashboard');
-        }
+        // Use setTimeout to allow session to be established
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            console.log('Login success - Using window.location.replace for:', targetUrl);
+            window.location.replace(targetUrl);
+          } else {
+            router.replace(targetUrl);
+          }
+        }, 1000);
       } else {
         setGlobalError('Login failed. Please check your credentials and try again.');
       }

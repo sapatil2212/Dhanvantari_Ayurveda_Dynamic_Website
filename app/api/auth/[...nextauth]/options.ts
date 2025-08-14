@@ -180,31 +180,29 @@ export const authOptions: NextAuthOptions = {
       console.log('NextAuth redirect callback - URL:', url, 'Base URL:', baseUrl);
       
       // Get the actual base URL from the request
-      const actualBaseUrl = process.env.NEXTAUTH_URL || baseUrl || 'http://localhost:3001';
+      const actualBaseUrl = process.env.NEXTAUTH_URL || baseUrl;
       console.log('NextAuth redirect callback - Actual base URL:', actualBaseUrl);
       
-      // If URL is already a full URL with protocol, return it
+      // If the url is already a complete URL (has protocol), use it as is
       if (url.startsWith('http://') || url.startsWith('https://')) {
-        console.log('NextAuth redirect callback - URL already has protocol:', url);
-        return url;
+        // But make sure it's from the same domain for security
+        const urlObj = new URL(url);
+        const baseUrlObj = new URL(actualBaseUrl);
+        if (urlObj.hostname === baseUrlObj.hostname) {
+          console.log('NextAuth redirect callback - Same domain URL:', url);
+          return url;
+        }
       }
       
-      // If URL is a relative path, prepend the base URL
+      // If it's a relative path, construct full URL
       if (url.startsWith('/')) {
-        const redirectUrl = `${actualBaseUrl}${url}`;
-        console.log('NextAuth redirect callback - Redirecting to relative path:', redirectUrl);
-        return redirectUrl;
-      }
-      
-      // If URL is just a hostname without protocol, add protocol
-      if (url.includes('.') && !url.startsWith('http')) {
-        const redirectUrl = `https://${url}`;
-        console.log('NextAuth redirect callback - Adding protocol to hostname:', redirectUrl);
+        const redirectUrl = new URL(url, actualBaseUrl).toString();
+        console.log('NextAuth redirect callback - Constructed URL from relative path:', redirectUrl);
         return redirectUrl;
       }
       
       // Default to dashboard
-      const defaultUrl = `${actualBaseUrl}/dashboard`;
+      const defaultUrl = new URL('/dashboard', actualBaseUrl).toString();
       console.log('NextAuth redirect callback - Default redirect to dashboard:', defaultUrl);
       return defaultUrl;
     },

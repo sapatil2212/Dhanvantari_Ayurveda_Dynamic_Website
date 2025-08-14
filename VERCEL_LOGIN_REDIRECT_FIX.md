@@ -1,56 +1,58 @@
-# Vercel Login Redirect Issue - Complete Fix Guide
+# Vercel NextAuth Error Page Fix - Complete Guide
 
 ## Problem Diagnosis
 
-The issue you're experiencing is a common NextAuth.js redirect problem in Vercel production environments. The authentication is working (JWT callback succeeds), but the redirect to dashboard fails, causing the session to show as "unauthenticated" on the frontend.
+You're getting redirected to `/api/auth/error` on Vercel, which indicates a NextAuth.js configuration issue. According to [NextAuth.js documentation](https://next-auth.js.org/deployment), on Vercel, you **DO NOT** need to set `NEXTAUTH_URL` as NextAuth automatically detects the correct URL.
 
 ## Root Causes
 
-1. **Missing NEXTAUTH_URL environment variable** in Vercel
-2. **Session state inconsistency** between server and client
-3. **Redirect callback not working properly** in production environment
+1. **Incorrect NEXTAUTH_URL configuration** - On Vercel, this should NOT be set
+2. **Environment variable conflicts** between local and production
+3. **Missing or incorrect NEXTAUTH_SECRET**
 
 ## Required Fixes
 
-### 1. Set Environment Variables in Vercel
+### 1. Remove NEXTAUTH_URL from Vercel Environment Variables
 
-**CRITICAL**: You must set these environment variables in your Vercel dashboard:
+**CRITICAL**: You must REMOVE the `NEXTAUTH_URL` environment variable from Vercel:
 
 1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
 2. Select your project: `dhanvantari-ayurveda-dynamic-websit`
 3. Go to **Settings** → **Environment Variables**
-4. Add these variables for **BOTH Production AND Preview** environments:
+4. **DELETE** the `NEXTAUTH_URL` variable if it exists
+5. Keep only these variables:
 
 | Variable Name | Value | Environment |
 |---------------|-------|-------------|
-| `NEXTAUTH_URL` | `https://dhanvantari-ayurveda-dynamic-websit.vercel.app` | Production & Preview |
 | `NEXTAUTH_SECRET` | `904bcaf3fb4242505d7c8971e34372294503f039e43dab34040b223d9dcdef0d` | Production & Preview |
 | `DATABASE_URL` | `your-actual-database-url` | Production & Preview |
+| Other email/database vars | `your-values` | Production & Preview |
 
 **Important Notes:**
-- Use your actual Vercel deployment URL for `NEXTAUTH_URL`
-- Make sure to include `https://` protocol
-- Set for BOTH Production and Preview environments
-- After adding variables, **redeploy** your application
+- **DO NOT SET NEXTAUTH_URL** on Vercel - NextAuth detects it automatically
+- Only set `NEXTAUTH_URL` for local development
+- Set `NEXTAUTH_SECRET` for both Production and Preview environments
+- After removing variables, **redeploy** your application
 
 ### 2. Code Changes Applied
 
-I've already made the following fixes to your codebase:
+I've made the following critical fixes to your codebase:
 
-#### A. Fixed NextAuth Redirect Callback (`app/api/auth/[...nextauth]/options.ts`)
-- Improved URL construction using proper URL API
-- Better domain validation for security
-- More robust fallback logic
+#### A. Fixed NextAuth Configuration (`app/api/auth/[...nextauth]/options.ts`)
+- **Removed dependency on NEXTAUTH_URL** - Now uses Vercel's automatic URL detection
+- **Enabled debug logging** to identify authentication issues
+- **Added event handlers** for better debugging
+- **Improved redirect callback** to work properly with Vercel's baseUrl
 
-#### B. Enhanced Login Page Redirect Logic (`app/(auth)/auth/login/page.tsx`)
-- More reliable session detection
-- Immediate redirect using `window.location.replace()` for production
-- Better error handling and fallbacks
+#### B. Enhanced Error Handling and Debugging
+- Added comprehensive event logging for signin, signout, and session events
+- Better error handling in redirect callback
+- Debug mode enabled to capture authentication flow issues
 
 ### 3. Deployment Steps
 
-1. **Commit and push** the code changes (already applied)
-2. **Set environment variables** in Vercel dashboard (as shown above)
+1. **REMOVE NEXTAUTH_URL** from Vercel environment variables
+2. **Commit and push** the code changes (already applied)
 3. **Redeploy** your application:
    - Go to Vercel Dashboard → Deployments
    - Find latest deployment → Click "..." → "Redeploy"
@@ -61,42 +63,44 @@ After redeployment, test the complete flow:
 
 1. Visit: `https://dhanvantari-ayurveda-dynamic-websit.vercel.app/auth/login`
 2. Enter correct credentials
-3. User should be redirected to dashboard successfully
-4. Check browser console - should see successful redirect logs
+3. Check Vercel function logs for detailed authentication flow
+4. User should be redirected to dashboard successfully
 
 ## Expected Behavior After Fix
 
 1. **Login Success**: User enters correct credentials
 2. **Authentication**: NextAuth validates and creates session
-3. **Redirect**: User is immediately redirected to `/dashboard`
+3. **No Error Redirect**: User stays on login or redirects to dashboard (no `/api/auth/error`)
 4. **Session Active**: Dashboard loads with user authenticated
 
 ## Troubleshooting
 
-### If redirect still fails:
+### If you still get redirected to `/api/auth/error`:
 
-1. **Check Vercel Logs**:
-   - Go to Vercel Dashboard → Functions
-   - Check for any authentication errors
+1. **Check Vercel Function Logs**:
+   - Go to Vercel Dashboard → Functions → View Function Logs
+   - Look for NextAuth error messages and authentication flow logs
 
 2. **Verify Environment Variables**:
-   - Ensure `NEXTAUTH_URL` matches your exact Vercel domain
-   - Confirm all variables are set for Production environment
+   - Ensure `NEXTAUTH_URL` is **NOT SET** in Vercel
+   - Confirm `NEXTAUTH_SECRET` is properly set
+   - Verify `DATABASE_URL` is correct
 
-3. **Clear Browser Cache**:
-   - Clear cookies and local storage
+3. **Database Connection Issues**:
+   - Check if your database is accessible from Vercel
+   - Verify database credentials and connection string
+   - Test database connection from Vercel environment
+
+4. **Clear Browser Data**:
+   - Clear all cookies and local storage
    - Try in incognito/private mode
+   - Test with different browsers
 
-4. **Check Database Connection**:
-   - Ensure `DATABASE_URL` is correct
-   - Verify database is accessible from Vercel
+### Common Error Patterns:
 
-### If you see "INVALID_CALLBACK_URL" error:
-
-This means `NEXTAUTH_URL` is not set correctly:
-- Double-check the URL in Vercel environment variables
-- Ensure it includes `https://` protocol
-- Match your exact Vercel deployment domain
+1. **"Invalid callback URL"** → NEXTAUTH_URL incorrectly set (should be removed on Vercel)
+2. **Database connection errors** → Check DATABASE_URL and database accessibility
+3. **"Configuration error"** → Verify NEXTAUTH_SECRET is set correctly
 
 ## Security Notes
 

@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // Enable debug for production to identify issues
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -130,6 +130,20 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/login',
     error: '/auth/login',
   },
+  events: {
+    async signIn({ user, account, profile }) {
+      console.log('NextAuth signIn event - User:', user, 'Account:', account);
+    },
+    async signOut({ token, session }) {
+      console.log('NextAuth signOut event - Token:', token, 'Session:', session);
+    },
+    async createUser({ user }) {
+      console.log('NextAuth createUser event - User:', user);
+    },
+    async session({ session, token }) {
+      console.log('NextAuth session event - Session:', session, 'Token:', token);
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       console.log('NextAuth JWT callback - User:', user, 'Token:', token);
@@ -179,30 +193,38 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       console.log('NextAuth redirect callback - URL:', url, 'Base URL:', baseUrl);
       
-      // Get the actual base URL from the request
-      const actualBaseUrl = process.env.NEXTAUTH_URL || baseUrl;
-      console.log('NextAuth redirect callback - Actual base URL:', actualBaseUrl);
+      // On Vercel, NextAuth automatically detects the correct URL, so we use baseUrl directly
+      // Don't rely on NEXTAUTH_URL in production on Vercel
+      const actualBaseUrl = baseUrl;
+      console.log('NextAuth redirect callback - Using baseUrl:', actualBaseUrl);
       
-      // If the url is already a complete URL (has protocol), use it as is
+      // If the url is already a complete URL (has protocol), validate it
       if (url.startsWith('http://') || url.startsWith('https://')) {
-        // But make sure it's from the same domain for security
-        const urlObj = new URL(url);
-        const baseUrlObj = new URL(actualBaseUrl);
-        if (urlObj.hostname === baseUrlObj.hostname) {
-          console.log('NextAuth redirect callback - Same domain URL:', url);
-          return url;
+        try {
+          const urlObj = new URL(url);
+          const baseUrlObj = new URL(actualBaseUrl);
+          if (urlObj.hostname === baseUrlObj.hostname) {
+            console.log('NextAuth redirect callback - Same domain URL:', url);
+            return url;
+          } else {
+            console.log('NextAuth redirect callback - Different domain, defaulting to dashboard');
+            return `${actualBaseUrl}/dashboard`;
+          }
+        } catch (error) {
+          console.log('NextAuth redirect callback - Invalid URL, defaulting to dashboard');
+          return `${actualBaseUrl}/dashboard`;
         }
       }
       
       // If it's a relative path, construct full URL
       if (url.startsWith('/')) {
-        const redirectUrl = new URL(url, actualBaseUrl).toString();
+        const redirectUrl = `${actualBaseUrl}${url}`;
         console.log('NextAuth redirect callback - Constructed URL from relative path:', redirectUrl);
         return redirectUrl;
       }
       
       // Default to dashboard
-      const defaultUrl = new URL('/dashboard', actualBaseUrl).toString();
+      const defaultUrl = `${actualBaseUrl}/dashboard`;
       console.log('NextAuth redirect callback - Default redirect to dashboard:', defaultUrl);
       return defaultUrl;
     },

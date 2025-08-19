@@ -120,16 +120,16 @@ export function NotificationDemo() {
           <div>
             <h3 className="text-lg font-semibold mb-3">Appointment Notifications</h3>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => handleAppointmentNotification('created')} variant="outline">
+              <Button onClick={() => handleAppointmentNotification('created')} variant="outline" noShimmer>
                 Appointment Created
               </Button>
-              <Button onClick={() => handleAppointmentNotification('updated')} variant="outline">
+              <Button onClick={() => handleAppointmentNotification('updated')} variant="outline" noShimmer>
                 Appointment Updated
               </Button>
-              <Button onClick={() => handleAppointmentNotification('cancelled')} variant="outline">
+              <Button onClick={() => handleAppointmentNotification('cancelled')} variant="outline" noShimmer>
                 Appointment Cancelled
               </Button>
-              <Button onClick={() => handleAppointmentNotification('confirmed')} variant="outline">
+              <Button onClick={() => handleAppointmentNotification('confirmed')} variant="outline" noShimmer>
                 Appointment Confirmed
               </Button>
             </div>
@@ -139,10 +139,10 @@ export function NotificationDemo() {
           <div>
             <h3 className="text-lg font-semibold mb-3">Patient Notifications</h3>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => handlePatientNotification('created')} variant="outline">
+              <Button onClick={() => handlePatientNotification('created')} variant="outline" noShimmer>
                 Patient Created
               </Button>
-              <Button onClick={() => handlePatientNotification('updated')} variant="outline">
+              <Button onClick={() => handlePatientNotification('updated')} variant="outline" noShimmer>
                 Patient Updated
               </Button>
             </div>
@@ -152,13 +152,13 @@ export function NotificationDemo() {
           <div>
             <h3 className="text-lg font-semibold mb-3">Prescription Notifications</h3>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => handlePrescriptionNotification('created')} variant="outline">
+              <Button onClick={() => handlePrescriptionNotification('created')} variant="outline" noShimmer>
                 Prescription Created
               </Button>
-              <Button onClick={() => handlePrescriptionNotification('updated')} variant="outline">
+              <Button onClick={() => handlePrescriptionNotification('updated')} variant="outline" noShimmer>
                 Prescription Updated
               </Button>
-              <Button onClick={() => handlePrescriptionNotification('shared')} variant="outline">
+              <Button onClick={() => handlePrescriptionNotification('shared')} variant="outline" noShimmer>
                 Prescription Shared
               </Button>
             </div>
@@ -168,13 +168,13 @@ export function NotificationDemo() {
           <div>
             <h3 className="text-lg font-semibold mb-3">Invoice Notifications</h3>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => handleInvoiceNotification('created')} variant="outline">
+              <Button onClick={() => handleInvoiceNotification('created')} variant="outline" noShimmer>
                 Invoice Created
               </Button>
-              <Button onClick={() => handleInvoiceNotification('paid')} variant="outline">
+              <Button onClick={() => handleInvoiceNotification('paid')} variant="outline" noShimmer>
                 Payment Received
               </Button>
-              <Button onClick={() => handleInvoiceNotification('overdue')} variant="outline">
+              <Button onClick={() => handleInvoiceNotification('overdue')} variant="outline" noShimmer>
                 Invoice Overdue
               </Button>
             </div>
@@ -184,13 +184,13 @@ export function NotificationDemo() {
           <div>
             <h3 className="text-lg font-semibold mb-3">Inventory Notifications</h3>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => handleInventoryNotification('low_stock')} variant="outline">
+              <Button onClick={() => handleInventoryNotification('low_stock')} variant="outline" noShimmer>
                 Low Stock Alert
               </Button>
-              <Button onClick={() => handleInventoryNotification('out_of_stock')} variant="outline">
+              <Button onClick={() => handleInventoryNotification('out_of_stock')} variant="outline" noShimmer>
                 Out of Stock
               </Button>
-              <Button onClick={() => handleInventoryNotification('restocked')} variant="outline">
+              <Button onClick={() => handleInventoryNotification('restocked')} variant="outline" noShimmer>
                 Item Restocked
               </Button>
             </div>
@@ -200,16 +200,16 @@ export function NotificationDemo() {
           <div>
             <h3 className="text-lg font-semibold mb-3">System Notifications</h3>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => handleSystemNotification('CREATED')} variant="outline" className="text-green-600">
+              <Button onClick={() => handleSystemNotification('CREATED')} variant="outline" className="text-green-600" noShimmer>
                 Success
               </Button>
-              <Button onClick={() => handleSystemNotification('ALERT')} variant="outline" className="text-red-600">
+              <Button onClick={() => handleSystemNotification('ALERT')} variant="outline" className="text-red-600" noShimmer>
                 Error
               </Button>
-              <Button onClick={() => handleSystemNotification('REMINDER')} variant="outline" className="text-yellow-600">
+              <Button onClick={() => handleSystemNotification('REMINDER')} variant="outline" className="text-yellow-600" noShimmer>
                 Warning
               </Button>
-              <Button onClick={() => handleSystemNotification('SYSTEM')} variant="outline" className="text-blue-600">
+              <Button onClick={() => handleSystemNotification('SYSTEM')} variant="outline" className="text-blue-600" noShimmer>
                 Info
               </Button>
             </div>
@@ -219,7 +219,7 @@ export function NotificationDemo() {
           <div>
             <h3 className="text-lg font-semibold mb-3">Custom Notification</h3>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={handleCustomNotification} variant="outline">
+              <Button onClick={handleCustomNotification} variant="outline" noShimmer>
                 Custom Notification with Action
               </Button>
             </div>

@@ -265,8 +265,8 @@ export default function AppointmentDetailModal({ id, open, onOpenChange, mode = 
 
             {isEditing && (
               <div className="mt-2 flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                <Button onClick={save} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
+                <Button variant="outline" onClick={() => setIsEditing(false)} noShimmer>Cancel</Button>
+                <Button onClick={save} disabled={saving} noShimmer>{saving ? 'Saving...' : 'Save Changes'}</Button>
               </div>
             )}
           </div>

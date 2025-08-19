@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,26 +81,27 @@ export default function AppointmentToolbar() {
   };
 
   return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center gap-2">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} className="pl-8 h-9 w-64" placeholder="Search name / email / contact" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} className="pl-8 h-8 sm:h-9 w-full sm:w-64 text-xs sm:text-sm" placeholder="Search name / email / contact" />
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-2 lg:pb-0 min-w-0 flex-nowrap">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button size="sm" variant="outline" className="h-9">
-              <CalendarRange className="mr-2 h-4 w-4" /> Date:
-              <span className="ml-2">{range.from ? new Date(range.from).toISOString().slice(0,10) : 'From'}</span>
+            <Button size="sm" variant="outline" className="h-8 sm:h-9 text-xs sm:text-sm whitespace-nowrap" noShimmer>
+              <CalendarRange className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+              <span className="hidden sm:inline">Date:</span>
+              <span className="ml-1 sm:ml-2 text-xs">{range.from ? new Date(range.from).toISOString().slice(0,10) : 'From'}</span>
               <span className="mx-1">-</span>
-              {range.to ? new Date(range.to).toISOString().slice(0,10) : 'To'}
+              <span className="text-xs">{range.to ? new Date(range.to).toISOString().slice(0,10) : 'To'}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-2" align="end">
             <div className="flex items-center justify-between pb-2 border-b mb-2">
-              <div className="text-sm font-medium">Select date range</div>
+              <div className="text-xs sm:text-sm font-medium">Select date range</div>
               <button onClick={() => setOpen(false)} aria-label="Close date picker" className="rounded p-1 hover:bg-slate-100">
                 <X className="h-4 w-4" />
               </button>
@@ -130,22 +131,24 @@ export default function AppointmentToolbar() {
               </div>
             </div>
             <div className="mt-2 flex items-center justify-end gap-2">
-              <Button size="sm" variant="outline" onClick={() => setRange({ from: undefined, to: undefined })}>Clear</Button>
-              <Button size="sm" onClick={() => setOpen(false)}>Done</Button>
+                             <Button size="sm" variant="outline" onClick={() => setRange({ from: undefined, to: undefined })} className="text-xs sm:text-sm" noShimmer>Clear</Button>
+                             <Button size="sm" onClick={() => setOpen(false)} className="text-xs sm:text-sm" noShimmer>Done</Button>
             </div>
           </PopoverContent>
         </Popover>
-        <Button size="sm" variant="outline" className="h-9" onClick={() => exportFile('csv')} disabled={!!downloading}>
-          <FileDown className="mr-2 h-4 w-4" /> CSV
+        <Button size="sm" variant="outline" className="h-8 sm:h-9 text-xs sm:text-sm whitespace-nowrap" onClick={() => exportFile('csv')} disabled={!!downloading} noShimmer>
+          <FileDown className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> CSV
         </Button>
-        <Button size="sm" variant="outline" className="h-9" onClick={() => exportFile('docx')} disabled={!!downloading}>
-          <FileDown className="mr-2 h-4 w-4" /> Word
+        <Button size="sm" variant="outline" className="h-8 sm:h-9 text-xs sm:text-sm whitespace-nowrap" onClick={() => exportFile('docx')} disabled={!!downloading} noShimmer>
+          <FileDown className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Word
         </Button>
-        <Button size="sm" variant="outline" className="h-9" onClick={() => exportFile('pdf')} disabled={!!downloading}>
-          <FileDown className="mr-2 h-4 w-4" /> PDF
+        <Button size="sm" variant="outline" className="h-8 sm:h-9 text-xs sm:text-sm whitespace-nowrap" onClick={() => exportFile('pdf')} disabled={!!downloading} noShimmer>
+          <FileDown className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> PDF
         </Button>
-        <Button size="sm" className="h-9 bg-emerald-600 hover:bg-emerald-700" onClick={() => router.push('/dashboard/appointments/new')}>
-          <Plus className="mr-2 h-4 w-4" /> New Appointment
+        <Button size="sm" className="h-8 sm:h-9 bg-emerald-600 hover:bg-emerald-700 text-xs sm:text-sm whitespace-nowrap" onClick={() => router.push('/dashboard/appointments/new')} noShimmer>
+          <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+          <span className="hidden sm:inline">New Appointment</span>
+          <span className="sm:hidden">New</span>
         </Button>
       </div>
     </div>

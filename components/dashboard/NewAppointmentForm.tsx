@@ -5,15 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { SuccessModal } from '@/components/ui/SuccessModal';
 import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+
 
 export default function NewAppointmentForm() {
   const [form, setForm] = React.useState({
@@ -21,8 +13,6 @@ export default function NewAppointmentForm() {
   });
   const [saving, setSaving] = React.useState(false);
   const [successOpen, setSuccessOpen] = React.useState(false);
-  const [confirmDupOpen, setConfirmDupOpen] = React.useState(false);
-  const [dupMessage, setDupMessage] = React.useState('');
   const { toast } = useToast();
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -54,18 +44,6 @@ export default function NewAppointmentForm() {
         });
         return;
       }
-      // Check for existing appointments by email/name/phone
-      const params = new URLSearchParams();
-      if (form.email) params.set('email', form.email);
-      if (form.phone) params.set('phone', form.phone);
-      if (form.name) params.set('name', form.name);
-      const existingRes = await fetch(`/api/appointments?${params.toString()}`, { cache: 'no-store' });
-      const existing = existingRes.ok ? await existingRes.json() : { items: [] };
-      if (existing.items && existing.items.length > 0) {
-        setDupMessage(`We found ${existing.items.length} appointment(s) with the same details. Proceed with another booking?`);
-        setConfirmDupOpen(true);
-        return;
-      }
       
       const res = await fetch('/api/appointments', {
         method: 'POST',
@@ -84,35 +62,7 @@ export default function NewAppointmentForm() {
     }
   };
 
-  const confirmSubmit = async () => {
-    setSaving(true);
-    try {
-      const missing = validate();
-      if (missing.length) {
-        toast({
-          title: 'Missing required fields',
-          description: `Please fill: ${missing.join(', ')}`,
-          variant: 'destructive',
-        });
-        return;
-      }
-      const res = await fetch('/api/appointments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || 'Failed');
-      }
-      setConfirmDupOpen(false);
-      setSuccessOpen(true);
-    } catch (error: any) {
-      toast({ title: 'Failed to create appointment', description: error?.message || 'Please try again', variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
+
 
   return (
     <>
@@ -160,8 +110,8 @@ export default function NewAppointmentForm() {
         <Textarea name="additionalNotes" value={form.additionalNotes} onChange={onChange} />
       </div>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={() => (window.location.href = '/dashboard/appointments')}>Cancel</Button>
-        <Button onClick={submit} disabled={saving}>{saving ? 'Creating...' : 'Create'}</Button>
+        <Button variant="outline" onClick={() => (window.location.href = '/dashboard/appointments')} noShimmer>Cancel</Button>
+        <Button onClick={submit} disabled={saving} noShimmer>{saving ? 'Creating...' : 'Create'}</Button>
       </div>
     </div>
     <SuccessModal
@@ -172,19 +122,7 @@ export default function NewAppointmentForm() {
       duration={3000}
     />
 
-    {/* Duplicate confirm modal */}
-    <AlertDialog open={confirmDupOpen}>
-      <AlertDialogContent className="max-w-sm">
-        <AlertDialogHeader className="text-center">
-          <AlertDialogTitle className="text-lg">Possible duplicate</AlertDialogTitle>
-          <AlertDialogDescription className="text-sm">{dupMessage || 'An appointment with the same details exists. Proceed with another booking?'}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <div className="mt-3 flex justify-center gap-2">
-          <AlertDialogCancel onClick={() => setConfirmDupOpen(false)}>No</AlertDialogCancel>
-          <AlertDialogAction onClick={confirmSubmit}>Yes, proceed</AlertDialogAction>
-        </div>
-      </AlertDialogContent>
-    </AlertDialog>
+
   </>
   );
 }

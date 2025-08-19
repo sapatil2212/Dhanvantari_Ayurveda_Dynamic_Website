@@ -64,7 +64,7 @@ export function PatientSelector({ onSelect }: { onSelect: (patient: Patient | nu
           onChange={(e) => setQuery(e.target.value)}
         />
         {selected && (
-          <Button variant="outline" onClick={clear}>Clear</Button>
+          <Button variant="outline" onClick={clear} noShimmer>Clear</Button>
         )}
       </div>
       {selected && (

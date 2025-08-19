@@ -87,6 +87,7 @@ export default function AddAllergyForm({ patientId, onCreated, allergies = [] }:
                     ? 'text-green-600 hover:text-green-700' 
                     : 'text-red-500 hover:text-red-700'
                 }`}
+                noShimmer
               >
                 {deletingId === allergy.id ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500" />
@@ -111,6 +112,7 @@ export default function AddAllergyForm({ patientId, onCreated, allergies = [] }:
             onClick={submit} 
             disabled={loading || !substance}
             className={success ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'}
+            noShimmer
           >
             {loading ? 'Saving…' : success ? (
               <>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ import {
 } from 'lucide-react';
 import { hasPermission, Permission, Role } from '@/lib/permissions';
 import { useSession, signOut } from 'next-auth/react';
+import { useHotelInfo } from '@/hooks/use-hotel-info';
 import { 
   Dialog,
   DialogContent,
@@ -67,10 +69,30 @@ interface MenuItem {
 }
 
 export default function Sidebar({ userRole }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true); // Start collapsed by default
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { hotelInfo } = useHotelInfo();
   const effectiveRole = userRole ?? ((session?.user as any)?.role as Role | undefined);
+
+  // Auto-expand on desktop, keep collapsed on mobile
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    // Auto-expand on desktop, collapse on mobile
+    setCollapsed(isMobile);
+  }, [isMobile]);
 
   const menuItems: MenuItem[] = [
     {
@@ -270,6 +292,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
               variant="ghost"
               size="sm"
               className="h-auto px-2 hover:scale-100"
+              noShimmer
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -342,17 +365,35 @@ export default function Sidebar({ userRole }: SidebarProps) {
     )}>
       {/* Header */}
       <div className="flex h-16 items-center justify-between border-b px-4">
-        {!collapsed && (
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded bg-primary"></div>
-            <span className="font-semibold">Dhanvantari</span>
+        {!collapsed ? (
+          <div className="flex items-center justify-center flex-1">
+            <div className="relative h-[100px] w-[100px]">
+              <Image
+                src={hotelInfo?.headerLogo || "/assets/logo/logo.png"}
+                alt={hotelInfo?.name || "Dhanvantari Ayurvedic Clinic"}
+                fill
+                className="object-contain"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center flex-1">
+            <div className="relative h-10 w-10">
+              <Image
+                src={hotelInfo?.headerLogo || "/assets/logo/logo.png"}
+                alt={hotelInfo?.name || "Dhanvantari Ayurvedic Clinic"}
+                fill
+                className="object-contain"
+              />
+            </div>
           </div>
         )}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setCollapsed(!collapsed)}
-          className="h-8 w-8 p-0"
+          className="h-8 w-8 p-0 flex-shrink-0"
+          noShimmer
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>

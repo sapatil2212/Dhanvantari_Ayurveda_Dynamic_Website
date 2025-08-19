@@ -49,14 +49,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // Get the authenticated user session
+    // Get the authenticated user session (optional for frontend bookings)
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user || !(session.user as any).id) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
-    const userId = (session.user as any).id;
+    const userId = session?.user ? (session.user as any).id : null;
 
     const body = await request.json();
     const {
@@ -92,11 +87,14 @@ export async function POST(request: Request) {
         previousTreatment,
         medications,
         additionalNotes,
-        createdBy: {
-          connect: {
-            id: userId
+        // Only connect createdBy if user is authenticated
+        ...(userId && {
+          createdBy: {
+            connect: {
+              id: userId
+            }
           }
-        },
+        }),
         // Try to link an existing patient based on email/phone, otherwise leave null
         patient: email || phone ? {
           connectOrCreate: {

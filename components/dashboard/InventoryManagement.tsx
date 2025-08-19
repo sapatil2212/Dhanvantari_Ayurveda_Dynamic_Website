@@ -356,12 +356,12 @@ export default function InventoryManagement() {
           <p className="text-muted-foreground">Manage Ayurvedic medicines, herbs, and medical supplies</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={loadInventoryItems} disabled={loading}>
+          <Button variant="outline" onClick={loadInventoryItems} disabled={loading} noShimmer>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Link href="/dashboard/inventory/add">
-            <Button>
+            <Button noShimmer>
               <Plus className="mr-2 h-4 w-4" />
               Add Item
             </Button>
@@ -412,7 +412,7 @@ export default function InventoryManagement() {
               </Select>
             </div>
             <div className="flex items-end">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" noShimmer>
                 <Filter className="h-4 w-4 mr-2" />
                 Apply Filters
               </Button>
@@ -427,11 +427,11 @@ export default function InventoryManagement() {
           <div className="flex items-center justify-between">
             <CardTitle>Inventory Items</CardTitle>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" noShimmer>
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" noShimmer>
                 <Upload className="h-4 w-4 mr-2" />
                 Import
               </Button>
@@ -507,6 +507,7 @@ export default function InventoryManagement() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleViewItem(item)}
+                            noShimmer
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -514,6 +515,7 @@ export default function InventoryManagement() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleEditItem(item)}
+                            noShimmer
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -524,6 +526,7 @@ export default function InventoryManagement() {
                                 size="sm" 
                                 className="text-red-500 hover:text-red-700 hover:bg-red-50"
                                 disabled={deletingItem === item.id}
+                                noShimmer
                               >
                                 {deletingItem === item.id ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -573,7 +576,7 @@ export default function InventoryManagement() {
           <div className="flex items-center justify-between">
             <CardTitle>Purchase Orders</CardTitle>
             <Link href="/dashboard/inventory/purchase-orders">
-              <Button>
+              <Button noShimmer>
                 <Plus className="mr-2 h-4 w-4" />
                 New Order
               </Button>
@@ -622,6 +625,7 @@ export default function InventoryManagement() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleViewOrder(order)}
+                            noShimmer
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -629,6 +633,7 @@ export default function InventoryManagement() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleEditOrder(order)}
+                            noShimmer
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -651,31 +656,31 @@ export default function InventoryManagement() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link href="/dashboard/inventory/add">
-              <Button variant="outline" className="h-20 flex-col w-full">
+              <Button variant="outline" className="h-20 flex-col w-full" noShimmer>
                 <Plus className="h-6 w-6 mb-2" />
                 <span>Add Item</span>
               </Button>
             </Link>
             <Link href="/dashboard/inventory/purchase-orders">
-              <Button variant="outline" className="h-20 flex-col w-full">
+              <Button variant="outline" className="h-20 flex-col w-full" noShimmer>
                 <ShoppingCart className="h-6 w-6 mb-2" />
                 <span>Purchase Orders</span>
               </Button>
             </Link>
             <Link href="/dashboard/inventory/alerts">
-              <Button variant="outline" className="h-20 flex-col w-full">
+              <Button variant="outline" className="h-20 flex-col w-full" noShimmer>
                 <AlertTriangle className="h-6 w-6 mb-2" />
                 <span>Stock Alerts</span>
               </Button>
             </Link>
             <Link href="/dashboard/inventory/suppliers">
-              <Button variant="outline" className="h-20 flex-col w-full">
+              <Button variant="outline" className="h-20 flex-col w-full" noShimmer>
                 <Building2 className="h-6 w-6 mb-2" />
                 <span>Suppliers</span>
               </Button>
             </Link>
             <Link href="/dashboard/inventory/reports">
-              <Button variant="outline" className="h-20 flex-col w-full">
+              <Button variant="outline" className="h-20 flex-col w-full" noShimmer>
                 <BarChart3 className="h-6 w-6 mb-2" />
                 <span>Reports</span>
               </Button>
@@ -764,7 +769,7 @@ export default function InventoryManagement() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewModalOpen(false)}>
+            <Button variant="outline" onClick={() => setViewModalOpen(false)} noShimmer>
               Close
             </Button>
           </DialogFooter>
@@ -915,10 +920,10 @@ export default function InventoryManagement() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)} noShimmer>
               Cancel
             </Button>
-            <Button onClick={handleSaveItem} disabled={savingItem}>
+            <Button onClick={handleSaveItem} disabled={savingItem} noShimmer>
               {savingItem ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1016,7 +1021,7 @@ export default function InventoryManagement() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewOrderModalOpen(false)}>
+            <Button variant="outline" onClick={() => setViewOrderModalOpen(false)} noShimmer>
               Close
             </Button>
           </DialogFooter>
@@ -1149,10 +1154,10 @@ export default function InventoryManagement() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOrderModalOpen(false)}>
+            <Button variant="outline" onClick={() => setEditOrderModalOpen(false)} noShimmer>
               Cancel
             </Button>
-            <Button onClick={handleSaveOrder} disabled={savingOrder}>
+            <Button onClick={handleSaveOrder} disabled={savingOrder} noShimmer>
               {savingOrder ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

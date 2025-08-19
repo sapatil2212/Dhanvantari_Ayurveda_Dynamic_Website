@@ -131,6 +131,7 @@ export default function MedicalHistoryManager() {
                   onClick={submit} 
                   disabled={saving || !form.condition.trim()}
                   className={success ? 'bg-green-600 hover:bg-green-700' : ''}
+                  noShimmer
                 >
                   {saving ? 'Saving…' : success ? (
                     <>

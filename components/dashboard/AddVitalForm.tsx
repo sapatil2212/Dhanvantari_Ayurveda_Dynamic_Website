@@ -93,6 +93,7 @@ export default function AddVitalForm({ patientId, onCreated, vitals = [] }: {
                     ? 'text-green-600 hover:text-green-700' 
                     : 'text-red-500 hover:text-red-700'
                 }`}
+                noShimmer
               >
                 {deletingId === vital.id ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500" />
@@ -118,6 +119,7 @@ export default function AddVitalForm({ patientId, onCreated, vitals = [] }: {
             onClick={submit} 
             disabled={loading}
             className={success ? 'bg-green-600 hover:bg-green-700' : ''}
+            noShimmer
           >
             {loading ? 'Saving…' : success ? (
               <>

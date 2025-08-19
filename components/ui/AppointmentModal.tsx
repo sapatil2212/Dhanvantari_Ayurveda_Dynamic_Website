@@ -65,7 +65,6 @@ export default function AppointmentModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const [showSuccess, setShowSuccess] = useState(false);
-  const [dupPrompt, setDupPrompt] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -88,18 +87,6 @@ export default function AppointmentModal() {
     setIsSubmitting(true);
 
     try {
-      // Duplicate check
-      const params = new URLSearchParams();
-      if (appointmentData.email) params.set('email', appointmentData.email);
-      if (appointmentData.phone) params.set('phone', appointmentData.phone);
-      if (appointmentData.name) params.set('name', appointmentData.name);
-      const existingRes = await fetch(`/api/appointments?${params.toString()}`, { cache: 'no-store' });
-      const existing = existingRes.ok ? await existingRes.json() : { items: [] };
-      if (existing.items && existing.items.length > 0) {
-        setDupPrompt({ open: true, message: `We found ${existing.items.length} appointment(s) with the same details. Proceed with another booking?` });
-        return;
-      }
-
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -537,45 +524,7 @@ export default function AppointmentModal() {
         </div>
       </DialogContent>
     </Dialog>
-    {/* Duplicate confirm overlay */}
-    {dupPrompt.open && (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-        <div className="w-full max-w-sm rounded-md bg-white p-4 text-center shadow-lg">
-          <div className="text-base font-semibold">Possible duplicate</div>
-          <div className="mt-1 text-sm text-gray-600">{dupPrompt.message}</div>
-          <div className="mt-3 flex justify-center gap-2">
-            <Button variant="outline" className="h-9 px-3 text-sm" onClick={() => setDupPrompt({ open: false, message: '' })}>No</Button>
-            <Button
-              className="h-9 px-3 text-sm bg-emerald-600 hover:bg-emerald-700"
-              onClick={async () => {
-                setDupPrompt({ open: false, message: '' });
-                setIsSubmitting(true);
-                try {
-                  const res = await fetch('/api/appointments', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(appointmentData),
-                  });
-                  if (!res.ok) throw new Error('Failed to book appointment');
-                  setShowSuccess(true);
-                  setStep(1);
-                  setAppointmentData({
-                    consultationType: '', preferredDate: '', preferredTime: '', name: '', email: '', phone: '', age: '', gender: '', chiefComplaint: '', previousTreatment: '', medications: '', additionalNotes: ''
-                  });
-                  setIsAppointmentModalOpen(false);
-                } catch (e: any) {
-                  toast({ title: 'Booking failed', description: e.message || 'Please try again later.' });
-                } finally {
-                  setIsSubmitting(false);
-                }
-              }}
-            >
-              Yes, proceed
-            </Button>
-          </div>
-        </div>
-      </div>
-    )}
+
     {showSuccess && (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
         <div className="w-full max-w-xs rounded-md bg-white p-4 text-center shadow-lg">

@@ -125,6 +125,7 @@ export default function LifestyleManager() {
                   onClick={submit} 
                   disabled={saving}
                   className={success ? 'bg-green-600 hover:bg-green-700' : ''}
+                  noShimmer
                 >
                   {saving ? 'Saving…' : success ? (
                     <>

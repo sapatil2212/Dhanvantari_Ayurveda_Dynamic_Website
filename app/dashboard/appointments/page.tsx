@@ -39,44 +39,44 @@ export default async function AppointmentsPage({ searchParams }: { searchParams?
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Appointments</h1>
-        <p className="text-sm text-gray-500">Manage and track patient appointments</p>
+        <h1 className="text-xl sm:text-2xl font-semibold">Appointments</h1>
+        <p className="text-xs sm:text-sm text-gray-500">Manage and track patient appointments</p>
       </div>
 
       <Toolbar />
 
       <Card className="shadow-sm">
         <CardContent className="p-0 overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-full text-left text-xs sm:text-sm">
             <thead>
               <tr className="border-b text-gray-500">
-                <th className="px-4 py-2">Patient</th>
-                <th className="px-4 py-2">Contact</th>
-                <th className="px-4 py-2">Consultation</th>
-                <th className="px-4 py-2">Date</th>
-                <th className="px-4 py-2">Time</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2">Actions</th>
+                <th className="px-2 sm:px-4 py-2 text-xs sm:text-sm">Patient</th>
+                <th className="px-2 sm:px-4 py-2 text-xs sm:text-sm">Contact</th>
+                <th className="px-2 sm:px-4 py-2 text-xs sm:text-sm">Consultation</th>
+                <th className="px-2 sm:px-4 py-2 text-xs sm:text-sm">Date</th>
+                <th className="px-2 sm:px-4 py-2 text-xs sm:text-sm">Time</th>
+                <th className="px-2 sm:px-4 py-2 text-xs sm:text-sm">Status</th>
+                <th className="px-2 sm:px-4 py-2 text-xs sm:text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
               {appointments.map((a) => (
                 <tr key={a.id} className="border-b hover:bg-slate-50">
-                  <td className="px-4 py-2">
-                    <div className="font-medium">{a.name}</div>
+                  <td className="px-2 sm:px-4 py-2">
+                    <div className="font-medium text-xs sm:text-sm">{a.name}</div>
                     <div className="text-xs text-gray-500">{a.gender ?? '-'}{a.age ? ` · ${a.age}y` : ''}</div>
                   </td>
-                  <td className="px-4 py-2">
-                    <div>{a.phone}</div>
+                  <td className="px-2 sm:px-4 py-2">
+                    <div className="text-xs sm:text-sm">{a.phone}</div>
                     <div className="text-xs text-gray-500">{a.email}</div>
                   </td>
-                  <td className="px-4 py-2">{a.consultationType}</td>
-                  <td className="px-4 py-2">{new Date(a.preferredDate).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">{a.preferredTime}</td>
-                  <td className="px-4 py-2">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                  <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm">{a.consultationType}</td>
+                  <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm">{new Date(a.preferredDate).toLocaleDateString()}</td>
+                  <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm">{a.preferredTime}</td>
+                  <td className="px-2 sm:px-4 py-2">
+                    <span className={`rounded-full px-1.5 sm:px-2.5 py-0.5 text-xs font-medium border ${
                       a.status === 'CONFIRMED'
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : a.status === 'CANCELLED'
@@ -88,7 +88,7 @@ export default async function AppointmentsPage({ searchParams }: { searchParams?
                       {a.status}
                     </span>
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-2 sm:px-4 py-2">
                     <AppointmentActions id={a.id} currentStatus={a.status as any} />
                   </td>
                 </tr>
@@ -96,7 +96,7 @@ export default async function AppointmentsPage({ searchParams }: { searchParams?
             </tbody>
           </table>
           {appointments.length === 0 && (
-            <div className="p-6 text-center text-sm text-gray-500">No appointments yet.</div>
+            <div className="p-6 text-center text-xs sm:text-sm text-gray-500">No appointments yet.</div>
           )}
         </CardContent>
       </Card>

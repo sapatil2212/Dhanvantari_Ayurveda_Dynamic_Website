@@ -298,34 +298,7 @@ export default function TreatmentsPreview() {
             </Card>
           </div>
 
-          {/* CTA Section */}
-          <div className={`text-center ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: '0.6s' }}>
-            <div className="bg-white rounded-3xl p-8 md:p-12 max-w-5xl mx-auto border border-gray-200 relative overflow-hidden">
-              <div className="relative z-10">
-                <h3 className="text-2xl md:text-3xl font-bold text-emerald-800 mb-6">
-                  Not sure which treatment is right for you?
-                </h3>
-                <p className="text-gray-600 mb-8 text-lg leading-relaxed max-w-3xl mx-auto">
-                  Book a consultation with our experienced Ayurvedic physicians to get a 
-                  personalized treatment plan based on your unique health needs and constitution.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button 
-                    onClick={() => setIsAppointmentModalOpen(true)}
-                    className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                  >
-                    Book Consultation
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                  <Link href="/services">
-                    <Button variant="outline" className="border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 text-lg px-8 py-6 rounded-xl transition-all duration-300">
-                      View All Treatments
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </div>
       </section>
     </>

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import VirtualTour from '@/components/ui/VirtualTour';
 
 const galleryImages = [
   {
@@ -163,20 +164,65 @@ export default function GalleryPage() {
         </div>
       )}
 
+      {/* Virtual Tour Section */}
+      <VirtualTour />
+
       {/* Visit CTA */}
-      <section className="py-16 px-4 bg-emerald-800 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Experience Our Healing Environment</h2>
-          <p className="text-emerald-100 mb-8">
-            Visit us to experience the peaceful and therapeutic atmosphere in person
+      <section className="py-20 px-4 bg-gradient-to-br from-emerald-50 via-emerald-100/50 to-emerald-50 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-20 h-20 bg-emerald-300 rounded-full blur-xl"></div>
+          <div className="absolute bottom-10 right-10 w-32 h-32 bg-emerald-400 rounded-full blur-xl"></div>
+          <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-emerald-200 rounded-full blur-lg"></div>
+        </div>
+        
+        <div className="relative max-w-5xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            Experience the Difference
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl font-bold text-emerald-800 mb-6 leading-tight">
+            Experience Our Healing Environment
+          </h2>
+          <p className="text-emerald-600 text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed">
+            Visit us to experience the peaceful and therapeutic atmosphere in person. 
+            Feel the tranquility and discover how our holistic approach can transform your wellness journey.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-white text-emerald-800 hover:bg-emerald-50">
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
+            <Button className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               Book a Visit
             </Button>
-            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-emerald-800">
+            <Button variant="outline" className="border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105">
               Get Directions
             </Button>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 mt-12">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-6 h-6 bg-emerald-600 rounded-full"></div>
+              </div>
+              <h3 className="font-semibold text-emerald-800 mb-2">Peaceful Atmosphere</h3>
+              <p className="text-emerald-600 text-sm">Immerse yourself in our calming environment designed for healing</p>
+            </div>
+            
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-6 h-6 bg-emerald-600 rounded-full"></div>
+              </div>
+              <h3 className="font-semibold text-emerald-800 mb-2">Expert Care</h3>
+              <p className="text-emerald-600 text-sm">Meet our experienced Ayurvedic physicians and therapists</p>
+            </div>
+            
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-6 h-6 bg-emerald-600 rounded-full"></div>
+              </div>
+              <h3 className="font-semibold text-emerald-800 mb-2">Holistic Wellness</h3>
+              <p className="text-emerald-600 text-sm">Discover comprehensive treatments for mind, body, and spirit</p>
+            </div>
           </div>
         </div>
       </section>

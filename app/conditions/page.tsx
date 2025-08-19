@@ -234,23 +234,64 @@ export default function ConditionsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 bg-emerald-800 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Don&apos;t See Your Condition Listed?</h2>
-          <p className="text-emerald-100 mb-8">
-            We treat many more conditions through Ayurveda. Contact us to discuss your specific health concerns.
+      <section className="py-20 px-4 bg-gradient-to-br from-emerald-50 via-emerald-100/50 to-emerald-50 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-20 h-20 bg-emerald-300 rounded-full blur-xl"></div>
+          <div className="absolute bottom-10 right-10 w-32 h-32 bg-emerald-400 rounded-full blur-xl"></div>
+          <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-emerald-200 rounded-full blur-lg"></div>
+        </div>
+        
+        <div className="relative max-w-5xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            Comprehensive Care
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl font-bold text-emerald-800 mb-6 leading-tight">
+            Don&apos;t See Your Condition Listed?
+          </h2>
+          <p className="text-emerald-600 text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed">
+            We treat many more conditions through Ayurveda. Our experienced physicians can address a wide range of health concerns with personalized treatment plans.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
             <Link href="/book-appointment">
-              <Button className="bg-white text-emerald-800 hover:bg-emerald-50">
+              <Button className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                 Book Consultation
               </Button>
             </Link>
             <Link href="/contact">
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-emerald-800">
+              <Button variant="outline" className="border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105">
                 Ask Our Experts
               </Button>
             </Link>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 mt-12">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-6 h-6 bg-emerald-600 rounded-full"></div>
+              </div>
+              <h3 className="font-semibold text-emerald-800 mb-2">Personalized Treatment</h3>
+              <p className="text-emerald-600 text-sm">Every treatment plan is customized to your unique constitution and condition</p>
+            </div>
+            
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-6 h-6 bg-emerald-600 rounded-full"></div>
+              </div>
+              <h3 className="font-semibold text-emerald-800 mb-2">Expert Physicians</h3>
+              <p className="text-emerald-600 text-sm">Experienced Ayurvedic doctors with years of clinical practice</p>
+            </div>
+            
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-6 h-6 bg-emerald-600 rounded-full"></div>
+              </div>
+              <h3 className="font-semibold text-emerald-800 mb-2">Natural Healing</h3>
+              <p className="text-emerald-600 text-sm">Safe and effective treatments using time-tested Ayurvedic principles</p>
+            </div>
           </div>
         </div>
       </section>

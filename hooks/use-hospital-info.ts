@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type HotelInfo = {
+export type HospitalInfo = {
   id: string;
   name: string;
   tagline?: string;
@@ -18,9 +18,9 @@ export type HotelInfo = {
   facebook?: string;
   instagram?: string;
   twitter?: string;
+  youtube?: string;
   linkedin?: string;
   pinterest?: string;
-  youtube?: string;
   headerLogo?: string;
   footerLogo?: string;
   favicon?: string;
@@ -33,45 +33,45 @@ export type HotelInfo = {
   updatedAt: string;
 };
 
-export function useHotelInfo() {
-  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
+export function useHospitalInfo() {
+  const [hospitalInfo, setHospitalInfo] = useState<HospitalInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchHotelInfo();
+    fetchHospitalInfo();
   }, []);
 
-  const fetchHotelInfo = async () => {
+  const fetchHospitalInfo = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/system/hotel-info');
-      if (!res.ok) throw new Error('Failed to fetch hotel information');
+      const res = await fetch('/api/system/hospital-info');
+      if (!res.ok) throw new Error('Failed to fetch hospital information');
       const data = await res.json();
-      setHotelInfo(data.hotelInfo);
+      setHospitalInfo(data.hospitalInfo);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to fetch hotel information');
+      setError(e instanceof Error ? e.message : 'Failed to fetch hospital information');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateHotelInfo = async (updatedInfo: Partial<HotelInfo>) => {
+  const updateHospitalInfo = async (updatedInfo: Partial<HospitalInfo>) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/system/hotel-info', {
+      const res = await fetch('/api/system/hospital-info', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedInfo),
       });
-      if (!res.ok) throw new Error('Failed to update hotel information');
+      if (!res.ok) throw new Error('Failed to update hospital information');
       const data = await res.json();
-      setHotelInfo(data.hotelInfo);
-      return data.hotelInfo;
+      setHospitalInfo(data.hospitalInfo);
+      return data.hospitalInfo;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to update hotel information');
+      setError(e instanceof Error ? e.message : 'Failed to update hospital information');
       throw e;
     } finally {
       setLoading(false);
@@ -79,10 +79,10 @@ export function useHotelInfo() {
   };
 
   return {
-    hotelInfo,
+    hospitalInfo,
     loading,
     error,
-    refetch: fetchHotelInfo,
-    update: updateHotelInfo,
+    refetch: fetchHospitalInfo,
+    update: updateHospitalInfo,
   };
 }

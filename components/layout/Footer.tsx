@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Twitter } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { SocialIcon } from 'react-social-icons';
 import { useAppointment } from '@/contexts/AppointmentContext';
 import { useHotelInfo } from '@/hooks/use-hotel-info';
 
@@ -30,21 +31,78 @@ export default function Footer() {
             <p className="text-emerald-200 text-sm leading-relaxed mb-4">
               {hotelInfo?.description || "Authentic Ayurvedic healing through traditional Panchkarma treatments and personalized wellness solutions in the heart of Nashik."}
             </p>
-                          <div className="flex space-x-4">
+                          <div className="flex space-x-3">
                 {hotelInfo?.facebook && (
-                  <a href={hotelInfo.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-                    <Facebook className="w-4 h-4" />
-                  </a>
+                  <SocialIcon 
+                    url={hotelInfo.facebook}
+                    network="facebook"
+                    bgColor="#1877F2"
+                    fgColor="#ffffff"
+                    style={{ width: 32, height: 32 }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-all duration-300 hover:scale-110"
+                  />
                 )}
                 {hotelInfo?.instagram && (
-                  <a href={hotelInfo.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-                    <Instagram className="w-4 h-4" />
-                  </a>
+                  <SocialIcon 
+                    url={hotelInfo.instagram}
+                    network="instagram"
+                    bgColor="#E4405F"
+                    fgColor="#ffffff"
+                    style={{ width: 32, height: 32 }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-all duration-300 hover:scale-110"
+                  />
                 )}
                 {hotelInfo?.twitter && (
-                  <a href={hotelInfo.twitter} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-                    <Twitter className="w-4 h-4" />
-                  </a>
+                  <SocialIcon 
+                    url={hotelInfo.twitter}
+                    network="x"
+                    bgColor="#000000"
+                    fgColor="#ffffff"
+                    style={{ width: 32, height: 32 }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-all duration-300 hover:scale-110"
+                  />
+                )}
+                {hotelInfo?.linkedin && (
+                  <SocialIcon 
+                    url={hotelInfo.linkedin}
+                    network="linkedin"
+                    bgColor="#0A66C2"
+                    fgColor="#ffffff"
+                    style={{ width: 32, height: 32 }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-all duration-300 hover:scale-110"
+                  />
+                )}
+                {hotelInfo?.pinterest && (
+                  <SocialIcon 
+                    url={hotelInfo.pinterest}
+                    network="pinterest"
+                    bgColor="#BD081C"
+                    fgColor="#ffffff"
+                    style={{ width: 32, height: 32 }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-all duration-300 hover:scale-110"
+                  />
+                )}
+                {hotelInfo?.youtube && (
+                  <SocialIcon 
+                    url={hotelInfo.youtube}
+                    network="youtube"
+                    bgColor="#FF0000"
+                    fgColor="#ffffff"
+                    style={{ width: 32, height: 32 }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-all duration-300 hover:scale-110"
+                  />
                 )}
               </div>
           </div>

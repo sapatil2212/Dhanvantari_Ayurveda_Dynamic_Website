@@ -42,6 +42,8 @@ type HotelInfo = {
   facebook?: string;
   instagram?: string;
   twitter?: string;
+  linkedin?: string;
+  pinterest?: string;
   youtube?: string;
   headerLogo?: string;
   footerLogo?: string;
@@ -442,12 +444,32 @@ export default function HotelInfoPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="twitter">Twitter</Label>
+                  <Label htmlFor="twitter">Twitter/X</Label>
                   <Input
                     id="twitter"
                     value={hotelInfo.twitter || ''}
                     onChange={(e) => setHotelInfo({ ...hotelInfo, twitter: e.target.value })}
-                    placeholder="Twitter profile URL"
+                    placeholder="Twitter/X profile URL"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin">LinkedIn</Label>
+                  <Input
+                    id="linkedin"
+                    value={hotelInfo.linkedin || ''}
+                    onChange={(e) => setHotelInfo({ ...hotelInfo, linkedin: e.target.value })}
+                    placeholder="LinkedIn profile URL"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="pinterest">Pinterest</Label>
+                  <Input
+                    id="pinterest"
+                    value={hotelInfo.pinterest || ''}
+                    onChange={(e) => setHotelInfo({ ...hotelInfo, pinterest: e.target.value })}
+                    placeholder="Pinterest profile URL"
                   />
                 </div>
                 <div className="space-y-2">

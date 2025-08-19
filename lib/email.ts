@@ -712,30 +712,16 @@ export async function sendAppointmentBookedEmail(data: AppointmentEmailData) {
           }
           .logo-container { 
             margin: 0 auto 16px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 12px; 
+            text-align: center; 
+            width: 100%; 
           }
           .logo { 
-            width: 48px; 
-            height: 48px; 
+            width: 120px; 
+            height: 120px; 
             object-fit: contain; 
-            border-radius: 6px; 
-          }
-          .brand-icon { 
-            width: 32px; 
-            height: 32px; 
-            background-color: #10b981; 
-            border-radius: 6px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-          }
-          .brand-icon svg { 
-            width: 18px; 
-            height: 18px; 
-            fill: white; 
+            border-radius: 8px; 
+            display: inline-block; 
+            margin: 0 auto; 
           }
           .header h1 { 
             color: #111827; 
@@ -852,13 +838,8 @@ export async function sendAppointmentBookedEmail(data: AppointmentEmailData) {
             <div class="header">
               <div class="logo-container">
                 <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
-                <div class="brand-icon">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                </div>
               </div>
-              <h1>Appointment confirmed</h1>
+                             <h1>Appointment booked</h1>
             </div>
             
             <div class="content">
@@ -923,7 +904,7 @@ export async function sendAppointmentBookedEmail(data: AppointmentEmailData) {
     const mailOptions = {
       from: `"Dhanvantari Ayurveda" <${emailUser}>`,
       to: patientEmail,
-      subject: `Appointment Confirmed - ${appointmentDate} at ${appointmentTime}`,
+      subject: `Appointment Booked - ${appointmentDate} at ${appointmentTime}`,
       html: emailContent,
     };
 
@@ -963,7 +944,7 @@ export async function sendAppointmentStatusEmail(data: AppointmentStatusData) {
           body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
           .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
           .header { background: linear-gradient(135deg, ${statusColor} 0%, ${statusColor}dd 100%); padding: 40px 30px; text-align: center; }
-          .logo { width: 120px; height: 40px; object-fit: contain; }
+          .logo { width: 180px; height: 100px; object-fit: contain; }
           .header h1 { color: #ffffff; margin: 20px 0 0 0; font-size: 32px; font-weight: 700; }
           .content { padding: 40px 30px; }
           .greeting { font-size: 24px; color: ${statusColor}; margin-bottom: 20px; font-weight: 600; }

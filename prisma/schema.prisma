@@ -635,6 +635,8 @@ model HotelInfo {
   facebook    String?
   instagram   String?
   twitter     String?
+  linkedin    String?
+  pinterest   String?
   youtube     String?
   
   // Logos

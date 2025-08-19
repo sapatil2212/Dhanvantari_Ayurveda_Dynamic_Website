@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Phone, Leaf, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { useAppointment } from '@/contexts/AppointmentContext';
+import { useHotelInfo } from '@/hooks/use-hotel-info';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -23,18 +24,18 @@ const navigation = [
   { name: 'About', href: '/about' },
   { 
     name: 'Treatments', 
-    href: '/services',
+    href: '/treatments',
     submenu: [
-      { name: 'Panchkarma', href: '/services#panchkarma' },
-      { name: 'Seasonal Ayurvedic Therapies', href: '/services#seasonal-therapies' },
-      { name: 'Kerala Beauty Therapies', href: '/services#kerala-beauty' },
-      { name: 'Weight Management Solutions', href: '/services#weight-management' },
-      { name: 'Memory & Immunity Boosting Therapies', href: '/services#memory-immunity' },
-      { name: 'Infertility (Uttarbasti) Treatment', href: '/services#infertility-treatment' },
-      { name: 'Hair Fall, Premature Greying & Skin Care', href: '/services#hair-skin-care' },
-      { name: 'Garbhsanskar – Healthy Pregnancy Care', href: '/services#pregnancy-care' },
-      { name: 'Menstrual Disorder Treatments', href: '/services#menstrual-disorders' },
-      { name: 'Physical & Mental Weakness Remedies', href: '/services#weakness-remedies' }
+      { name: 'Panchkarma', href: '/treatments/panchkarma' },
+      { name: 'Seasonal Ayurvedic Therapies', href: '/treatments/seasonal-therapies' },
+      { name: 'Kerala Beauty Therapies', href: '/treatments/kerala-beauty' },
+      { name: 'Weight Management Solutions', href: '/treatments/weight-management' },
+      { name: 'Memory & Immunity Boosting Therapies', href: '/treatments/memory-immunity' },
+      { name: 'Infertility (Uttarbasti) Treatment', href: '/treatments/infertility-treatment' },
+      { name: 'Hair Fall, Premature Greying & Skin Care', href: '/treatments/hair-skin-care' },
+      { name: 'Garbhsanskar – Healthy Pregnancy Care', href: '/treatments/pregnancy-care' },
+      { name: 'Menstrual Disorder Treatments', href: '/treatments/menstrual-disorders' },
+      { name: 'Physical & Mental Weakness Remedies', href: '/treatments/weakness-remedies' }
     ]
   },
   { name: 'Conditions', href: '/conditions' },
@@ -46,6 +47,7 @@ const navigation = [
 
 export default function Navigation() {
   const { setIsAppointmentModalOpen } = useAppointment();
+  const { hotelInfo } = useHotelInfo();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
@@ -90,29 +92,29 @@ export default function Navigation() {
         ? 'bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60' 
         : 'bg-white'
     }`}>
-      <div className="container mx-auto px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Image 
-              src="/assets/logo/logo.png"
-              alt="Dhanvantari Ayurvedic Clinic"
+              src={hotelInfo?.headerLogo || "/assets/logo/logo.png"}
+              alt={hotelInfo?.name || "Dhanvantari Ayurvedic Clinic"}
               width={120}
               height={40}
-              className="h-10 w-auto"
+              className="h-8 w-auto sm:h-9 md:h-10"
               priority
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-0.5">
             {navigation.map((item) => (
               <div key={item.name}>
                 {item.submenu ? (
                   <NavigationMenu>
                     <NavigationMenuList>
                       <NavigationMenuItem>
-                        <NavigationMenuTrigger className="bg-transparent hover:bg-emerald-50 text-gray-700 hover:text-emerald-700">
+                        <NavigationMenuTrigger className="bg-transparent hover:bg-emerald-50 text-gray-700 hover:text-emerald-700 px-2 py-1.5 text-sm">
                           {item.name}
                         </NavigationMenuTrigger>
                         <NavigationMenuContent>
@@ -151,7 +153,7 @@ export default function Navigation() {
                 ) : (
                   <Link
                     href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
                       isActive(item.href)
                         ? 'bg-emerald-100 text-emerald-700'
                         : 'text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
@@ -165,28 +167,28 @@ export default function Navigation() {
           </nav>
 
           {/* CTA Buttons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <a
-              href="tel:+919921118724"
-              className="hidden md:flex items-center space-x-2 text-emerald-600 hover:text-emerald-700"
+              href={`tel:${hotelInfo?.phone || '+919921118724'}`}
+              className="hidden md:flex items-center space-x-1.5 text-emerald-600 hover:text-emerald-700"
             >
               <Phone className="w-4 h-4" />
-              <span className="text-sm">+91 99211 18724</span>
+              <span className="text-sm">{hotelInfo?.phone || '+91 99211 18724'}</span>
             </a>
             
             <Button 
               onClick={() => setIsAppointmentModalOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3 py-1.5 h-8"
             >
               Book Appointment
             </Button>
 
             {session ? (
-              <Link href="/dashboard" className="hidden md:inline text-sm font-medium text-gray-700 hover:text-gray-900">
+              <Link href="/dashboard" className="hidden md:inline text-sm font-medium text-gray-700 hover:text-gray-900 px-2 py-1.5">
                 Dashboard
               </Link>
             ) : (
-              <Link href="/auth/login" className="hidden md:inline text-sm font-medium text-gray-700 hover:text-gray-900">
+              <Link href="/auth/login" className="hidden md:inline text-sm font-medium text-gray-700 hover:text-gray-900 px-2 py-1.5">
                 Login
               </Link>
             )}

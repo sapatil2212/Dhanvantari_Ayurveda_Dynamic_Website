@@ -173,20 +173,20 @@ export default function AppointmentModal() {
   return (
     <>
     <Dialog open={isAppointmentModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 bg-white">
-        <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="text-2xl font-bold text-emerald-800">
+      <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 bg-white">
+        <DialogHeader className="p-4 pb-0">
+          <DialogTitle className="text-xl font-bold text-emerald-800">
             Book Your Appointment
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4">
           {/* Progress Indicator */}
-          <div className="mb-6">
-            <div className="flex items-center justify-center space-x-4">
+          <div className="mb-4">
+            <div className="flex items-center justify-center space-x-3">
               {[1, 2, 3].map((stepNum) => (
                 <div key={stepNum} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                     step >= stepNum 
                       ? 'bg-emerald-600 text-white' 
                       : 'bg-gray-200 text-gray-600'
@@ -194,14 +194,14 @@ export default function AppointmentModal() {
                     {stepNum}
                   </div>
                   {stepNum < 3 && (
-                    <div className={`w-16 h-1 mx-2 ${
+                    <div className={`w-12 h-0.5 mx-2 ${
                       step > stepNum ? 'bg-emerald-600' : 'bg-gray-200'
                     }`} />
                   )}
                 </div>
               ))}
             </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-600 max-w-sm mx-auto">
+            <div className="flex justify-between mt-1 text-xs text-gray-600 max-w-xs mx-auto">
               <span>Details</span>
               <span>Medical</span>
               <span>Confirm</span>
@@ -212,21 +212,21 @@ export default function AppointmentModal() {
           {step === 1 && (
             <div>
               <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-xl text-emerald-800 flex items-center">
-                  <User className="w-5 h-5 mr-2" />
+                <CardTitle className="text-lg text-emerald-800 flex items-center">
+                  <User className="w-4 h-4 mr-2" />
                   Consultation & Personal Details
                 </CardTitle>
               </CardHeader>
 
               <CardContent className="px-0">
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {/* Consultation Type */}
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-3 gap-3">
                     <div>
-                      <Label htmlFor="consultationType">Consultation Type *</Label>
+                      <Label htmlFor="consultationType" className="text-sm">Consultation Type *</Label>
                       <Select value={appointmentData.consultationType} onValueChange={handleSelectChange('consultationType')}>
-                        <SelectTrigger id="consultationType" className="mt-2">
-                          <SelectValue placeholder="Select consultation type" />
+                        <SelectTrigger id="consultationType" className="mt-1 h-9">
+                          <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
                           {consultationTypes.map((type) => (
@@ -237,92 +237,91 @@ export default function AppointmentModal() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 md:col-span-1 gap-4">
-                      <div>
-                        <Label htmlFor="preferredDate">Preferred Date *</Label>
+                    <div>
+                      <Label htmlFor="preferredDate" className="text-sm">Preferred Date *</Label>
+                      <Input
+                        id="preferredDate"
+                        name="preferredDate"
+                        type="date"
+                        value={appointmentData.preferredDate}
+                        onChange={handleInputChange}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="mt-1 h-9"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="preferredTime" className="text-sm">Preferred Time *</Label>
+                      <div className="flex items-center mt-1">
+                        <Clock className="w-3 h-3 mr-1 text-gray-500" />
                         <Input
-                          id="preferredDate"
-                          name="preferredDate"
-                          type="date"
-                          value={appointmentData.preferredDate}
+                          id="preferredTime"
+                          name="preferredTime"
+                          type="time"
+                          value={appointmentData.preferredTime}
                           onChange={handleInputChange}
-                          min={new Date().toISOString().split('T')[0]}
-                          className="mt-2"
+                          className="h-9"
                           required
                         />
-                      </div>
-                      <div>
-                        <Label htmlFor="preferredTime">Preferred Time *</Label>
-                        <div className="flex items-center mt-2">
-                          <Clock className="w-4 h-4 mr-2 text-gray-500" />
-                          <Input
-                            id="preferredTime"
-                            name="preferredTime"
-                            type="time"
-                            value={appointmentData.preferredTime}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Personal Information */}
                   <div>
-                    <h3 className="text-lg font-semibold text-emerald-800 mb-4">Personal Information</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <h3 className="text-base font-semibold text-emerald-800 mb-3">Personal Information</h3>
+                    <div className="grid md:grid-cols-3 gap-3">
                       <div>
-                        <Label htmlFor="name">Full Name *</Label>
+                        <Label htmlFor="name" className="text-sm">Full Name *</Label>
                         <Input
                           id="name"
                           name="name"
                           type="text"
                           value={appointmentData.name}
                           onChange={handleInputChange}
-                          className="mt-2"
+                          className="mt-1 h-9"
                           required
                         />
                       </div>
                       <div>
-                        <Label htmlFor="email">Email *</Label>
+                        <Label htmlFor="email" className="text-sm">Email *</Label>
                         <Input
                           id="email"
                           name="email"
                           type="email"
                           value={appointmentData.email}
                           onChange={handleInputChange}
-                          className="mt-2"
+                          className="mt-1 h-9"
                           required
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Label htmlFor="phone" className="text-sm">Phone Number *</Label>
                         <Input
                           id="phone"
                           name="phone"
                           type="tel"
                           value={appointmentData.phone}
                           onChange={handleInputChange}
-                          className="mt-2"
+                          className="mt-1 h-9"
                           required
                         />
                       </div>
                       <div>
-                        <Label htmlFor="age">Age</Label>
+                        <Label htmlFor="age" className="text-sm">Age</Label>
                         <Input
                           id="age"
                           name="age"
                           type="number"
                           value={appointmentData.age}
                           onChange={handleInputChange}
-                          className="mt-2"
+                          className="mt-1 h-9"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="gender">Gender</Label>
+                        <Label htmlFor="gender" className="text-sm">Gender</Label>
                         <Select value={appointmentData.gender} onValueChange={handleSelectChange('gender')}>
-                          <SelectTrigger className="mt-2">
+                          <SelectTrigger className="mt-1 h-9">
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
                           <SelectContent>
@@ -336,7 +335,7 @@ export default function AppointmentModal() {
                   </div>
                 </div>
 
-                <div className="flex justify-end mt-6">
+                <div className="flex justify-end mt-4">
                   <Button
                     onClick={nextStep}
                     disabled={
@@ -347,7 +346,7 @@ export default function AppointmentModal() {
                       !appointmentData.email ||
                       !appointmentData.phone
                     }
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-emerald-600 hover:bg-emerald-700 h-9 px-4"
                   >
                     Continue
                   </Button>
@@ -360,71 +359,73 @@ export default function AppointmentModal() {
           {step === 2 && (
             <div>
               <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-xl text-emerald-800 flex items-center">
-                  <Calendar className="w-5 h-5 mr-2" />
+                <CardTitle className="text-lg text-emerald-800 flex items-center">
+                  <Calendar className="w-4 h-4 mr-2" />
                   Medical Information
                 </CardTitle>
               </CardHeader>
 
               <CardContent className="px-0">
-                <div className="space-y-6">
-                  <div className="space-y-4">
+                <div className="space-y-4">
+                  <div className="space-y-3">
                     <div>
-                      <Label htmlFor="chiefComplaint">Chief Complaint / Main Health Concern *</Label>
+                      <Label htmlFor="chiefComplaint" className="text-sm">Chief Complaint / Main Health Concern *</Label>
                       <Textarea
                         id="chiefComplaint"
                         name="chiefComplaint"
                         value={appointmentData.chiefComplaint}
                         onChange={handleInputChange}
-                        className="mt-2"
+                        className="mt-1 min-h-[60px]"
                         placeholder="Please describe your main health concern or reason for consultation"
                         required
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="previousTreatment">Previous Treatments (if any)</Label>
-                      <Textarea
-                        id="previousTreatment"
-                        name="previousTreatment"
-                        value={appointmentData.previousTreatment}
-                        onChange={handleInputChange}
-                        className="mt-2"
-                        placeholder="Please mention any previous treatments or consultations for this condition"
-                      />
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="previousTreatment" className="text-sm">Previous Treatments (if any)</Label>
+                        <Textarea
+                          id="previousTreatment"
+                          name="previousTreatment"
+                          value={appointmentData.previousTreatment}
+                          onChange={handleInputChange}
+                          className="mt-1 min-h-[60px]"
+                          placeholder="Please mention any previous treatments or consultations for this condition"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="medications" className="text-sm">Current Medications</Label>
+                        <Textarea
+                          id="medications"
+                          name="medications"
+                          value={appointmentData.medications}
+                          onChange={handleInputChange}
+                          className="mt-1 min-h-[60px]"
+                          placeholder="List any medications or supplements you are currently taking"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <Label htmlFor="medications">Current Medications</Label>
-                      <Textarea
-                        id="medications"
-                        name="medications"
-                        value={appointmentData.medications}
-                        onChange={handleInputChange}
-                        className="mt-2"
-                        placeholder="List any medications or supplements you are currently taking"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="additionalNotes">Additional Notes</Label>
+                      <Label htmlFor="additionalNotes" className="text-sm">Additional Notes</Label>
                       <Textarea
                         id="additionalNotes"
                         name="additionalNotes"
                         value={appointmentData.additionalNotes}
                         onChange={handleInputChange}
-                        className="mt-2"
+                        className="mt-1 min-h-[60px]"
                         placeholder="Any additional information you'd like to share"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-between mt-6">
-                  <Button variant="outline" onClick={prevStep}>
+                <div className="flex justify-between mt-4">
+                  <Button variant="outline" onClick={prevStep} className="h-9 px-4">
                     Back
                   </Button>
                   <Button
                     onClick={nextStep}
                     disabled={!appointmentData.chiefComplaint}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-emerald-600 hover:bg-emerald-700 h-9 px-4"
                   >
                     Continue
                   </Button>
@@ -543,9 +544,9 @@ export default function AppointmentModal() {
           <div className="text-base font-semibold">Possible duplicate</div>
           <div className="mt-1 text-sm text-gray-600">{dupPrompt.message}</div>
           <div className="mt-3 flex justify-center gap-2">
-            <button className="h-9 rounded-md border px-3 text-sm" onClick={() => setDupPrompt({ open: false, message: '' })}>No</button>
-            <button
-              className="h-9 rounded-md bg-emerald-600 px-3 text-sm text-white hover:bg-emerald-700"
+            <Button variant="outline" className="h-9 px-3 text-sm" onClick={() => setDupPrompt({ open: false, message: '' })}>No</Button>
+            <Button
+              className="h-9 px-3 text-sm bg-emerald-600 hover:bg-emerald-700"
               onClick={async () => {
                 setDupPrompt({ open: false, message: '' });
                 setIsSubmitting(true);
@@ -570,7 +571,7 @@ export default function AppointmentModal() {
               }}
             >
               Yes, proceed
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -584,7 +585,7 @@ export default function AppointmentModal() {
           <div className="text-base font-semibold">Appointment booked</div>
           <div className="mt-1 text-sm text-gray-600">A confirmation email has been sent to your inbox.</div>
           <div className="mt-3 flex justify-center">
-            <button className="h-9 rounded-md bg-emerald-600 px-3 text-sm text-white hover:bg-emerald-700" onClick={() => setShowSuccess(false)}>OK</button>
+            <Button className="h-9 px-3 text-sm bg-emerald-600 hover:bg-emerald-700" onClick={() => setShowSuccess(false)}>OK</Button>
           </div>
         </div>
       </div>

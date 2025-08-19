@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 type AuditLog = {
@@ -66,7 +67,7 @@ export default function AuditLogsPage() {
               <SelectItem value="User">User</SelectItem>
             </SelectContent>
           </Select>
-          <button onClick={load} className="px-4 py-2 bg-gray-900 text-white rounded">Filter</button>
+          <Button onClick={load} className="px-4 py-2 bg-gray-900 text-white rounded">Filter</Button>
         </div>
       </div>
 

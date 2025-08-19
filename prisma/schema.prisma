@@ -55,6 +55,7 @@ model User {
   createdPurchaseOrders    PurchaseOrder[] @relation("CreatedPurchaseOrders")
   updatedPurchaseOrders    PurchaseOrder[] @relation("UpdatedPurchaseOrders")
   updatedSystemSettings    SystemSetting[] @relation("UpdatedSystemSettings")
+  updatedHotelInfo         HotelInfo[] @relation("UpdatedHotelInfo")
   assignedEnquiries        Enquiry[] @relation("AssignedEnquiries")
   assignedByEnquiries      Enquiry[] @relation("AssignedByEnquiries")
   createdSuppliers         Supplier[] @relation("CreatedSuppliers")
@@ -605,6 +606,56 @@ model SystemSetting {
   updatedAt   DateTime @updatedAt
 
   @@index([category])
+}
+
+// Hotel Information Management
+model HotelInfo {
+  id          String   @id @default(cuid())
+  name        String   @default("Dhanvantari Ayurvedic Clinic")
+  tagline     String?  @default("Authentic Ayurvedic Healing")
+  description String?  @default("Traditional Panchkarma treatments and personalized wellness solutions")
+  
+  // Contact Information
+  phone       String?  @default("+91 99211 18724")
+  email       String?  @default("dhanvantariayurvedansk@gmail.com")
+  website     String?  @default("https://dhanvantariayurveda.com")
+  
+  // Address
+  address     String?  @default("Dhanvantari Ayurveda Building")
+  city        String?  @default("Ojhar")
+  state       String?  @default("Maharashtra")
+  pincode     String?  @default("422206")
+  landmark    String?  @default("Saikheda Phata, near Khanderao mandir")
+  
+  // Business Hours
+  workingHours String? @default("Monday - Saturday: 9:00 AM - 7:00 PM")
+  emergencyContact String?
+  
+  // Social Media
+  facebook    String?
+  instagram   String?
+  twitter     String?
+  youtube     String?
+  
+  // Logos
+  headerLogo  String?  @default("/assets/logo/logo.png")
+  footerLogo  String?  @default("/assets/logo/logo.png")
+  favicon     String?  @default("/assets/logo/logo.png")
+  
+  // SEO & Meta
+  metaTitle   String?
+  metaDescription String?
+  metaKeywords String?
+  
+  // Additional Info
+  gstNumber   String?
+  licenseNumber String?
+  registrationNumber String?
+  
+  updatedById String?
+  updatedBy   User?    @relation("UpdatedHotelInfo", fields: [updatedById], references: [id])
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
 }
 
 // Enquiry Management

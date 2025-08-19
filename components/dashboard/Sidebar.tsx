@@ -235,32 +235,41 @@ export default function Sidebar({ userRole }: SidebarProps) {
       <div key={item.href} className="space-y-1">
         <div className="flex">
           <Link href={item.href} className="flex-1">
-            <Button
-              variant={isActive ? "secondary" : "ghost"}
+            <div
               className={cn(
-                "w-full justify-start",
+                "relative w-full px-3 py-2 rounded-md transition-all duration-200 group cursor-pointer",
+                "hover:bg-emerald-50 hover:scale-100", // Use consistent faint green hover
+                isActive ? "bg-emerald-50 text-emerald-700" : "text-gray-700",
                 level > 0 && "ml-4",
                 collapsed && "justify-center"
               )}
             >
-              <item.icon className={cn("h-4 w-4", collapsed ? "mr-0" : "mr-2")} />
-              {!collapsed && (
-                <>
-                  <span className="flex-1 text-left">{item.title}</span>
-                  {item.badge && (
-                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                      {item.badge}
-                    </span>
-                  )}
-                </>
-              )}
-            </Button>
+              {/* Animated border line on hover */}
+              <div className="absolute inset-0 border-l-2 border-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-l-md"></div>
+              
+              <div className={cn(
+                "flex items-center relative z-10",
+                collapsed && "justify-center"
+              )}>
+                <item.icon className={cn("h-4 w-4 flex-shrink-0", collapsed ? "mr-0" : "mr-3")} />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left font-medium">{item.title}</span>
+                    {item.badge && (
+                      <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </Link>
           {hasChildren && !collapsed && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-auto px-2"
+              className="h-auto px-2 hover:scale-100"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -387,10 +396,12 @@ export default function Sidebar({ userRole }: SidebarProps) {
             <>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs text-gray-400 hover:text-gray-500">
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    Help & Support
-                  </Button>
+                  <div className="w-full px-3 py-2 rounded-md transition-all duration-200 hover:bg-emerald-50 hover:scale-100 cursor-pointer group">
+                    <div className="flex items-center">
+                      <HelpCircle className="h-4 w-4 mr-2 text-gray-400 group-hover:text-emerald-600" />
+                      <span className="text-xs text-gray-400 group-hover:text-emerald-600">Help & Support</span>
+                    </div>
+                  </div>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -413,10 +424,12 @@ export default function Sidebar({ userRole }: SidebarProps) {
               </Dialog>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs text-gray-400 hover:text-gray-500">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Documentation
-                  </Button>
+                  <div className="w-full px-3 py-2 rounded-md transition-all duration-200 hover:bg-emerald-50 hover:scale-100 cursor-pointer group">
+                    <div className="flex items-center">
+                      <BookOpen className="h-4 w-4 mr-2 text-gray-400 group-hover:text-emerald-600" />
+                      <span className="text-xs text-gray-400 group-hover:text-emerald-600">Documentation</span>
+                    </div>
+                  </div>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -463,15 +476,15 @@ export default function Sidebar({ userRole }: SidebarProps) {
               </Dialog>
             </>
           )}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+          <div 
+            className="w-full px-3 py-2 rounded-md transition-all duration-200 hover:bg-red-50 hover:scale-100 cursor-pointer group"
             onClick={() => signOut()}
           >
-            <LogOut className={cn("h-4 w-4", collapsed ? "mr-0" : "mr-2")} />
-            {!collapsed && "Sign Out"}
-          </Button>
+            <div className={cn("flex items-center", collapsed && "justify-center")}>
+              <LogOut className={cn("h-4 w-4 text-red-600 group-hover:text-red-700", collapsed ? "mr-0" : "mr-2")} />
+              {!collapsed && <span className="text-red-600 group-hover:text-red-700">Sign Out</span>}
+            </div>
+          </div>
         </div>
       </div>
     </div>

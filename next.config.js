@@ -4,7 +4,7 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
   },
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'res.cloudinary.com'],
   },
   // Disable static generation for API routes that use dynamic features
   async headers() {

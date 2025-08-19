@@ -97,12 +97,12 @@ export default function AppointmentActions({ id, currentStatus }: { id: string; 
                 <input type="time" className="mt-1 h-9 w-full rounded-md border px-2 text-sm" value={reschedule.time} onChange={(e) => setReschedule((p) => ({ ...p, time: e.target.value }))} />
               </div>
             </div>
-            <div className="mt-4 flex justify-end gap-2">
-              <button className="h-9 rounded-md border px-3 text-sm" onClick={() => setRescheduleOpen(false)}>Cancel</button>
-              <button
-                className="h-9 rounded-md bg-emerald-600 px-3 text-sm text-white hover:bg-emerald-700"
-                disabled={!reschedule.date || !reschedule.time || loading}
-                onClick={async () => {
+                         <div className="mt-4 flex justify-end gap-2">
+               <Button variant="outline" className="h-9 px-3 text-sm" onClick={() => setRescheduleOpen(false)}>Cancel</Button>
+               <Button
+                 className="h-9 px-3 text-sm bg-emerald-600 hover:bg-emerald-700"
+                 disabled={!reschedule.date || !reschedule.time || loading}
+                 onClick={async () => {
                   setLoading(true);
                   setUpdating(true);
                   try {
@@ -137,10 +137,10 @@ export default function AppointmentActions({ id, currentStatus }: { id: string; 
                     setUpdating(false);
                     setRescheduleOpen(false);
                   }
-                }}
-              >
-                Save
-              </button>
+                                 }}
+               >
+                 Save
+               </Button>
             </div>
           </div>
         </div>
@@ -191,13 +191,13 @@ export default function AppointmentActions({ id, currentStatus }: { id: string; 
                 <AlertDialogDescription className="text-sm">This action cannot be undone.</AlertDialogDescription>
               </AlertDialogHeader>
               <div className="mt-3 flex justify-center gap-2">
-                <button className="h-9 rounded-md border px-3 text-sm" onClick={() => setConfirmDelete(false)} disabled={deleteLoading}>Cancel</button>
-                <button className="h-9 rounded-md bg-rose-600 px-3 text-sm text-white hover:bg-rose-700 disabled:opacity-60" onClick={remove} disabled={deleteLoading}>
+                <Button variant="outline" className="h-9 px-3 text-sm" onClick={() => setConfirmDelete(false)} disabled={deleteLoading}>Cancel</Button>
+                <Button className="h-9 px-3 text-sm bg-rose-600 hover:bg-rose-700 disabled:opacity-60" onClick={remove} disabled={deleteLoading}>
                   <span className="inline-flex items-center gap-2">
                     {deleteLoading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}
                     {deleteLoading ? 'Deleting...' : 'Delete'}
                   </span>
-                </button>
+                </Button>
               </div>
             </>
           )}

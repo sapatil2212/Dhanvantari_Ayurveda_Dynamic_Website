@@ -502,10 +502,10 @@ export default function ForgotPasswordPage() {
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-white">
-              <h2 className="text-3xl font-bold mb-4">Dhanvantari Ayurveda</h2>
+              <h2 className="text-3xl font-bold mb-4">Reset Password</h2>
               <p className="text-lg opacity-90">
                 {step === 'email' ? 'We\'ll help you get back to your account' : 
-                 step === 'otp' ? 'Secure verification for your account' : 
+                 step === 'otp' ? 'Verify your account' : 
                  'Set your new password'}
               </p>
             </div>

@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 
 interface GalleryImage {
   id: number;
@@ -84,8 +82,11 @@ export default function InteractiveGallery() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const scrollPositionRef = useRef<number>(0);
 
   const categories = ['All', ...Array.from(new Set(galleryImages.map(img => img.category)))];
 
@@ -93,26 +94,91 @@ export default function InteractiveGallery() {
     ? galleryImages 
     : galleryImages.filter(img => img.category === selectedCategory);
 
-  // Auto-scroll functionality
-  useEffect(() => {
-    if (!isAutoScrolling || !scrollContainerRef.current) return;
+  // Smooth auto-scroll using requestAnimationFrame
+  const smoothAutoScroll = () => {
+    if (!scrollContainerRef.current || !isAutoScrolling || isHovered) {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      return;
+    }
 
-    const scrollContainer = scrollContainerRef.current;
-    const scrollWidth = scrollContainer.scrollWidth;
-    const clientWidth = scrollContainer.clientWidth;
+    const container = scrollContainerRef.current;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
     const maxScroll = scrollWidth - clientWidth;
 
-    const autoScroll = () => {
-      if (scrollContainer.scrollLeft >= maxScroll) {
-        scrollContainer.scrollLeft = 0;
-      } else {
-        scrollContainer.scrollLeft += 2;
-      }
-    };
+    // Increment scroll position
+    scrollPositionRef.current += 0.5; // Adjust speed here (0.5px per frame)
 
-    const interval = setInterval(autoScroll, 50);
-    return () => clearInterval(interval);
-  }, [isAutoScrolling]);
+    // Reset when reaching the end
+    if (scrollPositionRef.current >= maxScroll) {
+      scrollPositionRef.current = 0;
+    }
+
+    // Apply the scroll
+    container.scrollLeft = scrollPositionRef.current;
+
+    // Continue the animation
+    animationFrameRef.current = requestAnimationFrame(smoothAutoScroll);
+  };
+
+  const startAutoScroll = () => {
+    if (!animationFrameRef.current && isAutoScrolling && !isHovered) {
+      animationFrameRef.current = requestAnimationFrame(smoothAutoScroll);
+    }
+  };
+
+  const stopAutoScroll = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+  };
+
+  const toggleAutoScroll = () => {
+    setIsAutoScrolling(prev => !prev);
+  };
+
+  // Handle mouse enter/leave for pause on hover
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    stopAutoScroll();
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
+  // Sync scroll position when user manually scrolls
+  const handleScroll = () => {
+    if (scrollContainerRef.current && !isAutoScrolling) {
+      scrollPositionRef.current = scrollContainerRef.current.scrollLeft;
+    }
+  };
+
+  // Initialize auto-scroll
+  useEffect(() => {
+    if (isAutoScrolling && !isHovered) {
+      startAutoScroll();
+    } else {
+      stopAutoScroll();
+    }
+  }, [isAutoScrolling, isHovered]);
+
+  // Reset scroll position when category changes
+  useEffect(() => {
+    scrollPositionRef.current = 0;
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = 0;
+    }
+  }, [selectedCategory]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => stopAutoScroll();
+  }, []);
 
   const openModal = (image: GalleryImage) => {
     setSelectedImage(image);
@@ -198,46 +264,63 @@ export default function InteractiveGallery() {
           </p>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                selectedCategory === category
-                  ? 'bg-emerald-600 text-white shadow-lg'
-                  : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50'
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        {/* Auto-scroll Toggle */}
-        <div className="flex justify-center mb-6">
+        {/* Category Filter and Auto-scroll Controls */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+          <div className="flex flex-wrap justify-center gap-2">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  selectedCategory === category
+                    ? 'bg-emerald-600 text-white shadow-lg'
+                    : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+          
+          {/* Auto-scroll toggle button */}
           <button
-            onClick={() => setIsAutoScrolling(!isAutoScrolling)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+            onClick={toggleAutoScroll}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
               isAutoScrolling
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-emerald-600 text-white shadow-lg'
+                : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50'
             }`}
           >
-            {isAutoScrolling ? 'Pause Auto-scroll' : 'Start Auto-scroll'}
+            {isAutoScrolling ? (
+              <>
+                <Pause className="w-4 h-4" />
+                Pause Auto-scroll
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4" />
+                Start Auto-scroll
+              </>
+            )}
           </button>
         </div>
 
         {/* Gallery Grid */}
         <div 
           ref={scrollContainerRef}
-          className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
-          style={{ scrollBehavior: 'smooth' }}
+          className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide relative"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onScroll={handleScroll}
+          style={{ 
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
         >
-          {filteredImages.map((image) => (
+          {/* Duplicate images for seamless loop */}
+          {[...filteredImages, ...filteredImages].map((image, index) => (
             <div
-              key={image.id}
+              key={`${image.id}-${index}`}
               className="flex-shrink-0 w-80 h-64 group cursor-pointer"
               onClick={() => openModal(image)}
             >
@@ -261,10 +344,20 @@ export default function InteractiveGallery() {
           ))}
         </div>
 
+        {/* Auto-scroll indicator */}
+        {isAutoScrolling && (
+          <div className="flex justify-center mt-4">
+            <div className="flex items-center gap-2 text-sm text-emerald-600">
+              <div className="w-2 h-2 bg-emerald-600 rounded-full animate-pulse"></div>
+              <span>Auto-scrolling • Hover to pause</span>
+            </div>
+          </div>
+        )}
+
         {/* Modal */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-4xl w-[90vw] h-[80vh] p-0 bg-black border-0">
-            <div className="relative w-full h-full flex items-center justify-center">
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">
+            <div className="relative w-[90vw] h-[80vh] max-w-4xl">
               {/* Close Button */}
               <button
                 onClick={closeModal}
@@ -320,17 +413,27 @@ export default function InteractiveGallery() {
                     style={{ transform: `scale(${zoomLevel})` }}
                   />
                   
-                                     {/* Image Info */}
-                   <div className="absolute bottom-6 left-6 text-white bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                     <h3 className="font-semibold text-lg">{selectedImage.title}</h3>
-                     <p className="text-sm text-emerald-200">{selectedImage.category}</p>
-                     <p className="text-xs text-gray-300 mt-1">Zoom: {Math.round(zoomLevel * 100)}%</p>
-                   </div>
+                  {/* Image Info */}
+                  <div className="absolute bottom-6 left-6 text-white bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <h3 className="font-semibold text-lg">{selectedImage.title}</h3>
+                    <p className="text-sm text-emerald-200">{selectedImage.category}</p>
+                    <p className="text-xs text-gray-300 mt-1">Zoom: {Math.round(zoomLevel * 100)}%</p>
+                  </div>
                 </div>
               )}
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        )}
+
+        <style jsx>{`
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
       </div>
     </div>
   );

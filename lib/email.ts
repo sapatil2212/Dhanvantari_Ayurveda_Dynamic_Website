@@ -45,136 +45,249 @@ export async function sendEnquiryConfirmationEmail(data: EnquiryEmailData) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Enquiry Confirmation - Dhanvantari Ayurveda</title>
         <style>
-          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
-          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-          .header { background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center; position: relative; }
-          .logo-container { display: inline-block; background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
-          .logo { width: 120px; height: 40px; object-fit: contain; }
-          .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-          .header .subtitle { color: #d1fae5; margin: 8px 0 0 0; font-size: 18px; font-weight: 300; }
-          .content { padding: 40px 30px; }
-          .greeting { font-size: 24px; color: #059669; margin-bottom: 20px; font-weight: 600; }
-          .message { color: #4b5563; line-height: 1.8; margin-bottom: 30px; font-size: 16px; }
-          .details-card { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #d1fae5; border-radius: 12px; padding: 25px; margin: 25px 0; position: relative; }
-          .details-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(135deg, #059669 0%, #047857 100%); border-radius: 2px; }
-          .details-title { color: #059669; margin: 0 0 20px 0; font-size: 20px; font-weight: 600; }
-          .detail-row { display: flex; justify-content: space-between; margin: 12px 0; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-          .detail-label { font-weight: 600; color: #374151; }
-          .detail-value { color: #6b7280; text-align: right; }
-          .next-steps { background: #f8fafc; border-radius: 12px; padding: 25px; margin: 25px 0; }
-          .next-steps h3 { color: #059669; margin: 0 0 15px 0; font-size: 18px; font-weight: 600; }
-          .step-list { margin: 0; padding-left: 20px; }
-          .step-list li { color: #4b5563; margin: 8px 0; line-height: 1.6; }
-          .emergency-card { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 25px 0; text-align: center; }
-          .emergency-title { color: #92400e; margin: 0 0 10px 0; font-size: 16px; font-weight: 600; }
-          .emergency-text { color: #92400e; margin: 0; font-size: 14px; }
-          .footer { background: #f8f9fa; padding: 40px 30px; text-align: center; border-top: 1px solid #e9ecef; }
-          .footer-content { color: #374151; margin: 0; font-size: 18px; line-height: 1.8; font-weight: 600; }
-          .footer-subtitle { color: #6b7280; margin: 5px 0 0 0; font-size: 14px; font-weight: 400; }
-          .contact-info { margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-          .contact-item { text-align: center; }
-          .contact-label { color: #374151; font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block; }
-          .contact-value { color: #6b7280; font-size: 14px; line-height: 1.6; }
-          .contact-link { color: #059669; text-decoration: none; font-weight: 500; transition: color 0.2s; }
-          .contact-link:hover { color: #047857; text-decoration: underline; }
-          .divider { border-top: 1px solid #e5e7eb; margin: 20px 0; }
+          * { box-sizing: border-box; }
+          body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            line-height: 1.5; 
+            color: #374151; 
+            background-color: #f9fafb; 
+          }
+          .email-wrapper { 
+            width: 100%; 
+            padding: 20px 0; 
+            background-color: #f9fafb; 
+          }
+          .container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            border: 1px solid #e5e7eb; 
+          }
+          .header { 
+            background-color: #ffffff; 
+            padding: 32px 32px 24px; 
+            text-align: center; 
+            border-bottom: 1px solid #f3f4f6; 
+          }
+          .logo-container { 
+            margin: 0 auto 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+          }
+          .logo { 
+            width: 48px; 
+            height: 48px; 
+            object-fit: contain; 
+            border-radius: 6px; 
+          }
+          .brand-icon { 
+            width: 32px; 
+            height: 32px; 
+            background-color: #10b981; 
+            border-radius: 6px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+          }
+          .brand-icon svg { 
+            width: 18px; 
+            height: 18px; 
+            fill: white; 
+          }
+          .header h1 { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 20px; 
+            font-weight: 600; 
+            letter-spacing: -0.025em; 
+          }
+          .content { 
+            padding: 32px; 
+          }
+          .greeting { 
+            font-size: 14px; 
+            color: #111827; 
+            margin-bottom: 24px; 
+            font-weight: 400; 
+          }
+          .message { 
+            color: #6b7280; 
+            line-height: 1.6; 
+            margin-bottom: 32px; 
+            font-size: 14px; 
+          }
+          .details-card { 
+            background-color: #f9fafb; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+            border: 1px solid #e5e7eb; 
+          }
+          .details-title { 
+            color: #111827; 
+            margin: 0 0 12px 0; 
+            font-size: 13px; 
+            font-weight: 500; 
+          }
+          .detail-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 8px 0; 
+            padding: 4px 0; 
+          }
+          .detail-label { 
+            font-weight: 500; 
+            color: #6b7280; 
+            font-size: 12px; 
+          }
+          .detail-value { 
+            color: #374151; 
+            text-align: right; 
+            font-size: 12px; 
+          }
+          .next-steps { 
+            background-color: #fffbeb; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+            border: 1px solid #fed7aa; 
+          }
+          .next-steps-title { 
+            color: #92400e; 
+            margin: 0 0 12px 0; 
+            font-size: 13px; 
+            font-weight: 500; 
+          }
+          .step-list { 
+            margin: 0; 
+            padding-left: 16px; 
+            font-size: 12px; 
+          }
+          .step-list li { 
+            color: #a16207; 
+            margin: 4px 0; 
+            line-height: 1.5; 
+          }
+          .contact-note { 
+            background-color: #eff6ff; 
+            border: 1px solid #dbeafe; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+            text-align: center; 
+          }
+          .contact-note-text { 
+            color: #1e40af; 
+            margin: 0; 
+            font-size: 12px; 
+            line-height: 1.5; 
+          }
+          .footer { 
+            background-color: #f9fafb; 
+            padding: 24px 32px; 
+            text-align: center; 
+            border-top: 1px solid #f3f4f6; 
+          }
+          .footer-brand { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 14px; 
+            font-weight: 500; 
+          }
+          .footer-tagline { 
+            color: #9ca3af; 
+            margin: 4px 0 0 0; 
+            font-size: 12px; 
+          }
+          .footer-contact { 
+            color: #9ca3af; 
+            margin: 16px 0 0 0; 
+            font-size: 11px; 
+          }
+          .footer-contact a { 
+            color: #10b981; 
+            text-decoration: none; 
+          }
           @media only screen and (max-width: 600px) {
-            .container { margin: 0; }
-            .header { padding: 30px 20px; }
-            .content { padding: 30px 20px; }
-            .footer { padding: 25px 20px; }
+            .email-wrapper { padding: 10px; }
+            .container { margin: 0; border-radius: 0; }
+            .header, .content, .footer { padding: 24px 20px; }
             .detail-row { flex-direction: column; text-align: left; }
             .detail-value { text-align: left; margin-top: 4px; }
           }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <div class="logo-container">
-              <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
-            </div>
-            <h1>Dhanvantari Ayurveda</h1>
-            <p class="subtitle">Traditional Healing for Modern Wellness</p>
-          </div>
-          
-          <div class="content">
-            <div class="greeting">Dear ${name},</div>
-            
-            <div class="message">
-              Thank you for reaching out to Dhanvantari Ayurveda. We have received your enquiry and our dedicated team of Ayurvedic practitioners will review it carefully and get back to you within 24 hours.
-            </div>
-            
-            <div class="details-card">
-              <h3 class="details-title">📋 Enquiry Details</h3>
-              <div class="detail-row">
-                <span class="detail-label">Enquiry ID:</span>
-                <span class="detail-value">${enquiryId}</span>
-              </div>
-              ${service ? `
-              <div class="detail-row">
-                <span class="detail-label">Service Interest:</span>
-                <span class="detail-value">${service}</span>
-              </div>
-              ` : ''}
-              ${message ? `
-              <div class="detail-row">
-                <span class="detail-label">Message:</span>
-                <span class="detail-value">${message}</span>
-              </div>
-              ` : ''}
-            </div>
-            
-            <div class="next-steps">
-              <h3>🔄 What Happens Next?</h3>
-              <ul class="step-list">
-                <li><strong>Review:</strong> Our expert team will carefully review your health concerns</li>
-                <li><strong>Consultation:</strong> We'll contact you to discuss your specific needs</li>
-                <li><strong>Scheduling:</strong> Arrange a convenient consultation time for you</li>
-                <li><strong>Treatment:</strong> Begin your personalized Ayurvedic treatment plan</li>
-              </ul>
-            </div>
-            
-            <div class="emergency-card">
-              <div class="emergency-title">🚨 Need Immediate Assistance?</div>
-              <div class="emergency-text">
-                For urgent health concerns, please call us directly at <strong>+91 99211 18724</strong>
-              </div>
-            </div>
-          </div>
-          
-          <div class="footer">
-            <div class="footer-content">
-              Dhanvantari Ayurveda
-            </div>
-            <div class="footer-subtitle">
-              Traditional healing for modern wellness
-            </div>
-            
-            <div class="divider"></div>
-            
-            <div class="contact-info">
-              <div class="contact-item">
-                <span class="contact-label">📍 Address</span>
-                <div class="contact-value">
-                  Dhanvantari Ayurveda Building<br>
-                  Saikheda Phata, near Khanderao mandir<br>
-                  Ojhar, Maharashtra 422206
+        <div class="email-wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="logo-container">
+                <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
+                <div class="brand-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
                 </div>
+              </div>
+              <h1>Enquiry received</h1>
+            </div>
+            
+            <div class="content">
+              <div class="greeting">Hello ${name},</div>
+              
+              <div class="message">
+                Thank you for reaching out to Dhanvantari Ayurveda. We have received your enquiry and our dedicated team will review it carefully and get back to you within 24 hours.
               </div>
               
-              <div class="contact-item">
-                <span class="contact-label">📞 Phone</span>
-                <div class="contact-value">
-                  <a href="tel:+919921118724" class="contact-link">+91 99211 18724</a>
+              <div class="details-card">
+                <div class="details-title">Enquiry Details</div>
+                <div class="detail-row">
+                  <span class="detail-label">Enquiry ID</span>
+                  <span class="detail-value">${enquiryId}</span>
                 </div>
+                ${service ? `
+                <div class="detail-row">
+                  <span class="detail-label">Service Interest</span>
+                  <span class="detail-value">${service}</span>
+                </div>
+                ` : ''}
+                ${message ? `
+                <div class="detail-row">
+                  <span class="detail-label">Message</span>
+                  <span class="detail-value">${message}</span>
+                </div>
+                ` : ''}
               </div>
               
-              <div class="contact-item">
-                <span class="contact-label">✉️ Email</span>
-                <div class="contact-value">
-                  <a href="mailto:dhanvantariayurvedansk@gmail.com" class="contact-link">dhanvantariayurvedansk@gmail.com</a>
+              <div class="next-steps">
+                <div class="next-steps-title">What happens next?</div>
+                <ul class="step-list">
+                  <li>Our expert team will review your health concerns</li>
+                  <li>We'll contact you to discuss your specific needs</li>
+                  <li>Arrange a convenient consultation time</li>
+                  <li>Begin your personalized Ayurvedic treatment plan</li>
+                </ul>
+              </div>
+              
+              <div class="contact-note">
+                <div class="contact-note-text">
+                  For urgent health concerns, please call us directly at <strong>+91 99211 18724</strong>
                 </div>
+              </div>
+            </div>
+            
+            <div class="footer">
+              <div class="footer-brand">Dhanvantari Ayurveda</div>
+              <div class="footer-tagline">Traditional healing for modern wellness</div>
+              <div class="footer-contact">
+                📞 <a href="tel:+919921118724">+91 99211 18724</a> | 
+                ✉️ <a href="mailto:dhanvantariayurvedansk@gmail.com">dhanvantariayurvedansk@gmail.com</a>
               </div>
             </div>
           </div>
@@ -220,149 +333,264 @@ export async function sendEnquiryNotificationToStaff(data: EnquiryEmailData) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>New Enquiry Alert - Dhanvantari Ayurveda</title>
         <style>
-          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
-          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-          .header { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px; text-align: center; position: relative; }
-          .logo-container { display: inline-block; background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
-          .logo { width: 120px; height: 40px; object-fit: contain; }
-          .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-          .header .subtitle { color: #fecaca; margin: 8px 0 0 0; font-size: 18px; font-weight: 300; }
-          .content { padding: 40px 30px; }
-          .alert-badge { display: inline-block; background: #dc2626; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; }
-          .message { color: #4b5563; line-height: 1.8; margin-bottom: 30px; font-size: 16px; }
-          .details-card { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 1px solid #fecaca; border-radius: 12px; padding: 25px; margin: 25px 0; position: relative; }
-          .details-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 2px; }
-          .details-title { color: #dc2626; margin: 0 0 20px 0; font-size: 20px; font-weight: 600; }
-          .detail-row { display: flex; justify-content: space-between; margin: 12px 0; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-          .detail-label { font-weight: 600; color: #374151; }
-          .detail-value { color: #6b7280; text-align: right; }
-          .action-card { background: #f8fafc; border-radius: 12px; padding: 25px; margin: 25px 0; border-left: 4px solid #dc2626; }
-          .action-title { color: #dc2626; margin: 0 0 15px 0; font-size: 18px; font-weight: 600; }
-          .action-text { color: #4b5563; margin: 0; line-height: 1.6; }
-          .footer { background: #f8f9fa; padding: 40px 30px; text-align: center; border-top: 1px solid #e9ecef; }
-          .footer-content { color: #374151; margin: 0; font-size: 18px; line-height: 1.8; font-weight: 600; }
-          .footer-subtitle { color: #6b7280; margin: 5px 0 0 0; font-size: 14px; font-weight: 400; }
-          .contact-info { margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-          .contact-item { text-align: center; }
-          .contact-label { color: #374151; font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block; }
-          .contact-value { color: #6b7280; font-size: 14px; line-height: 1.6; }
-          .contact-link { color: #059669; text-decoration: none; font-weight: 500; transition: color 0.2s; }
-          .contact-link:hover { color: #047857; text-decoration: underline; }
-          .divider { border-top: 1px solid #e5e7eb; margin: 20px 0; }
-          .timestamp { background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; }
-          .timestamp-text { color: #6b7280; margin: 0; font-size: 14px; }
+          * { box-sizing: border-box; }
+          body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            line-height: 1.5; 
+            color: #374151; 
+            background-color: #f9fafb; 
+          }
+          .email-wrapper { 
+            width: 100%; 
+            padding: 20px 0; 
+            background-color: #f9fafb; 
+          }
+          .container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            border: 1px solid #e5e7eb; 
+          }
+          .header { 
+            background-color: #ffffff; 
+            padding: 32px 32px 24px; 
+            text-align: center; 
+            border-bottom: 1px solid #f3f4f6; 
+          }
+          .logo-container { 
+            margin: 0 auto 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+          }
+          .logo { 
+            width: 48px; 
+            height: 48px; 
+            object-fit: contain; 
+            border-radius: 6px; 
+          }
+          .brand-icon { 
+            width: 32px; 
+            height: 32px; 
+            background-color: #f59e0b; 
+            border-radius: 6px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+          }
+          .brand-icon svg { 
+            width: 18px; 
+            height: 18px; 
+            fill: white; 
+          }
+          .header h1 { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 20px; 
+            font-weight: 600; 
+            letter-spacing: -0.025em; 
+          }
+          .alert-badge { 
+            display: inline-block; 
+            background-color: #dc2626; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: 500; 
+            margin-top: 8px; 
+          }
+          .content { 
+            padding: 32px; 
+          }
+          .message { 
+            color: #6b7280; 
+            line-height: 1.6; 
+            margin-bottom: 32px; 
+            font-size: 14px; 
+          }
+          .details-card { 
+            background-color: #fef2f2; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+            border: 1px solid #fecaca; 
+          }
+          .details-title { 
+            color: #dc2626; 
+            margin: 0 0 12px 0; 
+            font-size: 13px; 
+            font-weight: 500; 
+          }
+          .detail-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 8px 0; 
+            padding: 4px 0; 
+          }
+          .detail-label { 
+            font-weight: 500; 
+            color: #6b7280; 
+            font-size: 12px; 
+          }
+          .detail-value { 
+            color: #374151; 
+            text-align: right; 
+            font-size: 12px; 
+            max-width: 60%; 
+            word-break: break-word; 
+          }
+          .action-card { 
+            background-color: #fffbeb; 
+            border: 1px solid #fed7aa; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+          }
+          .action-title { 
+            color: #92400e; 
+            margin: 0 0 8px 0; 
+            font-size: 13px; 
+            font-weight: 500; 
+          }
+          .action-text { 
+            color: #a16207; 
+            margin: 0; 
+            font-size: 12px; 
+            line-height: 1.5; 
+          }
+          .timestamp { 
+            background-color: #f3f4f6; 
+            border-radius: 4px; 
+            padding: 12px; 
+            margin: 24px 0; 
+            text-align: center; 
+          }
+          .timestamp-text { 
+            color: #6b7280; 
+            margin: 0; 
+            font-size: 11px; 
+          }
+          .footer { 
+            background-color: #f9fafb; 
+            padding: 24px 32px; 
+            text-align: center; 
+            border-top: 1px solid #f3f4f6; 
+          }
+          .footer-brand { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 14px; 
+            font-weight: 500; 
+          }
+          .footer-tagline { 
+            color: #9ca3af; 
+            margin: 4px 0 0 0; 
+            font-size: 12px; 
+          }
+          .footer-contact { 
+            color: #9ca3af; 
+            margin: 16px 0 0 0; 
+            font-size: 11px; 
+          }
+          .footer-contact a { 
+            color: #10b981; 
+            text-decoration: none; 
+          }
           @media only screen and (max-width: 600px) {
-            .container { margin: 0; }
-            .header { padding: 30px 20px; }
-            .content { padding: 30px 20px; }
-            .footer { padding: 25px 20px; }
+            .email-wrapper { padding: 10px; }
+            .container { margin: 0; border-radius: 0; }
+            .header, .content, .footer { padding: 24px 20px; }
             .detail-row { flex-direction: column; text-align: left; }
-            .detail-value { text-align: left; margin-top: 4px; }
+            .detail-value { text-align: left; margin-top: 4px; max-width: 100%; }
           }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <div class="logo-container">
-              <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
-            </div>
-            <h1>New Enquiry Alert</h1>
-            <p class="subtitle">Action Required - Customer Contact Needed</p>
-          </div>
-          
-          <div class="content">
-            <div class="alert-badge">🚨 URGENT - NEW ENQUIRY</div>
-            
-            <div class="message">
-              A new enquiry has been received through our website. Please review the details below and contact the customer within 24 hours to provide excellent service.
-            </div>
-            
-            <div class="details-card">
-              <h3 class="details-title">📋 Customer Details</h3>
-              <div class="detail-row">
-                <span class="detail-label">Enquiry ID:</span>
-                <span class="detail-value">${enquiryId}</span>
+        <div class="email-wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="logo-container">
+                <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
+                <div class="brand-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                  </svg>
+                </div>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">Customer Name:</span>
-                <span class="detail-value">${name}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Email Address:</span>
-                <span class="detail-value">${email}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Phone Number:</span>
-                <span class="detail-value">${phone}</span>
-              </div>
-              ${service ? `
-              <div class="detail-row">
-                <span class="detail-label">Service Interest:</span>
-                <span class="detail-value">${service}</span>
-              </div>
-              ` : ''}
-              ${message ? `
-              <div class="detail-row">
-                <span class="detail-label">Customer Message:</span>
-                <span class="detail-value">${message}</span>
-              </div>
-              ` : ''}
+              <h1>New enquiry alert</h1>
+              <div class="alert-badge">ACTION REQUIRED</div>
             </div>
             
-            <div class="action-card">
-              <div class="action-title">⚡ Required Action</div>
-              <div class="action-text">
-                <strong>Please contact this customer within 24 hours</strong> to discuss their health concerns and schedule a consultation. This is crucial for providing excellent customer service and converting the enquiry into a patient.
+            <div class="content">
+              <div class="message">
+                A new enquiry has been received through the website. Please review the details below and contact the customer within 24 hours.
               </div>
-            </div>
-            
-            <div class="timestamp">
-              <div class="timestamp-text">
-                <strong>Received:</strong> ${new Date().toLocaleString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric', 
-                  hour: '2-digit', 
-                  minute: '2-digit',
-                  timeZoneName: 'short'
-                })}
+              
+              <div class="details-card">
+                <div class="details-title">Customer Details</div>
+                <div class="detail-row">
+                  <span class="detail-label">Enquiry ID</span>
+                  <span class="detail-value">${enquiryId}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Customer Name</span>
+                  <span class="detail-value">${name}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Email Address</span>
+                  <span class="detail-value">${email}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Phone Number</span>
+                  <span class="detail-value">${phone}</span>
+                </div>
+                ${service ? `
+                <div class="detail-row">
+                  <span class="detail-label">Service Interest</span>
+                  <span class="detail-value">${service}</span>
+                </div>
+                ` : ''}
+                ${message ? `
+                <div class="detail-row">
+                  <span class="detail-label">Customer Message</span>
+                  <span class="detail-value">${message}</span>
+                </div>
+                ` : ''}
               </div>
-            </div>
-          </div>
-          
-          <div class="footer">
-            <div class="footer-content">
-              Dhanvantari Ayurveda
-            </div>
-            <div class="footer-subtitle">
-              Traditional healing for modern wellness
-            </div>
-            
-            <div class="divider"></div>
-            
-            <div class="contact-info">
-              <div class="contact-item">
-                <span class="contact-label">📍 Address</span>
-                <div class="contact-value">
-                  Dhanvantari Ayurveda Building<br>
-                  Saikheda Phata, near Khanderao mandir<br>
-                  Ojhar, Maharashtra 422206
+              
+              <div class="action-card">
+                <div class="action-title">Required Action</div>
+                <div class="action-text">
+                  Please contact this customer within 24 hours to discuss their health concerns and schedule a consultation. This is crucial for providing excellent customer service.
                 </div>
               </div>
               
-              <div class="contact-item">
-                <span class="contact-label">📞 Phone</span>
-                <div class="contact-value">
-                  <a href="tel:+919921118724" class="contact-link">+91 99211 18724</a>
+              <div class="timestamp">
+                <div class="timestamp-text">
+                  Received: ${new Date().toLocaleString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    timeZoneName: 'short'
+                  })}
                 </div>
               </div>
-              
-              <div class="contact-item">
-                <span class="contact-label">✉️ Email</span>
-                <div class="contact-value">
-                  <a href="mailto:dhanvantariayurvedansk@gmail.com" class="contact-link">dhanvantariayurvedansk@gmail.com</a>
-                </div>
+            </div>
+            
+            <div class="footer">
+              <div class="footer-brand">Dhanvantari Ayurveda</div>
+              <div class="footer-tagline">Traditional healing for modern wellness</div>
+              <div class="footer-contact">
+                📞 <a href="tel:+919921118724">+91 99211 18724</a> | 
+                ✉️ <a href="mailto:dhanvantariayurvedansk@gmail.com">dhanvantariayurvedansk@gmail.com</a>
               </div>
             </div>
           </div>
@@ -454,81 +682,237 @@ export async function sendAppointmentBookedEmail(data: AppointmentEmailData) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Appointment Confirmation - Dhanvantari Ayurveda</title>
         <style>
-          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
-          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-          .header { background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center; }
-          .logo { width: 120px; height: 40px; object-fit: contain; }
-          .header h1 { color: #ffffff; margin: 20px 0 0 0; font-size: 32px; font-weight: 700; }
-          .content { padding: 40px 30px; }
-          .greeting { font-size: 24px; color: #059669; margin-bottom: 20px; font-weight: 600; }
-          .message { color: #4b5563; line-height: 1.8; margin-bottom: 30px; font-size: 16px; }
-          .appointment-details { background: #f0fdf4; border: 1px solid #d1fae5; border-radius: 12px; padding: 25px; margin: 25px 0; }
-          .detail-row { display: flex; justify-content: space-between; margin: 12px 0; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-          .detail-label { font-weight: 600; color: #374151; }
-          .detail-value { color: #6b7280; text-align: right; }
-          .footer { background: #f8f9fa; padding: 40px 30px; text-align: center; border-top: 1px solid #e9ecef; }
+          * { box-sizing: border-box; }
+          body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            line-height: 1.5; 
+            color: #374151; 
+            background-color: #f9fafb; 
+          }
+          .email-wrapper { 
+            width: 100%; 
+            padding: 20px 0; 
+            background-color: #f9fafb; 
+          }
+          .container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            border: 1px solid #e5e7eb; 
+          }
+          .header { 
+            background-color: #ffffff; 
+            padding: 32px 32px 24px; 
+            text-align: center; 
+            border-bottom: 1px solid #f3f4f6; 
+          }
+          .logo-container { 
+            margin: 0 auto 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+          }
+          .logo { 
+            width: 48px; 
+            height: 48px; 
+            object-fit: contain; 
+            border-radius: 6px; 
+          }
+          .brand-icon { 
+            width: 32px; 
+            height: 32px; 
+            background-color: #10b981; 
+            border-radius: 6px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+          }
+          .brand-icon svg { 
+            width: 18px; 
+            height: 18px; 
+            fill: white; 
+          }
+          .header h1 { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 20px; 
+            font-weight: 600; 
+            letter-spacing: -0.025em; 
+          }
+          .content { 
+            padding: 32px; 
+          }
+          .greeting { 
+            font-size: 14px; 
+            color: #111827; 
+            margin-bottom: 24px; 
+            font-weight: 400; 
+          }
+          .message { 
+            color: #6b7280; 
+            line-height: 1.6; 
+            margin-bottom: 32px; 
+            font-size: 14px; 
+          }
+          .appointment-details { 
+            background-color: #f0fdf4; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+            border: 1px solid #bbf7d0; 
+          }
+          .details-title { 
+            color: #047857; 
+            margin: 0 0 12px 0; 
+            font-size: 13px; 
+            font-weight: 500; 
+          }
+          .detail-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 8px 0; 
+            padding: 4px 0; 
+          }
+          .detail-label { 
+            font-weight: 500; 
+            color: #6b7280; 
+            font-size: 12px; 
+          }
+          .detail-value { 
+            color: #374151; 
+            text-align: right; 
+            font-size: 12px; 
+          }
+          .reminders { 
+            background-color: #fffbeb; 
+            border: 1px solid #fed7aa; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+          }
+          .reminders-title { 
+            color: #92400e; 
+            margin: 0 0 8px 0; 
+            font-size: 13px; 
+            font-weight: 500; 
+          }
+          .reminders-list { 
+            color: #a16207; 
+            margin: 0; 
+            padding-left: 16px; 
+            font-size: 12px; 
+          }
+          .reminders-list li { 
+            margin: 4px 0; 
+            line-height: 1.4; 
+          }
+          .footer { 
+            background-color: #f9fafb; 
+            padding: 24px 32px; 
+            text-align: center; 
+            border-top: 1px solid #f3f4f6; 
+          }
+          .footer-brand { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 14px; 
+            font-weight: 500; 
+          }
+          .footer-tagline { 
+            color: #9ca3af; 
+            margin: 4px 0 0 0; 
+            font-size: 12px; 
+          }
+          .footer-contact { 
+            color: #9ca3af; 
+            margin: 16px 0 0 0; 
+            font-size: 11px; 
+          }
+          .footer-contact a { 
+            color: #10b981; 
+            text-decoration: none; 
+          }
+          @media only screen and (max-width: 600px) {
+            .email-wrapper { padding: 10px; }
+            .container { margin: 0; border-radius: 0; }
+            .header, .content, .footer { padding: 24px 20px; }
+            .detail-row { flex-direction: column; text-align: left; }
+            .detail-value { text-align: left; margin-top: 4px; }
+          }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
-            <h1>Appointment Confirmed</h1>
-          </div>
-          
-          <div class="content">
-            <div class="greeting">Dear ${patientName},</div>
-            <div class="message">
-              Your appointment has been successfully booked with Dhanvantari Ayurveda. We look forward to serving you and helping you on your wellness journey.
+        <div class="email-wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="logo-container">
+                <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
+                <div class="brand-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+              </div>
+              <h1>Appointment confirmed</h1>
             </div>
             
-            <div class="appointment-details">
-              <h3 style="color: #059669; margin: 0 0 20px 0;">Appointment Details</h3>
-              <div class="detail-row">
-                <span class="detail-label">Date:</span>
-                <span class="detail-value">${appointmentDate}</span>
+            <div class="content">
+              <div class="greeting">Hello ${patientName},</div>
+              
+              <div class="message">
+                Your appointment has been successfully booked with Dhanvantari Ayurveda. We look forward to serving you and helping you on your wellness journey.
               </div>
-              <div class="detail-row">
-                <span class="detail-label">Time:</span>
-                <span class="detail-value">${appointmentTime}</span>
+              
+              <div class="appointment-details">
+                <div class="details-title">Appointment Details</div>
+                <div class="detail-row">
+                  <span class="detail-label">Date</span>
+                  <span class="detail-value">${appointmentDate}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Time</span>
+                  <span class="detail-value">${appointmentTime}</span>
+                </div>
+                ${service ? `
+                <div class="detail-row">
+                  <span class="detail-label">Service</span>
+                  <span class="detail-value">${service}</span>
+                </div>
+                ` : ''}
+                ${notes ? `
+                <div class="detail-row">
+                  <span class="detail-label">Notes</span>
+                  <span class="detail-value">${notes}</span>
+                </div>
+                ` : ''}
+                <div class="detail-row">
+                  <span class="detail-label">Appointment ID</span>
+                  <span class="detail-value">${appointmentId}</span>
+                </div>
               </div>
-              ${service ? `
-              <div class="detail-row">
-                <span class="detail-label">Service:</span>
-                <span class="detail-value">${service}</span>
-              </div>
-              ` : ''}
-              ${notes ? `
-              <div class="detail-row">
-                <span class="detail-label">Notes:</span>
-                <span class="detail-value">${notes}</span>
-              </div>
-              ` : ''}
-              <div class="detail-row">
-                <span class="detail-label">Appointment ID:</span>
-                <span class="detail-value">${appointmentId}</span>
+              
+              <div class="reminders">
+                <div class="reminders-title">Important Reminders</div>
+                <ul class="reminders-list">
+                  <li>Please arrive 10 minutes before your scheduled time</li>
+                  <li>Bring any relevant medical reports or prescriptions</li>
+                  <li>Avoid heavy meals 2 hours before your appointment</li>
+                </ul>
               </div>
             </div>
             
-            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 25px 0; text-align: center;">
-              <h3 style="color: #92400e; margin: 0 0 10px 0;">Important Reminders</h3>
-              <p style="color: #92400e; margin: 0; font-size: 14px;">
-                • Please arrive 10 minutes before your scheduled time<br>
-                • Bring any relevant medical reports or prescriptions<br>
-                • Avoid heavy meals 2 hours before your appointment
-              </p>
-            </div>
-          </div>
-          
-          <div class="footer">
-            <div style="color: #374151; margin: 0; font-size: 18px; font-weight: 600;">
-              Dhanvantari Ayurveda
-            </div>
-            <div style="color: #6b7280; margin: 5px 0 0 0; font-size: 14px;">
-              Traditional healing for modern wellness
-            </div>
-            <div style="margin-top: 20px; color: #6b7280; font-size: 14px;">
-              📞 +91 99211 18724 | ✉️ dhanvantariayurvedansk@gmail.com
+            <div class="footer">
+              <div class="footer-brand">Dhanvantari Ayurveda</div>
+              <div class="footer-tagline">Traditional healing for modern wellness</div>
+              <div class="footer-contact">
+                📞 <a href="tel:+919921118724">+91 99211 18724</a> | 
+                ✉️ <a href="mailto:dhanvantariayurvedansk@gmail.com">dhanvantariayurvedansk@gmail.com</a>
+              </div>
             </div>
           </div>
         </div>
@@ -797,47 +1181,177 @@ export async function sendVerificationEmail(data: VerificationEmailData) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Email Verification - Dhanvantari Ayurveda</title>
         <style>
-          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
-          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-          .header { background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center; }
-          .logo { width: 120px; height: 40px; object-fit: contain; }
-          .header h1 { color: #ffffff; margin: 20px 0 0 0; font-size: 32px; font-weight: 700; }
-          .content { padding: 40px 30px; }
-          .greeting { font-size: 24px; color: #059669; margin-bottom: 20px; font-weight: 600; }
-          .message { color: #4b5563; line-height: 1.8; margin-bottom: 30px; font-size: 16px; }
-          .verify-button { display: inline-block; background: #059669; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-          .footer { background: #f8f9fa; padding: 40px 30px; text-align: center; border-top: 1px solid #e9ecef; }
+          * { box-sizing: border-box; }
+          body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            line-height: 1.5; 
+            color: #374151; 
+            background-color: #f9fafb; 
+          }
+          .email-wrapper { 
+            width: 100%; 
+            padding: 20px 0; 
+            background-color: #f9fafb; 
+          }
+          .container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            border: 1px solid #e5e7eb; 
+          }
+          .header { 
+            background-color: #ffffff; 
+            padding: 32px 32px 24px; 
+            text-align: center; 
+            border-bottom: 1px solid #f3f4f6; 
+          }
+          .logo-container { 
+            margin: 0 auto 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+          }
+          .logo { 
+            width: 48px; 
+            height: 48px; 
+            object-fit: contain; 
+            border-radius: 6px; 
+          }
+          .brand-icon { 
+            width: 32px; 
+            height: 32px; 
+            background-color: #4f46e5; 
+            border-radius: 6px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+          }
+          .brand-icon svg { 
+            width: 18px; 
+            height: 18px; 
+            fill: white; 
+          }
+          .header h1 { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 20px; 
+            font-weight: 600; 
+            letter-spacing: -0.025em; 
+          }
+          .content { 
+            padding: 32px; 
+          }
+          .greeting { 
+            font-size: 14px; 
+            color: #111827; 
+            margin-bottom: 24px; 
+            font-weight: 400; 
+          }
+          .message { 
+            color: #6b7280; 
+            line-height: 1.6; 
+            margin-bottom: 32px; 
+            font-size: 14px; 
+          }
+          .button-container { 
+            text-align: center; 
+            margin: 32px 0; 
+          }
+          .verify-button { 
+            display: inline-block; 
+            background-color: #4f46e5; 
+            color: #ffffff; 
+            padding: 12px 24px; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-weight: 500; 
+            font-size: 14px; 
+            transition: background-color 0.2s; 
+          }
+          .verify-button:hover { 
+            background-color: #4338ca; 
+          }
+          .link-fallback { 
+            color: #9ca3af; 
+            font-size: 12px; 
+            margin-top: 24px; 
+            line-height: 1.5; 
+          }
+          .link-fallback a { 
+            color: #4f46e5; 
+            text-decoration: none; 
+            word-break: break-all; 
+          }
+          .footer { 
+            background-color: #f9fafb; 
+            padding: 24px 32px; 
+            text-align: center; 
+            border-top: 1px solid #f3f4f6; 
+          }
+          .footer-brand { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 14px; 
+            font-weight: 500; 
+          }
+          .footer-tagline { 
+            color: #9ca3af; 
+            margin: 4px 0 0 0; 
+            font-size: 12px; 
+          }
+          .footer-copyright { 
+            color: #9ca3af; 
+            margin: 16px 0 0 0; 
+            font-size: 11px; 
+          }
+          @media only screen and (max-width: 600px) {
+            .email-wrapper { padding: 10px; }
+            .container { margin: 0; border-radius: 0; }
+            .header, .content, .footer { padding: 24px 20px; }
+          }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
-            <h1>Verify Your Email</h1>
-          </div>
-          
-          <div class="content">
-            <div class="greeting">Dear ${name},</div>
-            <div class="message">
-              Thank you for registering with Dhanvantari Ayurveda. Please verify your email address by clicking the button below.
+        <div class="email-wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="logo-container">
+                <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
+                <div class="brand-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                  </svg>
+                </div>
+              </div>
+              <h1>Verify your email address</h1>
             </div>
             
-            <div style="text-align: center;">
-              <a href="${verificationUrl}" class="verify-button">Verify Email Address</a>
+            <div class="content">
+              <div class="greeting">Hello ${name},</div>
+              
+              <div class="message">
+                Thank you for registering with Dhanvantari Ayurveda. Please verify your email address by clicking the button below to complete your account setup.
+              </div>
+              
+              <div class="button-container">
+                <a href="${verificationUrl}" class="verify-button">Verify Email Address</a>
+              </div>
+              
+              <div class="link-fallback">
+                If the button doesn't work, you can copy and paste this link into your browser:<br>
+                <a href="${verificationUrl}">${verificationUrl}</a>
+              </div>
             </div>
             
-            <div style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-              If the button doesn't work, you can copy and paste this link into your browser:<br>
-              <a href="${verificationUrl}" style="color: #059669;">${verificationUrl}</a>
-            </div>
-          </div>
-          
-          <div class="footer">
-            <div style="color: #374151; margin: 0; font-size: 18px; font-weight: 600;">
-              Dhanvantari Ayurveda
-            </div>
-            <div style="color: #6b7280; margin: 5px 0 0 0; font-size: 14px;">
-              Traditional healing for modern wellness
+            <div class="footer">
+              <div class="footer-brand">Dhanvantari Ayurveda</div>
+              <div class="footer-tagline">An effortless wellness solution with all the features you need.</div>
+              <div class="footer-copyright">© 2025 Dhanvantari Ayurveda. All rights reserved.</div>
             </div>
           </div>
         </div>
@@ -883,48 +1397,196 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Password Reset - Dhanvantari Ayurveda</title>
         <style>
-          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
-          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-          .header { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px; text-align: center; }
-          .logo { width: 120px; height: 40px; object-fit: contain; }
-          .header h1 { color: #ffffff; margin: 20px 0 0 0; font-size: 32px; font-weight: 700; }
-          .content { padding: 40px 30px; }
-          .greeting { font-size: 24px; color: #dc2626; margin-bottom: 20px; font-weight: 600; }
-          .message { color: #4b5563; line-height: 1.8; margin-bottom: 30px; font-size: 16px; }
-          .reset-button { display: inline-block; background: #dc2626; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-          .footer { background: #f8f9fa; padding: 40px 30px; text-align: center; border-top: 1px solid #e9ecef; }
+          * { box-sizing: border-box; }
+          body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            line-height: 1.5; 
+            color: #374151; 
+            background-color: #f9fafb; 
+          }
+          .email-wrapper { 
+            width: 100%; 
+            padding: 20px 0; 
+            background-color: #f9fafb; 
+          }
+          .container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            border: 1px solid #e5e7eb; 
+          }
+          .header { 
+            background-color: #ffffff; 
+            padding: 32px 32px 24px; 
+            text-align: center; 
+            border-bottom: 1px solid #f3f4f6; 
+          }
+          .logo-container { 
+            margin: 0 auto 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+          }
+          .logo { 
+            width: 48px; 
+            height: 48px; 
+            object-fit: contain; 
+            border-radius: 6px; 
+          }
+          .brand-icon { 
+            width: 32px; 
+            height: 32px; 
+            background-color: #ef4444; 
+            border-radius: 6px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+          }
+          .brand-icon svg { 
+            width: 18px; 
+            height: 18px; 
+            fill: white; 
+          }
+          .header h1 { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 20px; 
+            font-weight: 600; 
+            letter-spacing: -0.025em; 
+          }
+          .content { 
+            padding: 32px; 
+          }
+          .greeting { 
+            font-size: 14px; 
+            color: #111827; 
+            margin-bottom: 24px; 
+            font-weight: 400; 
+          }
+          .message { 
+            color: #6b7280; 
+            line-height: 1.6; 
+            margin-bottom: 32px; 
+            font-size: 14px; 
+          }
+          .button-container { 
+            text-align: center; 
+            margin: 32px 0; 
+          }
+          .reset-button { 
+            display: inline-block; 
+            background-color: #ef4444; 
+            color: #ffffff; 
+            padding: 12px 24px; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-weight: 500; 
+            font-size: 14px; 
+            transition: background-color 0.2s; 
+          }
+          .reset-button:hover { 
+            background-color: #dc2626; 
+          }
+          .security-note { 
+            background-color: #fef2f2; 
+            border: 1px solid #fecaca; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+          }
+          .security-note-text { 
+            color: #991b1b; 
+            margin: 0; 
+            font-size: 12px; 
+            line-height: 1.5; 
+          }
+          .link-fallback { 
+            color: #9ca3af; 
+            font-size: 12px; 
+            margin-top: 24px; 
+            line-height: 1.5; 
+          }
+          .link-fallback a { 
+            color: #ef4444; 
+            text-decoration: none; 
+            word-break: break-all; 
+          }
+          .footer { 
+            background-color: #f9fafb; 
+            padding: 24px 32px; 
+            text-align: center; 
+            border-top: 1px solid #f3f4f6; 
+          }
+          .footer-brand { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 14px; 
+            font-weight: 500; 
+          }
+          .footer-tagline { 
+            color: #9ca3af; 
+            margin: 4px 0 0 0; 
+            font-size: 12px; 
+          }
+          .footer-copyright { 
+            color: #9ca3af; 
+            margin: 16px 0 0 0; 
+            font-size: 11px; 
+          }
+          @media only screen and (max-width: 600px) {
+            .email-wrapper { padding: 10px; }
+            .container { margin: 0; border-radius: 0; }
+            .header, .content, .footer { padding: 24px 20px; }
+          }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
-            <h1>Reset Your Password</h1>
-          </div>
-          
-          <div class="content">
-            <div class="greeting">Dear ${name},</div>
-            <div class="message">
-              We received a request to reset your password for your Dhanvantari Ayurveda account. Click the button below to create a new password.
+        <div class="email-wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="logo-container">
+                <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
+                <div class="brand-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                  </svg>
+                </div>
+              </div>
+              <h1>Reset your password</h1>
             </div>
             
-            <div style="text-align: center;">
-              <a href="${resetUrl}" class="reset-button">Reset Password</a>
+            <div class="content">
+              <div class="greeting">Hello ${name},</div>
+              
+              <div class="message">
+                We received a request to reset your password for your Dhanvantari Ayurveda account. Click the button below to create a new password.
+              </div>
+              
+              <div class="button-container">
+                <a href="${resetUrl}" class="reset-button">Reset Password</a>
+              </div>
+              
+              <div class="security-note">
+                <div class="security-note-text">
+                  If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.
+                </div>
+              </div>
+              
+              <div class="link-fallback">
+                If the button doesn't work, you can copy and paste this link into your browser:<br>
+                <a href="${resetUrl}">${resetUrl}</a>
+              </div>
             </div>
             
-            <div style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-              If you didn't request this password reset, you can safely ignore this email.<br>
-              If the button doesn't work, you can copy and paste this link into your browser:<br>
-              <a href="${resetUrl}" style="color: #dc2626;">${resetUrl}</a>
-            </div>
-          </div>
-          
-          <div class="footer">
-            <div style="color: #374151; margin: 0; font-size: 18px; font-weight: 600;">
-              Dhanvantari Ayurveda
-            </div>
-            <div style="color: #6b7280; margin: 5px 0 0 0; font-size: 14px;">
-              Traditional healing for modern wellness
+            <div class="footer">
+              <div class="footer-brand">Dhanvantari Ayurveda</div>
+              <div class="footer-tagline">An effortless wellness solution with all the features you need.</div>
+              <div class="footer-copyright">© 2025 Dhanvantari Ayurveda. All rights reserved.</div>
             </div>
           </div>
         </div>
@@ -967,13 +1629,14 @@ export async function sendOTPEmail(data: OTPEmailData) {
       return null;
     }
 
-    const { email, name, otp, type } = data;
-    const isRegistration = type === 'REGISTRATION';
-    const subject = isRegistration ? 'Verify Your Account - Dhanvantari Ayurveda' : 'Reset Your Password - Dhanvantari Ayurveda';
-    const title = isRegistration ? 'Verify Your Account' : 'Reset Your Password';
-    const message = isRegistration 
-      ? 'Thank you for registering with Dhanvantari Ayurveda. Please use the OTP below to verify your account.'
-      : 'We received a request to reset your password. Please use the OTP below to create a new password.';
+         const { email, name, otp, type } = data;
+     const isRegistration = type === 'REGISTRATION';
+     const subject = isRegistration ? 'Verify Your Account - Dhanvantari Ayurveda' : 'Reset Your Password - Dhanvantari Ayurveda';
+     const title = isRegistration ? 'Verify Your Account' : 'Reset Your Password';
+     const heading = isRegistration ? 'Verify your Dhanvantari sign-up' : 'Password reset OTP';
+     const message = isRegistration 
+       ? 'Thank you for registering with Dhanvantari Ayurveda. Please use the OTP below to verify your account.'
+       : 'We received a request to reset your password. Please use the OTP below to create a new password.';
 
     const emailContent = `
       <!DOCTYPE html>
@@ -983,108 +1646,180 @@ export async function sendOTPEmail(data: OTPEmailData) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${title} - Dhanvantari Ayurveda</title>
         <style>
-          body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
-          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-          .header { background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center; }
-          .logo-container { display: inline-block; background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
-          .logo { width: 120px; height: 40px; object-fit: contain; }
-          .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-          .header .subtitle { color: #d1fae5; margin: 8px 0 0 0; font-size: 18px; font-weight: 300; }
-          .content { padding: 40px 30px; }
-          .greeting { font-size: 24px; color: #059669; margin-bottom: 20px; font-weight: 600; }
-          .message { color: #4b5563; line-height: 1.8; margin-bottom: 30px; font-size: 16px; }
-          .otp-container { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #d1fae5; border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; }
-          .otp-label { color: #059669; font-size: 18px; font-weight: 600; margin-bottom: 15px; }
-          .otp-code { font-size: 48px; font-weight: 700; color: #059669; letter-spacing: 8px; margin: 20px 0; font-family: 'Courier New', monospace; }
-          .otp-expiry { color: #6b7280; font-size: 14px; margin-top: 15px; }
-          .security-note { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 25px 0; }
-          .security-note h4 { color: #92400e; margin: 0 0 10px 0; font-size: 16px; }
-          .security-note p { color: #92400e; margin: 0; font-size: 14px; line-height: 1.5; }
-          .footer { background: #f8f9fa; padding: 40px 30px; text-align: center; border-top: 1px solid #e9ecef; }
-          .footer-content { color: #374151; margin: 0; font-size: 18px; line-height: 1.8; font-weight: 600; }
-          .footer-subtitle { color: #6b7280; margin: 5px 0 0 0; font-size: 14px; font-weight: 400; }
-          .contact-info { margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-          .contact-item { text-align: center; }
-          .contact-label { color: #374151; font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block; }
-          .contact-value { color: #6b7280; font-size: 14px; line-height: 1.6; }
-          .contact-link { color: #059669; text-decoration: none; font-weight: 500; transition: color 0.2s; }
-          .contact-link:hover { color: #047857; text-decoration: underline; }
-          .divider { border-top: 1px solid #e5e7eb; margin: 20px 0; }
+          * { box-sizing: border-box; }
+          body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            line-height: 1.5; 
+            color: #374151; 
+            background-color: #f9fafb; 
+          }
+          .email-wrapper { 
+            width: 100%; 
+            padding: 20px 0; 
+            background-color: #f9fafb; 
+          }
+          .container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            border: 1px solid #e5e7eb; 
+          }
+          .header { 
+            background-color: #ffffff; 
+            padding: 32px 32px 24px; 
+            text-align: center; 
+            border-bottom: 1px solid #f3f4f6; 
+          }
+                     .logo-container { 
+             margin: 0 auto 16px; 
+             display: flex; 
+             align-items: center; 
+             justify-content: center; 
+             width: 100%; 
+             text-align: center; 
+           }
+           .logo { 
+             width: 140px; 
+             height: 140px; 
+             object-fit: contain; 
+             border-radius: 8px; 
+             margin: 0 auto; 
+           }
+          .header h1 { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 20px; 
+            font-weight: 600; 
+            letter-spacing: -0.025em; 
+          }
+          .content { 
+            padding: 32px; 
+          }
+          .greeting { 
+            font-size: 14px; 
+            color: #111827; 
+            margin-bottom: 24px; 
+            font-weight: 400; 
+          }
+          .message { 
+            color: #6b7280; 
+            line-height: 1.6; 
+            margin-bottom: 32px; 
+            font-size: 14px; 
+          }
+          .otp-container { 
+            background-color: #f9fafb; 
+            border-radius: 8px; 
+            padding: 24px; 
+            margin: 32px 0; 
+            text-align: center; 
+            border: 1px solid #e5e7eb; 
+          }
+          .otp-code { 
+            font-size: 32px; 
+            font-weight: 700; 
+            color: #111827; 
+            letter-spacing: 8px; 
+            margin: 16px 0; 
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace; 
+            background-color: #ffffff; 
+            padding: 12px 16px; 
+            border-radius: 6px; 
+            border: 1px solid #d1d5db; 
+            display: inline-block; 
+          }
+          .otp-expiry { 
+            color: #9ca3af; 
+            font-size: 12px; 
+            margin-top: 8px; 
+          }
+          .security-note { 
+            background-color: #fffbeb; 
+            border: 1px solid #fed7aa; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 24px 0; 
+          }
+          .security-note-title { 
+            color: #92400e; 
+            margin: 0 0 8px 0; 
+            font-size: 13px; 
+            font-weight: 500; 
+          }
+          .security-note-text { 
+            color: #a16207; 
+            margin: 0; 
+            font-size: 12px; 
+            line-height: 1.5; 
+          }
+          .footer { 
+            background-color: #f9fafb; 
+            padding: 24px 32px; 
+            text-align: center; 
+            border-top: 1px solid #f3f4f6; 
+          }
+          .footer-brand { 
+            color: #111827; 
+            margin: 0; 
+            font-size: 14px; 
+            font-weight: 500; 
+          }
+          .footer-tagline { 
+            color: #9ca3af; 
+            margin: 4px 0 0 0; 
+            font-size: 12px; 
+          }
+          .footer-copyright { 
+            color: #9ca3af; 
+            margin: 16px 0 0 0; 
+            font-size: 11px; 
+          }
           @media only screen and (max-width: 600px) {
-            .container { margin: 0; }
-            .header { padding: 30px 20px; }
-            .content { padding: 30px 20px; }
-            .footer { padding: 25px 20px; }
-            .otp-code { font-size: 36px; letter-spacing: 6px; }
+            .email-wrapper { padding: 10px; }
+            .container { margin: 0; border-radius: 0; }
+            .header, .content, .footer { padding: 24px 20px; }
+            .otp-code { font-size: 28px; letter-spacing: 6px; }
           }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <div class="logo-container">
-              <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
-            </div>
-            <h1>${title}</h1>
-            <p class="subtitle">Secure verification for your account</p>
-          </div>
-          
-          <div class="content">
-            <div class="greeting">Dear ${name},</div>
+        <div class="email-wrapper">
+          <div class="container">
+                         <div class="header">
+               <div class="logo-container">
+                 <img src="https://dhanvantariayurved.in/assets/logo/logo.png" alt="Dhanvantari Ayurveda Logo" class="logo">
+               </div>
+               <h1>${heading}</h1>
+             </div>
             
-            <div class="message">
-              ${message}
-            </div>
-            
-            <div class="otp-container">
-              <div class="otp-label">Your Verification Code</div>
-              <div class="otp-code">${otp}</div>
-              <div class="otp-expiry">This code will expire in 10 minutes</div>
-            </div>
-            
-            <div class="security-note">
-              <h4>🔒 Security Notice</h4>
-              <p>
-                • Never share this OTP with anyone<br>
-                • Our team will never ask for this code over phone or email<br>
-                • If you didn't request this, please ignore this email
-              </p>
-            </div>
-          </div>
-          
-          <div class="footer">
-            <div class="footer-content">
-              Dhanvantari Ayurveda
-            </div>
-            <div class="footer-subtitle">
-              Traditional healing for modern wellness
-            </div>
-            
-            <div class="divider"></div>
-            
-            <div class="contact-info">
-              <div class="contact-item">
-                <span class="contact-label">📍 Address</span>
-                <div class="contact-value">
-                  Dhanvantari Ayurveda Building<br>
-                  Saikheda Phata, near Khanderao mandir<br>
-                  Ojhar, Maharashtra 422206
-                </div>
+            <div class="content">
+              <div class="greeting">Hello ${name},</div>
+              
+              <div class="message">
+                ${message}
               </div>
               
-              <div class="contact-item">
-                <span class="contact-label">📞 Phone</span>
-                <div class="contact-value">
-                  <a href="tel:+919921118724" class="contact-link">+91 99211 18724</a>
-                </div>
+              <div class="otp-container">
+                <div class="otp-code">${otp}</div>
+                <div class="otp-expiry">If you did not attempt to sign up but received this email, please disregard it. The code will remain active for 10 minutes.</div>
               </div>
               
-              <div class="contact-item">
-                <span class="contact-label">✉️ Email</span>
-                <div class="contact-value">
-                  <a href="mailto:dhanvantariayurvedansk@gmail.com" class="contact-link">dhanvantariayurvedansk@gmail.com</a>
+              <div class="security-note">
+                <div class="security-note-title">Security Notice</div>
+                <div class="security-note-text">
+                  Never share this verification code with anyone. Our team will never ask for this code via phone or email.
                 </div>
               </div>
+            </div>
+            
+            <div class="footer">
+              <div class="footer-brand">Dhanvantari Ayurveda</div>
+              <div class="footer-tagline">An effortless wellness solution with all the features you need.</div>
+              <div class="footer-copyright">© 2025 Dhanvantari Ayurveda. All rights reserved.</div>
             </div>
           </div>
         </div>

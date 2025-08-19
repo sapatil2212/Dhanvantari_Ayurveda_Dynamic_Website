@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import Link from 'next/link';
+import { Building2, Settings } from 'lucide-react';
 
 type Setting = {
   id: string;
@@ -89,9 +91,42 @@ export default function SystemSettingsPage() {
         <p className="text-gray-600">Configure application-wide settings</p>
       </div>
 
-      <Card>
+      {/* Quick Access Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link href="/dashboard/system/hotel-info">
+          <Card className="bg-emerald-50/30 border-emerald-200 hover:bg-emerald-100/50 transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-emerald-800">
+                <Building2 className="w-5 h-5 flex-shrink-0" />
+                Hospital Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-emerald-700">
+                Manage clinic information, contact details, logos, and branding
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Card className="bg-emerald-50/30 border-emerald-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-emerald-800">
+              <Settings className="w-5 h-5 flex-shrink-0" />
+              System Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-emerald-700">
+              Configure application-wide system settings and parameters
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="bg-emerald-50/30 border-emerald-200">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Settings</CardTitle>
+          <CardTitle className="text-emerald-800">Settings</CardTitle>
           <Button onClick={addSetting}>Add</Button>
         </CardHeader>
         <CardContent className="space-y-4">

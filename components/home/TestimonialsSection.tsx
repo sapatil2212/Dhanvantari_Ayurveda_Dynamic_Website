@@ -1,356 +1,451 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
+import { useState, useEffect, useRef } from "react"
+import { ChevronLeft, ChevronRight, Star, Quote, Check } from "lucide-react"
+import { Swiper, SwiperSlide } from "swiper/react"
+import { Autoplay, EffectCoverflow, Navigation, Pagination } from "swiper/modules"
+import "swiper/css"
+import "swiper/css/effect-coverflow"
+import "swiper/css/pagination"
+import "swiper/css/navigation"
 
-// Custom animation styles
-const animationStyles = `
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  @keyframes slideInFromLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-50px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  
-  @keyframes slideInFromRight {
-    from {
-      opacity: 0;
-      transform: translateX(50px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  
-  .animate-fade-in-up {
-    animation: fadeInUp 0.8s ease-out forwards;
-  }
-  
-  .animate-slide-in-left {
-    animation: slideInFromLeft 0.8s ease-out forwards;
-  }
-  
-  .animate-slide-in-right {
-    animation: slideInFromRight 0.8s ease-out forwards;
-  }
-`;
-
+// Testimonial data adapted for home page
 const testimonials = [
   {
-    name: 'Yogesh Shewale',
-    location: 'Ojhar',
-    condition: 'Fertility Treatment',
+    id: 1,
+    name: "Yogesh Shewale",
+    avatar: "Y",
+    location: "Google Review",
+    quote:
+      "Today I am so happy to announce that my wife is pregnant. We are taking treatment from Dr Rahul patil sir from last 3 months and so happy today. He has Magic in ayurved treatments. We were trying and taking treatment from many other doctors but no use and just loss of money. I will tell everyone directly go and visit Dhanvantari Ayurved Ojhar for all your problems.",
     rating: 5,
-    testimonial: "Today I am so happy to announce that my wife is pregnant. We are taking treatment from Dr Rahul patil sir from last 3 months and so happy today. He has Magic in ayurved treatments. We were trying and taking treatment from many other doctors but no use and just loss of money. I will tell everyone directly go and visit Dhanvantari Ayurved Ojhar for all your problems. No lengthy treatments and 100% results to all your problems. Thanks to Dr Rahul patil sir and dhanvantari Ayurveda team Ojhar.",
-    initials: 'YS'
+    date: "2 months ago",
+    verified: true,
   },
   {
-    name: 'Gayatri Patil',
-    location: 'Ojhar',
-    condition: 'Panchakarma & Swarnaprashan',
+    id: 2,
+    name: "Gayatri Patil",
+    avatar: "G",
+    location: "Google Review",
+    quote:
+      "Best panchakarma service is provided here. So relaxing and peaceful it is. Thank-you at dhanvantari Ayurveda. Also there product swarnaprashan is so helpful and effective. It gives tremendous and best results to babies. I personally observed it in my baby. Thankyou so much to Dr Shital patil madam for such a Beautiful products.",
     rating: 5,
-    testimonial: "Best panchakarma service is provided here. So relaxing and peaceful it is. Thank-you at dhanvantari Ayurveda. Also there product swarnaprashan is so helpful and effective. It gives tremendous and best results to babies. I personally observed it in my baby. Thankyou so much to Dr Shital patil madam for such a Beautiful products.",
-    initials: 'GP'
+    date: "3 months ago",
+    verified: true,
   },
   {
-    name: 'Saumya Shah',
-    location: 'Nashik',
-    condition: 'Acidity & Skin Treatment',
+    id: 3,
+    name: "Saumya Shah",
+    avatar: "S",
+    location: "Google Review",
+    quote:
+      "When you visit Dhanvantari Ayurveda Clinic, the first thing that will make you a great impression is incredible cleanliness and comfort. The clinic is very clean and beautiful, the interior is fresh and the staff is very caring! The staff and doctor are really helpful and gave us a lot of useful advices too.",
     rating: 5,
-    testimonial: "When you visit Dhanvantari Ayurveda Clinic, the first thing that will make you a great impression is incredible cleanliness and comfort. The clinic is very clean and beautiful, the interior is fresh and the staff is very caring! The staff and doctor are really helpful and gave us a lot of useful advices too. I was coming for acidity treatment and skin treatment from 3 months. Now i feel complete relief from acidity. Also my pimples are gone and recovering from skin issues. Will surely recommend dhanvantari ayurveda. Complete and pure ayurvedic solution for all your health problems.",
-    initials: 'SS'
+    date: "1 month ago",
+    verified: true,
   },
   {
-    name: 'Vishal Sonawane',
-    location: 'Malegaon',
-    condition: 'Knee Pain Treatment',
+    id: 4,
+    name: "Vishal Sonawane",
+    avatar: "V",
+    location: "Google Review",
+    quote:
+      "Me malegaon varun ithe treatment sati yeto. Majya nakache haad vadle hote mala operation suggest karnyat aala hota. Pan doctor rahul patil siran kade treatment ghetli ani operation chi garaj bhasli nahi. Ithe purn ayurvedic treatment dili jate ani kahi pathya palaichi asta pan result 100% aahe.",
     rating: 5,
-    testimonial: "Me malegaon varun ithe treatment sati yeto. Majya nakache haad vadle hote mala operation suggest karnyat aala hota. Pan doctor rahul patil siran kade treatment ghetli ani operation chi garaj bhasli nahi. Ithe purn ayurvedic treatment dili jate ani kahi pathya palaichi asta pan result 100% aahe. Kahihi tras aslyas nakki bhet dya dhanvantari ayurveda ozhar ithe. Dr Rahul patil sir thank you.",
-    initials: 'VS'
+    date: "4 months ago",
+    verified: true,
   },
   {
-    name: 'Mahi Jagwani',
-    location: 'Nashik',
-    condition: 'Swarnaprashan Drops',
+    id: 5,
+    name: "Mahi Jagwani",
+    avatar: "M",
+    location: "Google Review",
+    quote:
+      "Suvarna prashan drops given by you are very effective and the result after using this I have noticed and my kid loves too as these drops are good for immunity and they are helpful in cold and cough. Thanks once again Shital for suggesting and giving Suvarna prashan Drops.",
     rating: 5,
-    testimonial: "Suvarna prashan drops given by you are very effective and the result after using this I have noticed and my kid loves too as these drops are good for immunity and they are helpful in cold and cough. Thanks once again Shital for suggesting and giving Suvarna prashan Drops.",
-    initials: 'MJ'
+    date: "2 months ago",
+    verified: true,
   },
   {
-    name: 'Pankaj Suralke',
-    location: 'Muktai Nagar',
-    condition: 'General Health',
+    id: 6,
+    name: "Deepak Kadam",
+    avatar: "D",
+    location: "Google Review",
+    quote:
+      "Best Doctor and Hospital I have ever seen. My Mother Was referred to operation by other doctors but when I started treatment here doctor Rahul said no need of operation and within few months I made it true. Now she can walk very well only by taking medicine and panchkarma therapy. Best doctor in world.",
     rating: 5,
-    testimonial: "Overall solution to all your health problem. I came from muktai nagar for treatment. Also treatment was not so lengthy and Dr rahul patil treat you in very simple way. Best doctor i have ever visited.",
-    initials: 'PS'
+    date: "3 months ago",
+    verified: true,
   },
-  {
-    name: 'Deepak Kadam',
-    location: 'Nashik',
-    condition: 'Knee Pain Treatment',
-    rating: 5,
-    testimonial: "Best Doctor and Hospital I have ever seen. My Mother Was referred to operation by other doctors but when I started treatment here doctor Rahul said no need of operation and within few months I made it true. Now she can walk very well only by taking medicine and panchkarma therapy. Best doctor in world.",
-    initials: 'DK'
-  },
-  {
-    name: 'Kapil Gunjal',
-    location: 'Kalwan',
-    condition: 'Acidity & Mental Health',
-    rating: 5,
-    testimonial: "Me kalwan varun ithe treatment sati yeto. Aata mala purn pane farak vattoy me acidity ani manechya mankya sati treatment ghet hoto. Doctor rahul patil yanchya kade saglya aajarancha upay aahe nakki bhet dya dhanvantari ayurveda ozar dr rahul patil yanna.",
-    initials: 'KG'
-  },
-  {
-    name: 'Khushal Patil',
-    location: 'Nashik',
-    condition: 'Hyper Acidity',
-    rating: 5,
-    testimonial: "My mom was taking treatment for hyper acidity now she completely fine. Doctor is really best and hospital was made so good. Complete solution for health problems and best panchkarma in nasik.",
-    initials: 'KP'
-  },
-  {
-    name: 'Nana Pagar',
-    location: 'Khadak Ojhar',
-    condition: 'Knee Pain Treatment',
-    rating: 5,
-    testimonial: "मी खडक ओझर वरून येतो. गुडघे दुःखी ची ट्रीटमेंट सुरू होती आता पूर्ण आराम आहे. ऑपरेशन ची गरज भासली नाही बाकी डॉक्टर्स ने ऑपरेशन चा सल्ला दिला होता. डॉक्टर राहुल पाटील पूर्ण आयुर्वेद उपचार करतात आणि खूप छान डॉक्टर आहेत. काही गरज वाटली तर नक्की भेट द्या धन्वंतरी आयुर्वेद ओझर येथे. धन्यवाद राहुल सर.",
-    initials: 'NP'
-  },
-  {
-    name: 'Narendra Patil',
-    location: 'Nashik',
-    condition: 'Skin & Hair Problems',
-    rating: 5,
-    testimonial: "I will surely recommend Dr rahul patil sir. I was facing skin and hair problem and got complete relief from it. Its one and only solution for all your health problem and thats also without any side effects a pure ayurvedic treatment.",
-    initials: 'NP'
-  },
-  {
-    name: 'Hemkant More',
-    location: 'Nashik',
-    condition: 'Knee Pain Treatment',
-    rating: 5,
-    testimonial: "सर, आपल्या आयुर्वेद ट्रीटमेंट मुळे माझ्या गुडघे दुःखी चा 10ते 11 महिन्यात बऱ्यापैकी फरक पडतो आहे, आपल्या धन्वंतरी आयुर्वेद आणि आपल्या सगळ्या टीम साठी मनापासून धन्यवाद, आणि आभार व्यक्त करतो. धन्यवाद.",
-    initials: 'HM'
-  }
-];
+]
 
 export default function TestimonialsSection() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const swiperRef = useRef<any>(null)
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      {
-        threshold: 0.3,
-        rootMargin: '0px 0px -50px 0px'
-      }
-    );
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1200)
+    return () => clearTimeout(timer)
+  }, [])
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
-    };
-  }, []);
-
+  // Enhanced star rating with smooth animations
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${
-          i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+        className={`h-3 w-3 transition-colors duration-300 ${
+          i < rating ? "text-amber-400 fill-amber-400" : "text-gray-300"
         }`}
       />
-    ));
-  };
+    ))
+  }
 
-  const nextTestimonial = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  };
+  // Modern Google logo with enhanced styling
+  const GoogleLogo = () => (
+    <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-full opacity-80">
+      <svg viewBox="0 0 24 24" width="14" height="14">
+        <path
+          fill="#4285F4"
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        />
+        <path
+          fill="#34A853"
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        />
+        <path
+          fill="#FBBC05"
+          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+        />
+        <path
+          fill="#EA4335"
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+        />
+      </svg>
+      <span className="text-xs font-medium text-gray-600">Google</span>
+    </div>
+  )
 
-  const prevTestimonial = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
+  // Enhanced loading skeleton with wave animation
+  const LoadingSkeleton = () => (
+    <div className="relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/20 rounded-3xl p-6 shadow-lg border border-emerald-200/30">
+      <div className="animate-pulse space-y-4">
+        <div className="flex items-center space-x-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full"></div>
+          <div className="space-y-3 flex-1">
+            <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4"></div>
+            <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/2"></div>
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
+          <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-5/6"></div>
+          <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-4/5"></div>
+        </div>
+      </div>
+      {/* Wave animation overlay */}
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
+    </div>
+  )
 
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
-      <section ref={sectionRef} className="py-20 bg-white">
-      <div className="container mx-auto max-w-7xl px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
-        
+  // Modern testimonial card with enhanced design
+  const renderTestimonialCard = (testimonial: any, index: number) => (
+    <div
+      key={testimonial.id}
+      className="relative bg-gradient-to-br from-white to-emerald-50/20 rounded-xl p-4 mx-1 transition-all duration-700 ease-in-out cursor-pointer border border-emerald-200/30 transform hover:scale-105 mb-5 "
+      style={{
+        animation: 'fadeInOut 0.8s ease-in-out',
+        opacity: 0,
+        animationFillMode: 'forwards'
+      }}
+    >
+      {/* Quote icon */}
+      <div className="absolute top-3 right-3 opacity-10">
+        <Quote className="h-6 w-6 text-emerald-600" />
+      </div>
+
+      <div className="relative z-10 animate-fadeIn">
         {/* Header */}
-        <div className={`text-center mb-16 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
-          <Badge variant="outline" className="border-emerald-200 text-emerald-700 mb-4">
-            Patient Stories
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-emerald-900 mb-6">
-            Healing Stories from Our Patients
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Real experiences from people who found relief and healing through our 
-            authentic Ayurvedic treatments
-          </p>
-        </div>
-
-        {/* Featured Testimonial */}
-        <div className={`max-w-4xl mx-auto mb-12 ${isVisible ? 'animate-slide-in-left' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
-          <Card className="p-8 bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 relative overflow-hidden">
-            <div className="absolute top-6 right-6 text-emerald-200">
-              <Quote className="w-16 h-16" />
+        <div className="flex items-start space-x-3 mb-3 animate-slideInUp">
+          <div className="relative">
+            <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-white text-sm">
+              {testimonial.avatar}
             </div>
-            
-            <CardContent className="p-0 relative">
-              <div className="flex items-center mb-6">
-                <Avatar className="w-16 h-16 border-2 border-emerald-200">
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 text-lg font-semibold">
-                    {testimonials[currentIndex].initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="ml-4">
-                  <h3 className="text-xl font-semibold text-emerald-800">
-                    {testimonials[currentIndex].name}
-                  </h3>
-                  <p className="text-emerald-600">{testimonials[currentIndex].location}</p>
-                  <div className="flex items-center mt-1">
-                    {renderStars(testimonials[currentIndex].rating)}
-                  </div>
-                </div>
+            {testimonial.verified && (
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                <Check className="w-2 h-2 text-white" />
               </div>
+            )}
+          </div>
 
-              <blockquote className="text-lg text-gray-700 leading-relaxed mb-6 italic">
-                &ldquo;{testimonials[currentIndex].testimonial}&rdquo;
-              </blockquote>
-
-              <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                Treated for: {testimonials[currentIndex].condition}
-              </Badge>
-            </CardContent>
-
-            {/* Navigation */}
-            <div className="flex justify-between items-center mt-8">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={prevTestimonial}
-                className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              
-              <div className="flex space-x-2">
-                {testimonials.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                      index === currentIndex ? 'bg-emerald-600' : 'bg-emerald-200'
-                    }`}
-                    onClick={() => setCurrentIndex(index)}
-                  />
-                ))}
-              </div>
-              
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={nextTestimonial}
-                className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-1">
+              <h3 className="font-semibold text-gray-900 text-sm">{testimonial.name}</h3>
+              <div className="flex items-center space-x-0.5">{renderStars(testimonial.rating)}</div>
             </div>
-          </Card>
+            <p className="text-xs text-gray-600 mb-0.5 font-medium">{testimonial.location}</p>
+            <p className="text-xs text-gray-400">{testimonial.date}</p>
+          </div>
         </div>
 
-        {/* Testimonial Grid */}
-        <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: '0.4s' }}>
-          {testimonials.filter((_, index) => index !== currentIndex).slice(0, 3).map((testimonial, index) => (
-            <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300 border-emerald-100">
-              <CardContent className="p-0">
-                <div className="flex items-center mb-4">
-                  <Avatar className="border-2 border-emerald-200">
-                    <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                      {testimonial.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="ml-3">
-                    <h4 className="font-semibold text-emerald-800">{testimonial.name}</h4>
-                    <p className="text-sm text-gray-600">{testimonial.location}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center mb-3">
-                  {renderStars(testimonial.rating)}
-                </div>
-                
-                <blockquote className="text-sm text-gray-700 leading-relaxed mb-4 italic">
-                  &ldquo;{testimonial.testimonial.substring(0, 120)}...&rdquo;
-                </blockquote>
-                
-                <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700">
-                  {testimonial.condition}
-                </Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Quote text */}
+        <blockquote className="text-gray-700 leading-relaxed mb-4 text-sm relative">
+          <span className="text-emerald-600 text-lg font-bold">"</span>
+          <span className="relative z-10">{testimonial.quote}</span>
+          <span className="text-emerald-600 text-lg font-bold relative z-10">"</span>
+          {/* Text fade overlay */}
+          <div className="absolute top-0 right-0 w-40 h-full bg-gradient-to-l from-white to-transparent pointer-events-none z-5"></div>
+        </blockquote>
 
-        {/* CTA */}
-        <div className={`text-center ${isVisible ? 'animate-slide-in-right' : 'opacity-0'}`} style={{ animationDelay: '0.6s' }}>
-          <div className="bg-emerald-800 rounded-2xl p-8 text-white">
-            <h3 className="text-2xl font-bold mb-4">
-              Join Hundreds of Satisfied Patients
-            </h3>
-            <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
-              Experience the healing power of authentic Ayurveda. Book your consultation 
-              today and start your journey towards optimal health and wellness.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/book-appointment">
-                <Button className="bg-white text-emerald-800 hover:bg-emerald-50">
-                  Book Your Consultation
-                </Button>
-              </Link>
-              <Link href="/testimonials">
-                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-emerald-800">
-                  Read More Stories
-                </Button>
-              </Link>
+        {/* Footer */}
+        <div className="flex items-center justify-between">
+          <GoogleLogo />
+          <div className="text-xs text-green-600 font-medium">✓ Verified Review</div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const toggleAutoplay = () => {
+    if (swiperRef.current) {
+      if (isAutoPlaying) {
+        swiperRef.current.autoplay.stop()
+      } else {
+        swiperRef.current.autoplay.start()
+      }
+      setIsAutoPlaying(!isAutoPlaying)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-50/40 via-indigo-50/30 to-purple-50/20">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-gradient-to-br from-white via-emerald-50/20 to-indigo-50/10 border border-emerald-200/30 rounded-3xl p-8 lg:p-12 shadow-lg backdrop-blur-sm">
+            <div className="text-center mb-16">
+              <div className="animate-pulse space-y-4">
+                <div className="h-6 bg-gray-200 rounded-full w-32 mx-auto"></div>
+                <div className="h-8 bg-gray-200 rounded-full w-64 mx-auto"></div>
+                <div className="h-4 bg-gray-200 rounded-full w-48 mx-auto"></div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <LoadingSkeleton key={i} />
+              ))}
             </div>
           </div>
         </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white border border-gray-200 rounded-3xl p-8 lg:p-12 ">
+          {/* Modern header with enhanced animations */}
+          <div className="text-center mb-16 lg:mb-20">
+            <div className="inline-flex items-center space-x-2 bg-emerald-50 text-emerald-800 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+              <Star className="h-4 w-4 fill-current" />
+              <span>Healing Stories from Our Patients</span>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              What Our{" "}
+              <span className="text-emerald-600">
+                Amazing Patients
+              </span>{" "}
+              Say About Us
+            </h2>
+
+            <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed">
+              Real experiences from our valued patients who have found healing through authentic Ayurvedic treatments
+            </p>
+          </div>
+
+                    {/* Carousel */}
+          <div className="relative group">
+            {/* Left fade gradient */}
+            <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+            {/* Right fade gradient */}
+            <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+            
+            {/* Left Navigation Arrow */}
+            <button
+              onClick={() => swiperRef.current?.slidePrev()}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:shadow-xl hover:scale-110"
+            >
+              <ChevronLeft className="h-5 w-5 text-gray-600 hover:text-emerald-600 transition-colors duration-300" />
+            </button>
+            
+            {/* Right Navigation Arrow */}
+            <button
+              onClick={() => swiperRef.current?.slideNext()}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:shadow-xl hover:scale-110"
+            >
+              <ChevronRight className="h-5 w-5 text-gray-600 hover:text-emerald-600 transition-colors duration-300" />
+            </button>
+            <Swiper
+              modules={[Autoplay, EffectCoverflow, Navigation, Pagination]}
+              spaceBetween={16}
+              slidesPerView={1}
+              centeredSlides={true}
+              loop={true}
+              autoplay={{
+                delay: 4000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }}
+              effect="slide"
+              speed={800}
+              breakpoints={{
+                480: {
+                  slidesPerView: 1.2,
+                  spaceBetween: 16,
+                },
+                640: {
+                  slidesPerView: 1.4,
+                  spaceBetween: 20,
+                },
+                768: {
+                  slidesPerView: 1.8,
+                  spaceBetween: 24,
+                },
+                1024: {
+                  slidesPerView: 2.2,
+                  spaceBetween: 28,
+                },
+                1280: {
+                  slidesPerView: 2.5,
+                  spaceBetween: 32,
+                },
+              }}
+              onSlideChange={(swiper) => setCurrentSlide(swiper.realIndex)}
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper
+              }}
+              className="pb-12 overflow-visible"
+            >
+              {testimonials.map((testimonial, index) => (
+                <SwiperSlide key={testimonial.id}>{renderTestimonialCard(testimonial, index)}</SwiperSlide>
+              ))}
+            </Swiper>
+
+
+          </div>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInOut {
+          0% {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+          }
+          50% {
+            opacity: 0.8;
+            transform: translateY(10px) scale(0.98);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        
+        .swiper-slide {
+          transition: all 0.8s ease-in-out;
+          position: relative;
+          overflow: visible !important;
+        }
+        
+        .swiper-slide-active {
+          transform: scale(1) !important;
+          opacity: 1 !important;
+          z-index: 2;
+          filter: blur(0px);
+        }
+        
+        .swiper-slide-prev,
+        .swiper-slide-next {
+          transform: scale(0.85) !important;
+          opacity: 0.5 !important;
+          z-index: 1;
+          filter: blur(1.5px);
+        }
+        
+        .swiper-slide-prev {
+          transform: scale(0.85) translateX(10%) !important;
+        }
+        
+        .swiper-slide-next {
+          transform: scale(0.85) translateX(-10%) !important;
+        }
+        
+        /* Fade effect for cards */
+        .swiper-slide {
+          position: relative;
+          overflow: visible !important;
+        }
+        
+        .swiper-slide::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: -40px;
+          width: 150px;
+          height: 100%;
+          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 1));
+          pointer-events: none;
+          z-index: 25;
+          border-radius: 0 12px 12px 0;
+        }
+        
+        .swiper-slide-active::before {
+          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.95));
+        }
+        
+        .swiper-slide-prev::before,
+        .swiper-slide-next::before {
+          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.98));
+        }
+        
+        @keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+        
+        @keyframes slideInUp {
+          0% {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.6s ease-out 0.2s both;
+        }
+        
+        .animate-slideInUp {
+          animation: slideInUp 0.6s ease-out 0.4s both;
+        }
+      `}</style>
     </section>
-    </>
-  );
+  )
 }

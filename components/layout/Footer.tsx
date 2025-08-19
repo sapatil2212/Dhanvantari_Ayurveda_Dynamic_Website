@@ -4,9 +4,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Twitter } from 'lucide-react';
 import { useAppointment } from '@/contexts/AppointmentContext';
+import { useHotelInfo } from '@/hooks/use-hotel-info';
 
 export default function Footer() {
   const { setIsAppointmentModalOpen } = useAppointment();
+  const { hotelInfo } = useHotelInfo();
   return (
     <footer className="bg-emerald-800 text-white">
       <div className="container mx-auto py-12 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
@@ -17,8 +19,8 @@ export default function Footer() {
             <div className="flex items-center mb-4">
               <div className="bg-white rounded-lg p-3">
                 <Image
-                  src="/assets/logo/logo.png"
-                  alt="Dhanvantari Ayurvedic Clinic"
+                  src={hotelInfo?.footerLogo || "/assets/logo/logo.png"}
+                  alt={hotelInfo?.name || "Dhanvantari Ayurvedic Clinic"}
                   width={100}
                   height={100}
                   className="rounded-lg"
@@ -26,20 +28,25 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-emerald-200 text-sm leading-relaxed mb-4">
-              Authentic Ayurvedic healing through traditional Panchkarma treatments 
-              and personalized wellness solutions in the heart of Nashik.
+              {hotelInfo?.description || "Authentic Ayurvedic healing through traditional Panchkarma treatments and personalized wellness solutions in the heart of Nashik."}
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-                <Twitter className="w-4 h-4" />
-              </a>
-            </div>
+                          <div className="flex space-x-4">
+                {hotelInfo?.facebook && (
+                  <a href={hotelInfo.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
+                    <Facebook className="w-4 h-4" />
+                  </a>
+                )}
+                {hotelInfo?.instagram && (
+                  <a href={hotelInfo.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
+                    <Instagram className="w-4 h-4" />
+                  </a>
+                )}
+                {hotelInfo?.twitter && (
+                  <a href={hotelInfo.twitter} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
+                    <Twitter className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
           </div>
 
           {/* Quick Links */}
@@ -75,32 +82,42 @@ export default function Footer() {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
-                                  <div>Dhanvantari Ayurveda Building</div>
-                <div>Saikheda Phata, near Khanderao mandir</div>
-                <div>Ojhar, Maharashtra 422206</div>
+                  <div>{hotelInfo?.address || "Dhanvantari Ayurveda Building"}</div>
+                  <div>{hotelInfo?.landmark || "Saikheda Phata, near Khanderao mandir"}</div>
+                  <div>{hotelInfo?.city || "Ojhar"}, {hotelInfo?.state || "Maharashtra"} {hotelInfo?.pincode || "422206"}</div>
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 flex-shrink-0" />
                 <div className="text-sm">
-                  <div>+91 99211 18724</div>
-             
+                  <div>{hotelInfo?.phone || "+91 99211 18724"}</div>
+                  {hotelInfo?.emergencyContact && (
+                    <div className="text-emerald-300">Emergency: {hotelInfo.emergencyContact}</div>
+                  )}
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 flex-shrink-0" />
                 <div className="text-sm">
-                  dhanvantariayurvedansk@gmail.com
+                  {hotelInfo?.email || "dhanvantariayurvedansk@gmail.com"}
                 </div>
               </div>
               
               <div className="flex items-start space-x-3">
                 <Clock className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
-                  <div>Mon - Sat: 9:00 AM - 7:00 PM</div>
-                  <div>Sunday: 10:00 AM - 2:00 PM</div>
+                  {hotelInfo?.workingHours ? (
+                    hotelInfo.workingHours.split('\n').map((line, index) => (
+                      <div key={index}>{line}</div>
+                    ))
+                  ) : (
+                    <>
+                      <div>Mon - Sat: 9:00 AM - 7:00 PM</div>
+                      <div>Sunday: 10:00 AM - 2:00 PM</div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -111,7 +128,7 @@ export default function Footer() {
         <div className="border-t border-emerald-700 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-emerald-200 text-sm">
-              © {new Date().getFullYear()} Dhanvantari Ayurvedic Clinic. All rights reserved.
+              © {new Date().getFullYear()} {hotelInfo?.name || "Dhanvantari Ayurvedic Clinic"}. All rights reserved.
             </div>
             <div className="flex space-x-6 text-emerald-200 text-sm">
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

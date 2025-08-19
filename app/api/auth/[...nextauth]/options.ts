@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // Enable debug for production to identify issues
+  debug: process.env.NODE_ENV === 'development', // Enable debug in development
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -102,9 +102,9 @@ export const authOptions: NextAuthOptions = {
             data: { lastLoginAt: new Date() }
           });
           
+          // Return minimal user data - only essential fields
           return { 
             id: user.id, 
-            name: user.name ?? user.email, 
             email: user.email, 
             role: user.role 
           } as any;
@@ -130,103 +130,95 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/login',
     error: '/auth/login',
   },
-  events: {
-    async signIn({ user, account, profile }) {
-      console.log('NextAuth signIn event - User:', user, 'Account:', account);
-    },
-    async signOut({ token, session }) {
-      console.log('NextAuth signOut event - Token:', token, 'Session:', session);
-    },
-    async createUser({ user }) {
-      console.log('NextAuth createUser event - User:', user);
-    },
-    async session({ session, token }) {
-      console.log('NextAuth session event - Session:', session, 'Token:', token);
-    },
-  },
   callbacks: {
     async jwt({ token, user }) {
-      console.log('NextAuth JWT callback - User:', user, 'Token:', token);
-      
+      // Only store minimal essential data in JWT to keep cookie size small
       if (user) {
-        token.userId = (user as any).id;
+        token.id = user.id;
+        token.email = user.email;
         token.role = (user as any).role;
-        token.lastActivity = Date.now();
-        console.log('NextAuth JWT callback - Updated token with user data:', token);
-      } else {
-        console.log('NextAuth JWT callback - No user provided, keeping existing token');
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔐 JWT callback - User data set:', { 
+            id: user.id, 
+            email: user.email, 
+            role: (user as any).role 
+          });
+        }
       }
       
-      // Update last activity timestamp on each request
-      if (token.userId) {
-        token.lastActivity = Date.now();
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔐 JWT callback - Final token:', { 
+          id: token.id, 
+          email: token.email, 
+          role: token.role 
+        });
       }
       
-      console.log('NextAuth JWT callback - Final token:', token);
       return token;
     },
     async session({ session, token }) {
-      console.log('NextAuth session callback - Token:', token, 'Session:', session);
-      
-      if (token?.userId && session.user) {
-        (session.user as any).id = token.userId as string;
-        (session.user as any).role = token.role as any;
-        (session.user as any).lastActivity = token.lastActivity;
-        console.log('NextAuth session callback - Updated session:', session);
-      } else {
-        console.log('NextAuth session callback - No token.userId or session.user');
-      }
-      
-      // Ensure session has required fields
-      if (!session.user) {
-        console.log('NextAuth session callback - No session.user, creating default');
-        session.user = {
-          id: token?.userId as string || '',
-          email: token?.email as string || '',
-          name: token?.name as string || '',
-          role: token?.role as any || 'USER',
-        } as any;
+      // Expose minimal info to client
+      if (token) {
+        // Ensure session.user exists
+        if (!session.user) {
+          session.user = {} as any;
+        }
+        
+        (session.user as any).id = token.id as string;
+        (session.user as any).email = token.email as string;
+        (session.user as any).role = token.role;
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔐 Session callback - Final session:', {
+            id: (session.user as any).id,
+            email: (session.user as any).email,
+            role: (session.user as any).role
+          });
+        }
       }
       
       return session;
     },
     async redirect({ url, baseUrl }) {
-      console.log('NextAuth redirect callback - URL:', url, 'Base URL:', baseUrl);
-      
-      // On Vercel, NextAuth automatically detects the correct URL, so we use baseUrl directly
-      // Don't rely on NEXTAUTH_URL in production on Vercel
-      const actualBaseUrl = baseUrl;
-      console.log('NextAuth redirect callback - Using baseUrl:', actualBaseUrl);
-      
       // If the url is already a complete URL (has protocol), validate it
       if (url.startsWith('http://') || url.startsWith('https://')) {
         try {
           const urlObj = new URL(url);
-          const baseUrlObj = new URL(actualBaseUrl);
+          const baseUrlObj = new URL(baseUrl);
           if (urlObj.hostname === baseUrlObj.hostname) {
-            console.log('NextAuth redirect callback - Same domain URL:', url);
             return url;
           } else {
-            console.log('NextAuth redirect callback - Different domain, defaulting to dashboard');
-            return `${actualBaseUrl}/dashboard`;
+            return `${baseUrl}/dashboard`;
           }
         } catch (error) {
-          console.log('NextAuth redirect callback - Invalid URL, defaulting to dashboard');
-          return `${actualBaseUrl}/dashboard`;
+          return `${baseUrl}/dashboard`;
         }
       }
       
       // If it's a relative path, construct full URL
       if (url.startsWith('/')) {
-        const redirectUrl = `${actualBaseUrl}${url}`;
-        console.log('NextAuth redirect callback - Constructed URL from relative path:', redirectUrl);
-        return redirectUrl;
+        return `${baseUrl}${url}`;
       }
       
       // Default to dashboard
-      const defaultUrl = `${actualBaseUrl}/dashboard`;
-      console.log('NextAuth redirect callback - Default redirect to dashboard:', defaultUrl);
-      return defaultUrl;
+      return `${baseUrl}/dashboard`;
+    },
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' 
+        ? '__Secure-next-auth.session-token' 
+        : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
     },
   },
 };

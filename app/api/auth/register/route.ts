@@ -7,6 +7,7 @@ const schema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   role: z.enum(['RECEPTIONIST', 'DOCTOR', 'OTHER']).default('OTHER'),
+  psk: z.string().min(1, 'Agency Permanent Security Key is required'),
 });
 
 // Simple in-memory rate limiting (in production, use Redis or similar)
@@ -48,10 +49,25 @@ export async function POST(request: Request) {
     }
 
     const json = await request.json();
-    const { name, email, password, role } = schema.parse(json);
+    const { name, email, password, role, psk } = schema.parse(json);
+
+    // Validate PSK
+    const expectedPSK = process.env.AGENCY_PSK;
+    if (!expectedPSK) {
+      console.error('AGENCY_PSK environment variable is not set');
+      return NextResponse.json({ 
+        message: 'Registration is currently unavailable. Please contact support.' 
+      }, { status: 500 });
+    }
+
+    if (psk !== expectedPSK) {
+      return NextResponse.json({ 
+        message: 'Invalid Agency Permanent Security Key. Please enter the correct key to register.' 
+      }, { status: 403 });
+    }
 
     // Send OTP for registration
-    const result = await OTPService.sendRegistrationOTP(email, name);
+    const result = await OTPService.sendRegistrationOTP(email, name, psk);
 
     if (result.success) {
       return NextResponse.json({ 

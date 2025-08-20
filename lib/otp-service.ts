@@ -17,7 +17,7 @@ export class OTPService {
   /**
    * Send OTP for registration
    */
-  static async sendRegistrationOTP(email: string, name: string): Promise<{ success: boolean; message: string }> {
+  static async sendRegistrationOTP(email: string, name: string, psk?: string): Promise<{ success: boolean; message: string }> {
     try {
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
@@ -47,14 +47,15 @@ export class OTPService {
       const otp = this.generateOTP();
       const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-      // Save OTP to database
+      // Save OTP to database with PSK (if provided)
       await prisma.oTPToken.create({
         data: {
           email: email.toLowerCase().trim(),
           otp,
           type: 'REGISTRATION',
           expiresAt,
-          attempts: 0
+          attempts: 0,
+          metadata: psk ? JSON.stringify({ psk }) : null
         }
       });
 
@@ -139,6 +140,7 @@ export class OTPService {
     name: string;
     password: string;
     role: string;
+    psk?: string;
   }): Promise<{ success: boolean; message: string; user?: any }> {
     try {
       const otpRecord = await prisma.oTPToken.findFirst({
@@ -161,6 +163,24 @@ export class OTPService {
       if (otpRecord.attempts >= MAX_OTP_ATTEMPTS) {
         await this.deleteOTP(otpRecord.id);
         return { success: false, message: 'Too many failed attempts. Please request a new OTP.' };
+      }
+
+      // Validate PSK if provided
+      if (userData.psk) {
+        const expectedPSK = process.env.AGENCY_PSK;
+        if (!expectedPSK) {
+          console.error('AGENCY_PSK environment variable is not set');
+          return { success: false, message: 'Registration is currently unavailable. Please contact support.' };
+        }
+
+        if (userData.psk !== expectedPSK) {
+          // Increment attempts for invalid PSK
+          await prisma.oTPToken.update({
+            where: { id: otpRecord.id },
+            data: { attempts: otpRecord.attempts + 1 }
+          });
+          return { success: false, message: 'Invalid Agency Permanent Security Key. Please enter the correct key to register.' };
+        }
       }
 
       // Increment attempts

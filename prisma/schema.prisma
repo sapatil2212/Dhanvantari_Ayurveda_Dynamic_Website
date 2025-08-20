@@ -101,6 +101,7 @@ model OTPToken {
   attempts  Int      @default(0)
   expiresAt DateTime
   createdAt DateTime @default(now())
+  metadata  String?  // JSON string for additional data like PSK
 
   @@index([email, type])
   @@index([expiresAt])

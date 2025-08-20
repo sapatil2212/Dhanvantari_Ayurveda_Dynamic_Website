@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Home, AlertCircle, CheckCircle2, Loader2, KeyRound } from 'lucide-react';
+import { AnimatedTick } from '@/components/ui/animated-tick';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const registrationSchema = z.object({
@@ -31,6 +32,9 @@ const registrationSchema = z.object({
   confirmPassword: z.string()
     .min(1, { message: 'Please confirm your password' }),
   role: z.enum(['RECEPTIONIST', 'DOCTOR', 'OTHER']).default('OTHER'),
+  psk: z.string()
+    .min(1, { message: 'Agency Permanent Security Key is required' })
+    .min(1, { message: 'Please enter the correct Agency Permanent Security Key' }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -55,6 +59,7 @@ export default function RegisterPage() {
   const [registrationData, setRegistrationData] = useState<any>(null);
   const [otpSent, setOtpSent] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const registrationForm = useForm<z.infer<typeof registrationSchema>>({
     resolver: zodResolver(registrationSchema),
@@ -117,6 +122,7 @@ export default function RegisterPage() {
           email: values.email.trim().toLowerCase(),
           password: values.password,
           role: values.role,
+          psk: values.psk,
         }),
       });
 
@@ -170,13 +176,15 @@ export default function RegisterPage() {
           name: registrationData.name,
           password: registrationData.password,
           role: registrationData.role,
+          psk: registrationData.psk,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        setGlobalSuccess('Account created successfully! You can now log in.');
+        // Show success modal
+        setShowSuccess(true);
         // Reset forms
         registrationForm.reset();
         otpForm.reset();
@@ -184,11 +192,8 @@ export default function RegisterPage() {
         setRegistrationData(null);
         setOtpSent(false);
         setResendTimer(0);
-        
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-          router.push('/auth/login');
-        }, 2000);
+        setGlobalError(null);
+        setGlobalSuccess(null);
       } else {
         setGlobalError(data.message || 'OTP verification failed. Please try again.');
       }
@@ -215,6 +220,7 @@ export default function RegisterPage() {
           email: registrationData.email.trim().toLowerCase(),
           password: registrationData.password,
           role: registrationData.role,
+          psk: registrationData.psk,
         }),
       });
 
@@ -363,6 +369,29 @@ export default function RegisterPage() {
                     <p className="text-sm text-red-600 flex items-center gap-1">
                       <AlertCircle className="h-3 w-3" />
                       {registrationForm.formState.errors.role.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="psk" className="text-sm font-medium text-gray-700">
+                    Agency Permanent Security Key
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input 
+                      id="psk"
+                      className="pl-10" 
+                      placeholder="Enter the Agency Permanent Security Key" 
+                      type="password"
+                      {...registrationForm.register('psk')}
+                      autoComplete="off"
+                    />
+                  </div>
+                  {registrationForm.formState.errors.psk && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {registrationForm.formState.errors.psk.message}
                     </p>
                   )}
                 </div>
@@ -549,6 +578,30 @@ export default function RegisterPage() {
           </div>
         </div>
       </Card>
+
+      {/* Success Modal */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 animate-in fade-in duration-300">
+          <div className="w-full max-w-sm rounded-lg bg-white p-6 text-center shadow-lg animate-in zoom-in-95 duration-300">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <AnimatedTick size={40} className="text-emerald-600" />
+            </div>
+            <div className="text-lg font-semibold text-gray-900 mb-2">Registration Successful!</div>
+            <div className="text-sm text-gray-600 mb-4">Your account has been created successfully. You can now log in with your credentials.</div>
+            <div className="flex justify-center">
+              <Button 
+                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+                onClick={() => {
+                  setShowSuccess(false);
+                  router.push('/auth/login');
+                }}
+              >
+                Go to Login
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

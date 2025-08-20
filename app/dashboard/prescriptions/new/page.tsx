@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { AutocompleteInput } from '@/components/ui/autocomplete-input';
 import { Mic, MicOff, Play, Square, Save, ArrowLeft, User, Stethoscope } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import AIPrescriptionAssistant from '@/components/dashboard/AIPrescriptionAssistant';
+import PrescriptionOptimizer from '@/components/dashboard/PrescriptionOptimizer';
 
 type RxItem = { 
   medicineName: string; 
@@ -836,6 +838,47 @@ export default function NewPrescriptionPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Prescription Assistant */}
+          <AIPrescriptionAssistant
+            patientId={selectedPatientId}
+            onMedicineSelect={(medicine) => {
+              const newItem = {
+                medicineName: medicine.medicineName,
+                strength: medicine.strength || '',
+                dosage: medicine.dosage || '',
+                frequency: medicine.frequency || '',
+                route: medicine.route || 'Oral',
+                durationDays: medicine.durationDays || 5,
+                instructions: medicine.instructions || '',
+              };
+              setItems([...items, newItem]);
+            }}
+            onDosageSelect={(dosage) => {
+              // Apply dosage to the last added medicine
+              if (items.length > 0) {
+                const lastIndex = items.length - 1;
+                updateItem(lastIndex, 'dosage', dosage.dosage);
+                updateItem(lastIndex, 'frequency', dosage.frequency);
+                updateItem(lastIndex, 'route', dosage.route);
+                updateItem(lastIndex, 'durationDays', dosage.durationDays);
+                updateItem(lastIndex, 'instructions', dosage.instructions);
+              }
+            }}
+          />
+
+          {/* AI Prescription Optimizer */}
+          <PrescriptionOptimizer
+            patientId={selectedPatientId}
+            currentPrescription={{
+              items,
+              diagnosis,
+              advice,
+            }}
+            onOptimizationComplete={(optimization) => {
+              console.log('Optimization completed:', optimization);
+            }}
+          />
 
           {/* Quick Actions */}
           <Card>

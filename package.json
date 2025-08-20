@@ -19,7 +19,9 @@
     "db:resolve-migration": "node scripts/resolve-migration.js",
     "db:quick-fix": "node scripts/quick-fix-migration.js",
     "setup": "node scripts/initial-setup.js",
-    "vercel-build": "node scripts/vercel-build.js"
+    "vercel-build": "node scripts/vercel-build.js",
+    "test:ai": "node scripts/test-ai-system.js",
+    "add-sample-medicines": "node scripts/add-sample-medicines.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -73,6 +75,7 @@
     "next": "14.2.7",
     "next-auth": "^4.24.11",
     "node-cron": "^4.2.1",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^6.10.1",
     "pdf-lib": "^1.17.1",
     "postcss": "8.4.30",

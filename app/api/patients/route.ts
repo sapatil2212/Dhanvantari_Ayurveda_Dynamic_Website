@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/options';
+import { NotificationService } from '@/lib/notification-service';
 
 function generateMrn() {
   return `MRN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -116,6 +117,13 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Create real-time notification
+    try {
+      await NotificationService.createPatientNotification(created.id, 'created');
+    } catch (error) {
+      console.error('Failed to create patient notification:', error);
+    }
 
     return NextResponse.json(created, { status: 201 });
   } catch (error: any) {

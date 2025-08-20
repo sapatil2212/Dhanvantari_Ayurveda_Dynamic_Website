@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useEffect, useState } from 'react';
 import { 
   LineChart, 
   Line, 
@@ -63,36 +64,83 @@ interface AnalyticsData {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export default function AdvancedAnalytics({ data }: { data: AnalyticsData }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="shadow-sm">
+              <CardContent className="p-6">
+                <div className="h-24 bg-gray-100 animate-pulse rounded-lg" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />
+      </div>
+    );
+  }
+
+  // Calculate real values from data
+  const totalRevenue = data.revenue.monthly.reduce((sum, item) => sum + item.amount, 0);
+  const totalPatients = data.patients.new.reduce((sum, item) => sum + item.count, 0);
+  const totalAppointments = data.appointments.status.reduce((sum, item) => sum + item.count, 0);
+  const totalPrescriptions = data.prescriptions.monthly.reduce((sum, item) => sum + item.count, 0);
+
+  // Calculate percentage changes (simplified calculation)
+  const revenueChange = data.revenue.monthly.length > 1 
+    ? ((data.revenue.monthly[data.revenue.monthly.length - 1].amount - data.revenue.monthly[data.revenue.monthly.length - 2].amount) / data.revenue.monthly[data.revenue.monthly.length - 2].amount * 100).toFixed(1)
+    : '0.0';
+  
+  const patientChange = data.patients.new.length > 1
+    ? ((data.patients.new[data.patients.new.length - 1].count - data.patients.new[data.patients.new.length - 2].count) / data.patients.new[data.patients.new.length - 2].count * 100).toFixed(1)
+    : '0.0';
+
+  // Calculate appointment change from daily data
+  const appointmentChange = data.appointments.daily.length > 1
+    ? ((data.appointments.daily[data.appointments.daily.length - 1].scheduled - data.appointments.daily[data.appointments.daily.length - 2].scheduled) / data.appointments.daily[data.appointments.daily.length - 2].scheduled * 100).toFixed(1)
+    : '0.0';
+
+  const prescriptionChange = data.prescriptions.monthly.length > 1
+    ? ((data.prescriptions.monthly[data.prescriptions.monthly.length - 1].count - data.prescriptions.monthly[data.prescriptions.monthly.length - 2].count) / data.prescriptions.monthly[data.prescriptions.monthly.length - 2].count * 100).toFixed(1)
+    : '0.0';
+
   const kpiCards = [
     {
       title: 'Total Revenue',
-      value: '₹2,45,000',
-      change: '+12.5%',
-      trend: 'up',
+      value: `₹${totalRevenue.toLocaleString('en-IN')}`,
+      change: `${parseFloat(revenueChange) >= 0 ? '+' : ''}${revenueChange}%`,
+      trend: parseFloat(revenueChange) >= 0 ? 'up' : 'down',
       icon: DollarSign,
       color: 'text-green-600'
     },
     {
       title: 'Active Patients',
-      value: '1,234',
-      change: '+8.2%',
-      trend: 'up',
+      value: totalPatients.toLocaleString(),
+      change: `${parseFloat(patientChange) >= 0 ? '+' : ''}${patientChange}%`,
+      trend: parseFloat(patientChange) >= 0 ? 'up' : 'down',
       icon: Users,
       color: 'text-blue-600'
     },
     {
       title: 'Appointments Today',
-      value: '45',
-      change: '+15.3%',
+      value: totalAppointments.toString(),
+      change: appointmentChange,
       trend: 'up',
       icon: Calendar,
       color: 'text-purple-600'
     },
     {
       title: 'Prescriptions',
-      value: '89',
-      change: '+5.7%',
-      trend: 'up',
+      value: totalPrescriptions.toString(),
+      change: `${parseFloat(prescriptionChange) >= 0 ? '+' : ''}${prescriptionChange}%`,
+      trend: parseFloat(prescriptionChange) >= 0 ? 'up' : 'down',
       icon: Pill,
       color: 'text-orange-600'
     }

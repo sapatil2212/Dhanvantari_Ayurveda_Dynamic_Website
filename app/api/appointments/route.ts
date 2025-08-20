@@ -114,12 +114,12 @@ export async function POST(request: Request) {
       },
     });
 
-    // Create real-time notification - temporarily disabled
-    // try {
-    //   await NotificationService.createAppointmentNotification(created.id, 'created');
-    // } catch (error) {
-    //   console.error('Failed to create appointment notification:', error);
-    // }
+    // Create real-time notification
+    try {
+      await NotificationService.createAppointmentNotification(created.id, 'created');
+    } catch (error) {
+      console.error('Failed to create appointment notification:', error);
+    }
 
     // Send booking email (best-effort)
     try {

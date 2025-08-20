@@ -2,10 +2,28 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Line, LineChart, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { useEffect, useState } from 'react';
 
 type Point = { name: string; patients: number; inpatient: number };
 
 export default function PatientStatistics({ data }: { data: Point[] }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <Card className="lg:col-span-2 shadow-sm">
+        <CardContent className="p-4">
+          <div className="mb-2 text-sm font-medium text-gray-700">Patient Statistics</div>
+          <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="lg:col-span-2 shadow-sm">
       <CardContent className="p-4">

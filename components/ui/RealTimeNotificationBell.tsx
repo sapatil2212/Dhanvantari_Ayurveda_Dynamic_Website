@@ -12,18 +12,62 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { useNotifications } from '@/contexts/NotificationContext';
 import { cn } from '@/lib/utils';
 
 export function RealTimeNotificationBell() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, isLoading } = useNotifications();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Hydration safety
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/notifications?take=10');
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.items || []);
+        setUnreadCount(data.unreadCount || 0);
+      } else {
+        console.error('Failed to fetch notifications:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch notifications on mount and when dropdown opens
+  useEffect(() => {
+    if (mounted) {
+      fetchNotifications();
+    }
+  }, [mounted]);
+
+  useEffect(() => {
+    if (open) {
+      fetchNotifications();
+    }
+  }, [open]);
+
+  // Set up polling for real-time updates
+  useEffect(() => {
+    if (!mounted) return;
+
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000); // Poll every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [mounted]);
 
   // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {
@@ -33,6 +77,46 @@ export function RealTimeNotificationBell() {
       </Button>
     );
   }
+
+  // Mark notification as read
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        // Update local state
+        setNotifications(prev => 
+          prev.map(notif => 
+            notif.id === notificationId 
+              ? { ...notif, isRead: true }
+              : notif
+          )
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  // Mark all notifications as read
+  const markAllAsRead = async () => {
+    try {
+      const response = await fetch('/api/notifications/mark-all-read', {
+        method: 'POST',
+      });
+      if (response.ok) {
+        // Update local state
+        setNotifications(prev => 
+          prev.map(notif => ({ ...notif, isRead: true }))
+        );
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
+  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -95,6 +179,7 @@ export function RealTimeNotificationBell() {
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
           )}
+
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
@@ -173,17 +258,9 @@ export function RealTimeNotificationBell() {
           <>
             <DropdownMenuSeparator />
             <div className="p-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-sm text-gray-600 hover:text-gray-800"
-                onClick={() => {
-                  // Navigate to full notifications page
-                  window.open('/dashboard/notifications', '_blank');
-                }}
-              >
-                View all notifications
-              </Button>
+              <div className="text-xs text-gray-500 text-center">
+                Showing {notifications.length} of {unreadCount} unread notifications
+              </div>
             </div>
           </>
         )}

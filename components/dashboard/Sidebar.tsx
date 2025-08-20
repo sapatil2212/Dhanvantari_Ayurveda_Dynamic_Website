@@ -120,7 +120,6 @@ export default function Sidebar({ userRole }: SidebarProps) {
         { title: 'All Appointments', href: '/dashboard/appointments', icon: Calendar },
         { title: 'New Appointment', href: '/dashboard/appointments/new', icon: Calendar },
         { title: 'Schedule', href: '/dashboard/appointments/schedule', icon: Clock },
-        { title: 'Room Management', href: '/dashboard/appointments/rooms', icon: Activity },
       ]
     },
     {

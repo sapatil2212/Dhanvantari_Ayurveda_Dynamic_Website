@@ -60,6 +60,9 @@ model User {
   assignedByEnquiries      Enquiry[] @relation("AssignedByEnquiries")
   createdSuppliers         Supplier[] @relation("CreatedSuppliers")
   updatedSuppliers         Supplier[] @relation("UpdatedSuppliers")
+  createdMedicines         Medicine[] @relation("CreatedMedicines")
+  updatedMedicines         Medicine[] @relation("UpdatedMedicines")
+  sharedPrescriptions      SharedPrescription[] @relation("SharedPrescriptions")
 }
 
 enum Role {
@@ -445,6 +448,7 @@ model Prescription {
   appointment     Appointment?     @relation(fields: [appointmentId], references: [id])
   appointmentId   String?
   items           PrescriptionItem[]
+  sharedPrescriptions SharedPrescription[]
 
   @@index([patientId, date])
 }
@@ -464,6 +468,89 @@ model PrescriptionItem {
 
   prescription    Prescription  @relation(fields: [prescriptionId], references: [id])
   @@index([prescriptionId])
+}
+
+// Shared Prescriptions
+model SharedPrescription {
+  id              String   @id @default(cuid())
+  prescriptionId  String
+  shareCode       String   @unique
+  accessCode      String?  // Optional access code for additional security
+  expiresAt       DateTime?
+  maxViews        Int?     // Maximum number of times it can be viewed
+  currentViews    Int      @default(0)
+  isActive        Boolean  @default(true)
+  allowDownload   Boolean  @default(true)
+  allowPrint      Boolean  @default(true)
+  shareType       ShareType @default(PUBLIC)
+  sharedBy        String?
+  sharedByUser    User?    @relation("SharedPrescriptions", fields: [sharedBy], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  prescription    Prescription @relation(fields: [prescriptionId], references: [id])
+  views           SharedPrescriptionView[]
+
+  @@index([prescriptionId])
+  @@index([shareCode])
+  @@index([isActive])
+}
+
+model SharedPrescriptionView {
+  id                    String   @id @default(cuid())
+  sharedPrescriptionId  String
+  viewedAt              DateTime @default(now())
+  ipAddress             String?
+  userAgent             String?
+  location              String?
+  isDownloaded          Boolean  @default(false)
+  isPrinted             Boolean  @default(false)
+
+  sharedPrescription    SharedPrescription @relation(fields: [sharedPrescriptionId], references: [id])
+  @@index([sharedPrescriptionId])
+  @@index([viewedAt])
+}
+
+enum ShareType {
+  PUBLIC
+  PRIVATE
+  RESTRICTED
+}
+
+// Medicine Database
+model Medicine {
+  id              String   @id @default(cuid())
+  name            String
+  genericName     String?
+  brandName       String?
+  category        String   // e.g., Antibiotic, Analgesic, Antihypertensive, Ayurvedic
+  type            String   // e.g., Tablet, Capsule, Syrup, Injection, Ointment
+  strength        String?
+  dosageForm      String?  // e.g., 500mg, 10ml, etc.
+  route           String?  // e.g., Oral, Topical, Intravenous
+  manufacturer    String?
+  description     String?
+  indications     String?  // What it's used for
+  contraindications String? // When not to use
+  sideEffects     String?
+  interactions    String?
+  dosage          String?  // Standard dosage information
+  storage         String?  // Storage instructions
+  isActive        Boolean  @default(true)
+  isPrescription  Boolean  @default(true) // Whether it requires prescription
+  isControlled    Boolean  @default(false) // Whether it's a controlled substance
+  createdById     String?
+  createdBy       User?    @relation("CreatedMedicines", fields: [createdById], references: [id])
+  updatedById     String?
+  updatedBy       User?    @relation("UpdatedMedicines", fields: [updatedById], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([name])
+  @@index([category])
+  @@index([type])
+  @@index([manufacturer])
+  @@index([isActive])
 }
 
 // Inventory Management

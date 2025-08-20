@@ -1,4 +1,5 @@
-import { Metadata } from 'next';
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,11 +11,7 @@ import {
   Droplets, Wind, Calendar, Users, MapPin, Phone, Mail, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
-
-export const metadata: Metadata = {
-  title: 'About Dhanvantari Ayurvedic Clinic | Authentic Healing Since 2009',
-  description: 'Learn about our journey in providing authentic Ayurvedic treatments and Panchkarma therapies. Discover our vision, mission, and commitment to holistic healing.',
-};
+import { useAppointment } from '@/contexts/AppointmentContext';
 
 const clinicFeatures = [
   { 
@@ -94,28 +91,7 @@ const treatmentAmenities = [
   }
 ];
 
-const nearbyLocations = [
-  {
-    icon: Landmark,
-    title: "City Center",
-    distance: "2 km"
-  },
-  {
-    icon: Mountain,
-    title: "Railway Station",
-    distance: "3 km"
-  },
-  {
-    icon: GanttChart,
-    title: "Bus Terminal",
-    distance: "1.5 km"
-  },
-  {
-    icon: Plane,
-    title: "Airport",
-    distance: "15 km"
-  }
-];
+
 
 const visionMissionCards = [
   {
@@ -168,6 +144,8 @@ const coreValues = [
 ];
 
 export default function AboutPage() {
+  const { setIsAppointmentModalOpen } = useAppointment();
+  
   return (
     <div className="pt-0 px-0 sm:px-6 lg:px-8 bg-gradient-to-b from-emerald-50 to-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 xl:px-32">
@@ -194,33 +172,7 @@ export default function AboutPage() {
                 Welcome to Dhanvantari Ayurvedic Clinic, where ancient wisdom meets modern healthcare. For over 15 years, we have been dedicated to providing authentic Ayurvedic treatments and Panchkarma therapies that restore health and promote wellness naturally.
               </p>
               
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                  <MapPin className="w-5 h-5 mr-2 text-emerald-600" />
-                  Conveniently Located
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {nearbyLocations.map((location, index) => {
-                    const IconComponent = location.icon;
-                    return (
-                      <div 
-                        key={index} 
-                        className="bg-white p-4 rounded-xl border border-gray-200 hover:border-emerald-300 transition-all duration-200 shadow-sm hover:shadow-md"
-                      >
-                        <div className="flex items-start space-x-3">
-                          <div className="flex-shrink-0 bg-emerald-100 p-2 rounded-full">
-                            <IconComponent className="w-5 h-5 text-emerald-600" strokeWidth={1.5} />
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-900">{location.title}</h3>
-                            <p className="text-xs text-gray-500 mt-1">{location.distance} away</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+
             </div>
           </div>
 
@@ -365,12 +317,13 @@ export default function AboutPage() {
               Book your consultation today and take the first step towards natural wellness.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/book-appointment">
-                <Button className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  Book Consultation
-                  <Calendar className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
+              <Button 
+                onClick={() => setIsAppointmentModalOpen(true)}
+                className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                Book Consultation
+                <Calendar className="ml-2 w-5 h-5" />
+              </Button>
               <Link href="/contact">
                 <Button variant="outline" className="border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 text-lg px-8 py-6 rounded-xl transition-all duration-300">
                   Contact Us
@@ -449,17 +402,18 @@ export default function AboutPage() {
 
                 {/* CTA Buttons */}
                 <div className="flex flex-row gap-4 pt-2">
-                  <Link href="/book-appointment">
-                    <Button className="group relative bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-full hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] overflow-hidden">
-                      <span className="relative z-10 flex items-center justify-center space-x-2">
-                        <Calendar className="h-5 w-5" />
-                        <span className='font-medium text-sm sm:text-base'>Book Consultation</span>
-                        <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                      </span>
-                      {/* Shimmer effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    </Button>
-                  </Link>
+                  <Button 
+                    onClick={() => setIsAppointmentModalOpen(true)}
+                    className="group relative bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-full hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center justify-center space-x-2">
+                      <Calendar className="h-5 w-5" />
+                      <span className='font-medium text-sm sm:text-base'>Book Consultation</span>
+                      <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  </Button>
                 </div>
               </div>
               

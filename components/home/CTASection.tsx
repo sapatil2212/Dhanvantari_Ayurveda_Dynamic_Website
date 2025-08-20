@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Phone, MapPin, Clock, MessageCircle } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { useAppointment } from '@/contexts/AppointmentContext';
 
 // Custom animation styles
 const animationStyles = `
@@ -57,6 +58,7 @@ const animationStyles = `
 export default function CTASection() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const { setIsAppointmentModalOpen } = useAppointment();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -97,18 +99,14 @@ export default function CTASection() {
             Take the first step towards optimal health with personalized Ayurvedic care. 
             Our experienced doctors are here to guide you on your path to wellness.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/book-appointment">
-              <Button className="bg-white text-emerald-700 hover:bg-emerald-50 text-lg px-8 py-6">
-                Book Consultation Now
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-emerald-700 text-lg px-8 py-6">
-                Contact Our Experts
-              </Button>
-            </Link>
+          <div className="flex justify-center">
+            <Button 
+              onClick={() => setIsAppointmentModalOpen(true)}
+              className="bg-white text-emerald-700 hover:bg-emerald-50 text-lg px-8 py-6"
+            >
+              Book Consultation Now
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
           </div>
         </div>
 

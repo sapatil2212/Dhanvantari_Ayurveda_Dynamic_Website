@@ -95,7 +95,7 @@ class AIService {
           take: 5,
         },
         encounters: {
-          orderBy: { encounterDate: 'desc' },
+          orderBy: { date: 'desc' },
           take: 10,
           include: {
             prescriptions: {
@@ -235,21 +235,21 @@ class AIService {
         }
       }
 
-      suggestions.push({
-        name: medicine.name,
-        genericName: medicine.genericName,
-        category: medicine.category,
-        type: medicine.type,
-        strength: medicine.strength,
-        dosage: category?.typicalDosage || medicine.dosage,
-        frequency: this.extractFrequency(category?.typicalDosage || medicine.dosage),
-        route: medicine.route || 'Oral',
-        durationDays: this.extractDuration(category?.typicalDosage || medicine.dosage),
-        instructions: this.generateInstructions(medicine, request),
-        confidence: Math.max(0, Math.min(1, confidence)),
-        reasoning: reasoning || 'General recommendation based on category.',
-        contraindications: contraindications.length > 0 ? contraindications : undefined,
-        sideEffects: medicine.sideEffects ? medicine.sideEffects.split(',').map(s => s.trim()) : undefined,
+             suggestions.push({
+         name: medicine.name,
+         genericName: medicine.genericName || undefined,
+         category: medicine.category,
+         type: medicine.type,
+         strength: medicine.strength || undefined,
+                 dosage: category?.typicalDosage || medicine.dosage || undefined,
+         frequency: this.extractFrequency(category?.typicalDosage || medicine.dosage || ''),
+         route: medicine.route || 'Oral',
+         durationDays: this.extractDuration(category?.typicalDosage || medicine.dosage || ''),
+         instructions: this.generateInstructions(medicine, request),
+         confidence: Math.max(0, Math.min(1, confidence)),
+         reasoning: reasoning || 'General recommendation based on category.',
+         contraindications: contraindications.length > 0 ? contraindications : undefined,
+         sideEffects: medicine.sideEffects ? medicine.sideEffects.split(',').map(s => s.trim()) : undefined,
       });
     }
 
@@ -274,17 +274,17 @@ class AIService {
     const category = knowledgeBase.categories[medicine.category as keyof typeof knowledgeBase.categories];
     const suggestions: DosageSuggestion[] = [];
 
-    // Standard dosage suggestion
-    const standardDosage: DosageSuggestion = {
-      dosage: this.extractDosage(category?.typicalDosage || medicine.dosage),
-      frequency: this.extractFrequency(category?.typicalDosage || medicine.dosage),
-      route: medicine.route || 'Oral',
-      durationDays: this.extractDuration(category?.typicalDosage || medicine.dosage),
-      instructions: this.generateInstructions(medicine, request),
-      confidence: 0.8,
-      reasoning: 'Standard dosage based on medication category and typical usage.',
-      warnings: this.generateWarnings(medicine, request),
-    };
+         // Standard dosage suggestion
+     const standardDosage: DosageSuggestion = {
+       dosage: this.extractDosage(category?.typicalDosage || medicine.dosage || ''),
+       frequency: this.extractFrequency(category?.typicalDosage || medicine.dosage || ''),
+       route: medicine.route || 'Oral',
+       durationDays: this.extractDuration(category?.typicalDosage || medicine.dosage || ''),
+       instructions: this.generateInstructions(medicine, request),
+       confidence: 0.8,
+       reasoning: 'Standard dosage based on medication category and typical usage.',
+       warnings: this.generateWarnings(medicine, request),
+     };
 
     suggestions.push(standardDosage);
 
@@ -309,15 +309,14 @@ class AIService {
       }
     }
 
-    // Alternative dosage forms
-    if (medicine.type !== 'Tablet') {
-      suggestions.push({
-        ...standardDosage,
-        type: medicine.type,
-        confidence: 0.6,
-        reasoning: `Alternative ${medicine.type} formulation available.`,
-      });
-    }
+         // Alternative dosage forms
+     if (medicine.type !== 'Tablet') {
+       suggestions.push({
+         ...standardDosage,
+         confidence: 0.6,
+         reasoning: `Alternative ${medicine.type} formulation available.`,
+       });
+     }
 
     return suggestions.sort((a, b) => b.confidence - a.confidence);
   }
@@ -404,25 +403,30 @@ class AIService {
       optimization.improvements.push('Cost optimization opportunities available');
     }
 
-    // Check for age-appropriate medications
-    if (patient.age) {
-      const ageInappropriate = currentPrescription.items.filter((item: any) => {
-        const medicine = medicines.find(m => m.name === item.medicineName);
-        return medicine && this.isAgeInappropriate(medicine, patient.age!);
-      });
+         // Check for age-appropriate medications
+     if (patient.dateOfBirth) {
+       const age = Math.floor((new Date().getTime() - new Date(patient.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+       const ageInappropriate = currentPrescription.items.filter((item: any) => {
+         const medicine = medicines.find(m => m.name === item.medicineName);
+         return medicine && this.isAgeInappropriate(medicine, age);
+       });
 
-      if (ageInappropriate.length > 0) {
-        optimization.warnings.push('Some medications may not be age-appropriate');
-      }
-    }
+       if (ageInappropriate.length > 0) {
+         optimization.warnings.push('Some medications may not be age-appropriate');
+       }
+     }
 
-    // Suggest complementary medications
-    const complementaryMeds = await this.suggestMedicines({
-      diagnosis,
-      patientAge: patient.age,
-      patientGender: patient.gender,
-      existingMedications: medicineNames,
-    });
+         // Suggest complementary medications
+     const patientAge = patient.dateOfBirth ? 
+       Math.floor((new Date().getTime() - new Date(patient.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 
+       undefined;
+     
+     const complementaryMeds = await this.suggestMedicines({
+       diagnosis,
+       patientAge,
+       patientGender: patient.gender || undefined,
+       existingMedications: medicineNames,
+     });
 
     if (complementaryMeds.length > 0) {
       optimization.alternativeMedicines = complementaryMeds.slice(0, 3);

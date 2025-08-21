@@ -13,12 +13,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const request: AISuggestionRequest = {
+    const aiRequest: AISuggestionRequest = {
       ...patientInfo,
       medicineName,
     };
 
-    const suggestions = await aiService.suggestDosage(medicineName, request);
+    const suggestions = await aiService.suggestDosage(medicineName, aiRequest);
     
     return NextResponse.json({
       success: true,
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const request: AISuggestionRequest = {
+    const aiRequest: AISuggestionRequest = {
       medicineName,
       patientAge,
       patientGender: patientGender || undefined,
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       allergies: allergies?.filter(a => a.trim()) || undefined,
     };
 
-    const suggestions = await aiService.suggestDosage(medicineName, request);
+    const suggestions = await aiService.suggestDosage(medicineName, aiRequest);
     
     return NextResponse.json({
       success: true,

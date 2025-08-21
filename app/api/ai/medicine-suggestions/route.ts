@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const existingMedications = searchParams.get('existingMedications')?.split(',');
     const allergies = searchParams.get('allergies')?.split(',');
 
-    const request: AISuggestionRequest = {
+    const aiRequest: AISuggestionRequest = {
       diagnosis: diagnosis || undefined,
       symptoms: symptoms?.filter(s => s.trim()) || undefined,
       category: category || undefined,
@@ -50,14 +50,14 @@ export async function GET(request: NextRequest) {
       allergies: allergies?.filter(a => a.trim()) || undefined,
     };
 
-    if (!request.diagnosis && (!request.symptoms || request.symptoms.length === 0)) {
+    if (!aiRequest.diagnosis && (!aiRequest.symptoms || aiRequest.symptoms.length === 0)) {
       return NextResponse.json(
         { error: 'Either diagnosis or symptoms are required' },
         { status: 400 }
       );
     }
 
-    const suggestions = await aiService.suggestMedicines(request);
+    const suggestions = await aiService.suggestMedicines(aiRequest);
     
     return NextResponse.json({
       success: true,

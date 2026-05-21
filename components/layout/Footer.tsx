@@ -195,21 +195,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-
-        {/* Credit Section */}
-        <div className="border-t border-gray-100/20 mt-8 pt-8 text-center">
-          <p className="text-white text-[10px] lg:text-xs">
-            Made with ❤️ by{' '}
-            <a 
-              href="https://digiworldtechnologies.com/" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:text-gray-200 transition-colors duration-200"
-            >
-              Digiworld Infotech
-            </a>
-          </p>
-        </div>
       </div>
     </footer>
   );
